@@ -44,16 +44,50 @@
       "type": "string",
       "description": "Path to the counts CSV file containing probe counts"
     },
-    "config": {
+    "substances_cell_types": {
       "type": "string",
-      "description": "Path to the configuration YAML file specifying processing choices"
+      "description": "Path to YAML file containing test substances and cell types to analyze",
+      "default": "dataset_prep/data/substances_cell_types.yml"
+    },
+    "additional_divider": {
+      "type": "string",
+      "description": "Additional field to use for dividing data",
+      "default": "N/A"
+    },
+    "batch_key": {
+      "type": "string",
+      "description": "Field to use as batch key in the BIFROST model",
+      "default": "Exposure plate ID"
+    },
+    "min_percent_mapped_reads": {
+      "type": "number",
+      "description": "Minimum percentage of mapped reads required",
+      "minimum": 0,
+      "maximum": 100,
+      "default": 50
+    },
+    "min_num_mapped_reads": {
+      "type": "integer",
+      "description": "Minimum number of mapped reads required",
+      "minimum": 0,
+      "default": 100000
+    },
+    "min_avg_treatment_count": {
+      "type": "number",
+      "description": "Minimum average treatment count required",
+      "minimum": 0,
+      "default": 5
+    },
+    "specific_filters": {
+      "type": "object",
+      "description": "Additional specific filters to apply",
+      "default": {}
     }
   },
   "required": [
     "meta_data",
     "meta_mapper",
-    "counts",
-    "config"
+    "counts"
   ],
   "allOf": [
     {

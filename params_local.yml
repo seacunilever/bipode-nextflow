@@ -1,7 +1,9 @@
 model_file: model/BIFROST_HTTr_beta_logistic_batch
-data_files:
-  - dataset_prep/bifrost_inputs/BIFROST_input_Paracetamol_HepG2.json
 work_dir: ./work
 results_dir: ./results
 n_cores: 4
-max_nodes: 1 
+max_nodes: 1
+meta_data: dataset_prep/data/Example_Meta_Data.csv
+meta_mapper: dataset_prep/data/sers_meta_data_mapper.yml
+counts: dataset_prep/data/Example_Counts.csv
+config: dataset_prep/data/example_config_file.yaml 

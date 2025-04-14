@@ -129,7 +129,13 @@ def parse_args():
     parser.add_argument('--meta-data', required=True, help='Path to meta data CSV file')
     parser.add_argument('--meta-mapper', required=True, help='Path to meta data mapper YAML file')
     parser.add_argument('--counts', required=True, help='Path to counts CSV file')
-    parser.add_argument('--config', required=True, help='Path to configuration YAML file')
+    parser.add_argument('--substances-cell-types', required=True, help='Path to substances and cell types YAML file')
+    parser.add_argument('--additional-divider', default='N/A', help='Additional field to use for dividing data')
+    parser.add_argument('--batch-key', default='Exposure plate ID', help='Field to use as batch key in the BIFROST model')
+    parser.add_argument('--min-percent-mapped-reads', type=float, default=50.0, help='Minimum percentage of mapped reads required')
+    parser.add_argument('--min-num-mapped-reads', type=int, default=100000, help='Minimum number of mapped reads required')
+    parser.add_argument('--min-avg-treatment-count', type=float, default=5.0, help='Minimum average treatment count required')
+    parser.add_argument('--specific-filters', default='{}', help='Additional specific filters to apply (JSON string)')
     parser.add_argument('--output-dir', default='bifrost_inputs', help='Directory to store outputs')
     parser.add_argument('--test-probes', type=int, default=5, help='Number of probes to sample for testing')
     parser.add_argument('--test-pattern', default='HepG2', help='Pattern to match files for testing')
@@ -146,8 +152,20 @@ def main():
     # Load counts table
     counts = pd.read_csv(args.counts)
 
-    # Load configuration file specifying processing choices
-    config_dict = load_yaml_file(args.config)
+    # Load substances and cell types
+    substances_cell_types = load_yaml_file(args.substances_cell_types)
+
+    # Create config dictionary from arguments
+    config_dict = {
+        'Test substances': substances_cell_types['Test substances'],
+        'Cell types': substances_cell_types['Cell types'],
+        'Additional divider': args.additional_divider,
+        'Batch key': args.batch_key,
+        'Minimum percent mapped reads': args.min_percent_mapped_reads,
+        'Minimum number mapped reads': args.min_num_mapped_reads,
+        'Minimum average treatment count': args.min_avg_treatment_count,
+        'Specific filters': eval(args.specific_filters)  # Convert JSON string to dict
+    }
 
     # Make directory for storing outputs
     output_dir = args.output_dir

@@ -1,11 +1,18 @@
 process PREPARE_INPUTS {
-    publishDir "${params.results_dir}/", mode: "copy"
+    publishDir "${results_dir}/", mode: "copy"
 
     input:
     path meta_data
     path meta_mapper
     path counts
-    path config
+    path substances_cell_types
+    val additional_divider
+    val batch_key
+    val min_percent_mapped_reads
+    val min_num_mapped_reads
+    val min_avg_treatment_count
+    val specific_filters
+    val results_dir
 
     output:
     path "bifrost_inputs/*.json", emit: prepared_inputs
@@ -16,7 +23,13 @@ process PREPARE_INPUTS {
         --meta-data $meta_data \
         --meta-mapper $meta_mapper \
         --counts $counts \
-        --config $config \
+        --substances-cell-types $substances_cell_types \
+        --additional-divider "$additional_divider" \
+        --batch-key "$batch_key" \
+        --min-percent-mapped-reads $min_percent_mapped_reads \
+        --min-num-mapped-reads $min_num_mapped_reads \
+        --min-avg-treatment-count $min_avg_treatment_count \
+        --specific-filters '$specific_filters' \
         --output-dir bifrost_inputs
     """
 }
