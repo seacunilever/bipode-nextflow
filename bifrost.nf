@@ -79,7 +79,7 @@ def n_probes = probes.groupBy{ it[0] }.collectEntries{ k, v -> [(k):Math.ceil(v*
 data_file_ch = Channel.fromList(data_files.collect { tuple(file(it).simpleName, file(it)) })
 probes_ch = Channel.fromList(probes)
                    .groupTuple(size: params.n_cores.toInteger(), remainder: true, sort: true)
-model_ch = Channel.fromPath(params.model_file)
+model_ch = Channel.fromPath(params.model_file + ".stan")
 
 workflow {
     SPLIT_DATA(data_file_ch)

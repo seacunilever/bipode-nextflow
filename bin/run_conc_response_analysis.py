@@ -14,7 +14,7 @@ from multiprocessing import Pool
 from io import StringIO
 
 from scipy.stats import gmean, beta as beta_dist
-from scipy.special import logit, expit, betainc, digamma, polygamma
+from scipy.special import logit, expit, betainc, digamma, polygamma, beta
 from scipy.optimize import brentq
 
 
@@ -200,7 +200,7 @@ def get_inits(data):
     return {'log_odds': log_odds, 'mu': mu, 'theta_raw': 0.}
 
 
-def fit_model(path_to_executable, data):
+def fit_model(path_to_executable, data, n_cores):
     """
     This function fits the BIFROST model using PyStan.
     The stan_utility library is required to export convergence diagnostics
@@ -208,6 +208,7 @@ def fit_model(path_to_executable, data):
     Accepts:
         model - instance of the BIFROST model
         data (pd.Series/dict) - data object to be passed to the model
+        n_cores (int) - number of cores to use for parallel chains
 
     Returns:
         a dictionary containing the posterior samples and the diagnostic string
@@ -217,7 +218,7 @@ def fit_model(path_to_executable, data):
     model = cmdstanpy.CmdStanModel(exe_file=path_to_executable)
     fit = model.sample(data=data,
                        chains=4,
-                       parallel_chains=1,
+                       parallel_chains=n_cores,
                        iter_warmup=500,
                        iter_sampling=250,
                        thin=1,
@@ -365,11 +366,14 @@ def run_concentration_response_analysis(files_to_process, model_name, number_of_
     Uses the multiprocessing module to fit Pystan model for dataset specified by
     chemical and cell type.
 
-    Accepts:    1. analysis_dir - directory containing data to be processed
-                2. Path to executable for Stan model
-                3. Number of cores to use
+    Args:
+        files_to_process (list): List of probe .pkl files to process
+        model_name (str): Path to the Stan model file
+        number_of_cores (int): Number of cores to use
+        fit_dir (str, optional): Directory to contain model fits
 
-    Returns:    None
+    Returns:
+        None
     """
 
     # Define path to directory to contain model fits
@@ -395,7 +399,8 @@ def run_concentration_response_analysis(files_to_process, model_name, number_of_
     # Create list of arguments to pass to standard_analysis function
     fitting_args = [(path_to_model,
                      i,
-                     f'{path_to_fits}/{os.path.splitext(os.path.basename(i))[0]}.pkl')
+                     f'{path_to_fits}/{os.path.splitext(os.path.basename(i))[0]}.pkl',
+                     number_of_cores)
                     for i in files_to_process]
 
     with Pool(number_of_cores) as p:
@@ -409,18 +414,18 @@ def standard_analysis(paths):
     Also generates concentration-response curves.
 
     Argument:
-        paths (tuple) - tuple of paths to the model instance, data file, and fit file
+        paths (tuple) - tuple of paths to the model instance, data file, fit file, and number of cores
 
     Returns:    None
     """
 
-    path_to_executable, path_to_data, path_to_fit = paths
+    path_to_executable, path_to_data, path_to_fit, n_cores = paths
 
     data = pickle.load(open(path_to_data, 'rb'))
 
     # Generate posterior samples
     with suppress_stdout_stderr():
-        fit_dict = fit_model(path_to_executable, data)
+        fit_dict = fit_model(path_to_executable, data, n_cores)
 
         # Generate model fits
         gen_plotting_data(data,
