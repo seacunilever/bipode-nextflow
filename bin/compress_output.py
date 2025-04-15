@@ -2,23 +2,23 @@
 
 import argparse
 import os
+from pathlib import Path
+from typing import Dict, Any, Union, List, Optional, Tuple
 import numpy as np
 import pandas as pd
 import pickle
 
 
-def get_confidence_threshold_probability_density(x: np.ndarray):
+def get_confidence_threshold_probability_density(x: np.ndarray) -> np.ndarray:
     """
-    Evaluates the probability density for the function for
-    defined to describe uncertainty in CDS threshold.
+    Evaluate the probability density for the function describing uncertainty in CDS threshold.
 
-    Accepts:
-        x (np.ndarray): array of values at which to calculate density
+    Args:
+        x: Array of values at which to calculate density
 
     Returns:
-        dq (np.ndarray) - corresponding probability density
+        Array of corresponding probability densities
     """
-
     dq = np.zeros(len(x))
     index = np.where((x > 0.5) & (x < 1))[0]
     tl, tu, a, b, c = 0.5, 1, 0.38387606, -5.40387609, 2.8775016
@@ -31,19 +31,27 @@ def get_confidence_threshold_probability_density(x: np.ndarray):
     return dq
 
 
-def get_minimum_pod_means(pod_means: np.ndarray, cds: np.ndarray, cds_thresholds: np.ndarray, max_conc: float):
+def get_minimum_pod_means(
+    pod_means: np.ndarray,
+    cds: np.ndarray,
+    cds_thresholds: np.ndarray,
+    max_conc: float
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
-    Computes minimum PoD means for each value in the specified array
+    Compute minimum PoD means for each value in the specified array.
 
-    Accepts:
-        stats (pd.Series) - dictionary-like structure with PoD means and CDS
-        cds_thresholds (np.ndarray) - thresholds on which to filter probes
+    Args:
+        pod_means: Array of PoD means
+        cds: Array of CDS values
+        cds_thresholds: Array of thresholds on which to filter probes
+        max_conc: Maximum concentration value
 
     Returns:
-        min_means (np.ndarray) - array of minimum mean values
-        min_probes (np.ndarray) - array of corresponding probe IDs
+        Tuple containing:
+            - Array of minimum mean values
+            - Array of corresponding probe IDs
+            - Array of corresponding CDS values
     """
-
     min_means = np.full(len(cds_thresholds), max_conc)
     min_probes = np.full(len(cds_thresholds), 'Max. conc.', dtype='object')
     min_cds = np.full(len(cds_thresholds), 0, dtype='float')
@@ -59,17 +67,16 @@ def get_minimum_pod_means(pod_means: np.ndarray, cds: np.ndarray, cds_thresholds
     return min_means, min_probes, min_cds
 
 
-def get_global_pod(df: pd.Series):
+def get_global_pod(df: pd.Series) -> Dict[str, Any]:
     """
-    Calculates and returns global PoD.
+    Calculate and return global PoD.
 
-    Accepts:
-        df (pd.Series): BIFROST summary
+    Args:
+        df: BIFROST summary Series
 
     Returns:
-        results (dict): dictionary of global PoD-related stats
+        Dictionary of global PoD-related statistics
     """
-
     # Extract PoD means and CDS
     pod_means = np.array([np.mean(df[i]['pod']) if len(df[i]['pod']) > 0 else np.nan for i in df['probes']])
     cds = np.array([df[i]['cds'] for i in df['probes']])
@@ -95,27 +102,27 @@ def get_global_pod(df: pd.Series):
     return results
 
 
-def compress_output(analysis_dir, path_to_summary):
+def compress_output(analysis_dir: Union[str, Path], path_to_summary: Union[str, Path]) -> None:
     """
-    Compresses intermediate output into a single pandas Dataframe.
+    Compress intermediate output into a single pandas DataFrame.
 
-    Accepts:
-        analysis_dir - name of parent directory for intermediate output
-        path_to_summary - path to summary file
-
-    Returns:
-        None
+    Args:
+        analysis_dir: Path to parent directory for intermediate output
+        path_to_summary: Path to summary file
     """
-
+    analysis_path = Path(analysis_dir)
+    
     # Determine probe IDs
-    data_files = os.listdir(f'{analysis_dir}')
-    probes = np.array([os.path.splitext(file)[0] for file in data_files])
+    data_files = [f for f in analysis_path.iterdir() if f.is_file()]
+    probes = np.array([file.stem for file in data_files])
 
     # Create empty pandas series
     summary = pd.Series(dtype='object')
 
     # Extract details inputs universal to all chemicals/probes
-    data = pickle.load(open(f'{analysis_dir}/{probes[0]}.pkl', 'rb'))
+    with open(analysis_path / f"{probes[0]}.pkl", 'rb') as f:
+        data = pickle.load(f)
+    
     for key in ['n_samp',
                 'n_sample', 'n_treatment_batch', 'total_count', 'n_batch', 'batch_index',
                 'n_conc', 'conc', 'conc_index', 'max_conc',
@@ -126,7 +133,8 @@ def compress_output(analysis_dir, path_to_summary):
 
     # Extract probe-specific information
     for probe in probes:
-        data = pickle.load(open(f'{analysis_dir}/{probe}.pkl', 'rb'))
+        with open(analysis_path / f"{probe}.pkl", 'rb') as f:
+            data = pickle.load(f)
 
         summary[probe] = pd.Series(dtype='object')
         summary[probe]['diagnostics'] = data['diagnostics']
@@ -143,10 +151,15 @@ def compress_output(analysis_dir, path_to_summary):
     summary.to_json(path_to_summary, orient='index', compression='zip')
 
 
-if __name__ == '__main__':
+def main() -> None:
+    """Main entry point for the script."""
     parser = argparse.ArgumentParser()
     parser.add_argument('--fits-dir', type=str, help='list of probe .pkl files to process separated by spaces')
     parser.add_argument('--output', type=str, help='path to the output json')
     args = parser.parse_args()
 
     compress_output(args.fits_dir, args.output)
+
+
+if __name__ == '__main__':
+    main()

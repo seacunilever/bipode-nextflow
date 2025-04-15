@@ -1,15 +1,27 @@
 #!/usr/bin/env python
 
 import os
+from pathlib import Path
+from typing import Dict, Any, Union, List, Optional, Tuple
 import numpy as np
 import pandas as pd
 import yaml
 import argparse
-from pathlib import Path
 import itertools
 
-def load_yaml_file(file_path) -> dict:
-    """Opens file and returns contents as string."""
+def load_yaml_file(file_path: Union[str, Path]) -> Dict[str, Any]:
+    """
+    Load and parse a YAML file.
+
+    Args:
+        file_path: Path to the YAML file
+
+    Returns:
+        Dictionary containing the parsed YAML contents
+
+    Raises:
+        yaml.YAMLError: If the YAML file is invalid
+    """
     with open(file_path) as stream:
         try:
             yaml_dict = yaml.safe_load(stream)
@@ -17,8 +29,20 @@ def load_yaml_file(file_path) -> dict:
             print(exc)
     return yaml_dict
 
-def convert_meta_data(meta: pd.DataFrame, meta_mapper_dict: dict) -> pd.DataFrame:
-    """Builds a pandas DataFrame containing meta data for internal use."""
+def convert_meta_data(meta: pd.DataFrame, meta_mapper_dict: Dict[str, List[str]]) -> pd.DataFrame:
+    """
+    Build a pandas DataFrame containing meta data for internal use.
+
+    Args:
+        meta: Input meta data DataFrame
+        meta_mapper_dict: Dictionary mapping output columns to input columns
+
+    Returns:
+        Processed meta data DataFrame
+
+    Raises:
+        TypeError: If a non-string key is encountered in the mapper
+    """
     # Populate columns from meta data and mapper dict
     df = pd.DataFrame()
     for key in meta_mapper_dict:
@@ -36,18 +60,49 @@ def convert_meta_data(meta: pd.DataFrame, meta_mapper_dict: dict) -> pd.DataFram
 
     return df
 
-def filter_percent_mapped_reads(df: pd.DataFrame, minimum_percent_mapped_reads: (int, float)) -> pd.DataFrame:
-    """Filters out samples below the specified minimum percentage of mapped reads."""
-    df = df[df['Percent mapped reads'] >= minimum_percent_mapped_reads]
-    return df
+def filter_percent_mapped_reads(df: pd.DataFrame, minimum_percent_mapped_reads: Union[int, float]) -> pd.DataFrame:
+    """
+    Filter out samples below the specified minimum percentage of mapped reads.
 
-def filter_total_mapped_reads(df: pd.DataFrame, minimum_total_mapped_reads: (int, float)) -> pd.DataFrame:
-    """Filters out samples below the specified minimum total mapped reads."""
-    df = df[df['Num. mapped reads'] >= minimum_total_mapped_reads]
-    return df
+    Args:
+        df: Input DataFrame
+        minimum_percent_mapped_reads: Minimum percentage threshold
 
-def write_bifrost_input(meta, filter_dict, counts_table, config_dict, output_directory):
-    """Applies filters to DataFrame and returns BIFROST HTTr pipeline input."""
+    Returns:
+        Filtered DataFrame
+    """
+    return df[df['Percent mapped reads'] >= minimum_percent_mapped_reads]
+
+def filter_total_mapped_reads(df: pd.DataFrame, minimum_total_mapped_reads: Union[int, float]) -> pd.DataFrame:
+    """
+    Filter out samples below the specified minimum total mapped reads.
+
+    Args:
+        df: Input DataFrame
+        minimum_total_mapped_reads: Minimum total mapped reads threshold
+
+    Returns:
+        Filtered DataFrame
+    """
+    return df[df['Num. mapped reads'] >= minimum_total_mapped_reads]
+
+def write_bifrost_input(
+    meta: pd.DataFrame,
+    filter_dict: Dict[str, str],
+    counts_table: pd.DataFrame,
+    config_dict: Dict[str, Any],
+    output_directory: Union[str, Path]
+) -> None:
+    """
+    Apply filters to DataFrame and write BIFROST HTTr pipeline input.
+
+    Args:
+        meta: Meta data DataFrame
+        filter_dict: Dictionary of filters to apply
+        counts_table: Counts data DataFrame
+        config_dict: Configuration dictionary
+        output_directory: Directory to write output files
+    """
     # Filter meta data
     test_substance_mask = meta['Test substance'] == filter_dict['Test substance']
     control_mask = meta['Concentration'] == 0
@@ -102,12 +157,25 @@ def write_bifrost_input(meta, filter_dict, counts_table, config_dict, output_dir
     for key in filter_dict:
         if key not in ['Test substance', 'N/A']:
             s += f'_{"".join(ch for ch in filter_dict[key] if ch.isalnum())}'
-    file_path = f'{output_directory}/BIFROST_input_{s}.json'
+    file_path = Path(output_directory) / f'BIFROST_input_{s}.json'
 
     bifrost_input.to_json(file_path, orient='index')
 
-def generate_bifrost_inputs(meta: pd.DataFrame, counts_table: pd.DataFrame, config_dict: dict, output_directory):
-    """Generates BIFROST inputs from the provided meta DataFrame, counts DataFrame and config dict."""
+def generate_bifrost_inputs(
+    meta: pd.DataFrame,
+    counts_table: pd.DataFrame,
+    config_dict: Dict[str, Any],
+    output_directory: Union[str, Path]
+) -> None:
+    """
+    Generate BIFROST inputs from the provided meta DataFrame, counts DataFrame and config dict.
+
+    Args:
+        meta: Meta data DataFrame
+        counts_table: Counts data DataFrame
+        config_dict: Configuration dictionary
+        output_directory: Directory to write output files
+    """
     test_substances = config_dict['Test substances']
     cell_types = config_dict['Cell types']
 
@@ -124,7 +192,13 @@ def generate_bifrost_inputs(meta: pd.DataFrame, counts_table: pd.DataFrame, conf
                                config_dict['Additional divider']: pair[1]}
                 write_bifrost_input(meta, filter_dict, counts_table, config_dict, output_directory)
 
-def parse_args():
+def parse_args() -> argparse.Namespace:
+    """
+    Parse command line arguments.
+
+    Returns:
+        Parsed arguments
+    """
     parser = argparse.ArgumentParser(description='Prepare Bifrost inputs from meta data and counts')
     parser.add_argument('--meta-data', required=True, help='Path to meta data CSV file')
     parser.add_argument('--meta-mapper', required=True, help='Path to meta data mapper YAML file')
@@ -141,7 +215,8 @@ def parse_args():
     parser.add_argument('--test-pattern', default='HepG2', help='Pattern to match files for testing')
     return parser.parse_args()
 
-def main():
+def main() -> None:
+    """Main entry point for the script."""
     args = parse_args()
     
     # Load meta data file and convert in to common format
@@ -168,20 +243,19 @@ def main():
     }
 
     # Make directory for storing outputs
-    output_dir = args.output_dir
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
+    output_dir = Path(args.output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
     generate_bifrost_inputs(meta, counts, config_dict, output_dir)
 
     # Reduce datasets to specified number of probes (for testing pipeline on small datasets)
     for i in os.listdir(output_dir):
         if args.test_pattern in i:
-            df = pd.read_json(f'{output_dir}/{i}', orient='index', typ='series')
+            df = pd.read_json(output_dir / i, orient='index', typ='series')
             print(df['probes'][:args.test_probes])
             index = np.random.choice(len(df['probes']), size=args.test_probes, replace=False)
             df['probes'] = np.array(df['probes'])[index]
             df['counts'] = np.array(df['counts'], dtype='int')[index]
-            df.to_json(f'{output_dir}/{i}', orient='index')
+            df.to_json(output_dir / i, orient='index')
 
 if __name__ == '__main__':
     main()
