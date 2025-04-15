@@ -1,0 +1,111 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "$id": "https://raw.githubusercontent.com/your-org/bifrost-nextflow/master/nextflow_schema.json",
+  "title": "Bifrost Pipeline Parameters",
+  "description": "Parameters for the Bifrost Nextflow pipeline",
+  "type": "object",
+  "properties": {
+    "model_file": {
+      "type": "string",
+      "description": "Path to the Stan model file (without .stan extension)",
+      "default": "model/BIFROST_HTTr_beta_logistic_batch"
+    },
+    "work_dir": {
+      "type": "string",
+      "description": "Directory where temporary files will be stored",
+      "default": "./work"
+    },
+    "results_dir": {
+      "type": "string",
+      "description": "Directory where final results will be stored",
+      "default": "./results"
+    },
+    "n_cores": {
+      "type": "integer",
+      "description": "Number of CPU cores to use for processing",
+      "minimum": 1,
+      "default": 4
+    },
+    "max_nodes": {
+      "type": "integer",
+      "description": "Maximum number of nodes to use in Azure Batch (only applicable for Azure profile)",
+      "minimum": 1,
+      "default": 1
+    },
+    "meta_data": {
+      "type": "string",
+      "description": "Path to the metadata CSV file containing sample information"
+    },
+    "meta_mapper": {
+      "type": "string",
+      "description": "Path to the metadata mapper YAML file that defines column mappings"
+    },
+    "counts": {
+      "type": "string",
+      "description": "Path to the counts CSV file containing probe counts"
+    },
+    "substances_cell_types": {
+      "type": "string",
+      "description": "Path to YAML file containing test substances and cell types to analyze",
+      "default": "dataset_prep/data/substances_cell_types.yml"
+    },
+    "additional_divider": {
+      "type": "string",
+      "description": "Additional field to use for dividing data",
+      "default": "N/A"
+    },
+    "batch_key": {
+      "type": "string",
+      "description": "Field to use as batch key in the BIFROST model",
+      "default": "Exposure plate ID"
+    },
+    "min_percent_mapped_reads": {
+      "type": "number",
+      "description": "Minimum percentage of mapped reads required",
+      "minimum": 0,
+      "maximum": 100,
+      "default": 50
+    },
+    "min_num_mapped_reads": {
+      "type": "integer",
+      "description": "Minimum number of mapped reads required",
+      "minimum": 0,
+      "default": 100000
+    },
+    "min_avg_treatment_count": {
+      "type": "number",
+      "description": "Minimum average treatment count required",
+      "minimum": 0,
+      "default": 5
+    },
+    "specific_filters": {
+      "type": "object",
+      "description": "Additional specific filters to apply",
+      "default": {}
+    }
+  },
+  "required": [
+    "meta_data",
+    "meta_mapper",
+    "counts"
+  ],
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "work_dir": {
+            "pattern": "^az://"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "max_nodes": {
+            "minimum": 1,
+            "maximum": 100
+          }
+        }
+      }
+    }
+  ]
+} 

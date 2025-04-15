@@ -1,7 +1,9 @@
 model_file: model/BIFROST_HTTr_beta_logistic.stan
-data_files:
-  - data/BIFROST_HTTr_test_HepaRG_p3r1_input.json
 work_dir: az://bifrost/work
 results_dir: results
 n_cores: 4
 max_nodes: 5
+meta_data: data/Example_Meta_Data.csv
+meta_mapper: data/sers_meta_data_mapper.yml
+counts: data/Example_Counts.csv
+config: data/example_config_file.yaml
