@@ -2,33 +2,37 @@
 import argparse
 import pickle
 import os
+from pathlib import Path
+from typing import Dict, Any, Union, List, Optional
 import numpy as np
 import pandas as pd
 
 
-def process_data(input_file_path, path_to_output, testing_mode=False):
+def process_data(input_file_path: Union[str, Path], path_to_output: Union[str, Path], testing_mode: bool = False) -> None:
     """
-    This function processes raw count data into a stan-compatible format for each probe.
+    Process raw count data into a stan-compatible format for each probe.
 
-    Accepts:    1. input_file_path - path to pipeline input json
-                2. analysis_dir - path to the temporary directory where intermediate output will be stored
+    Args:
+        input_file_path: Path to pipeline input json file
+        path_to_output: Path to the temporary directory where intermediate output will be stored
+        testing_mode: If True, only process the first probe for testing purposes
 
-    Returns:    None
+    Returns:
+        None
     """
-
     # Create directories for intermediate output within specified analysis directory
-    if not os.path.exists(f'{path_to_output}/Data'):
-        os.makedirs(f'{path_to_output}/Data')
-    if not os.path.exists(f'{path_to_output}/Fits'):
-        os.makedirs(f'{path_to_output}/Fits')
-
-    path_to_output = f'{path_to_output}/Data'
+    output_path = Path(path_to_output)
+    data_dir = output_path / "Data"
+    fits_dir = output_path / "Fits"
+    
+    data_dir.mkdir(parents=True, exist_ok=True)
+    fits_dir.mkdir(parents=True, exist_ok=True)
 
     # Load data
-    if os.path.exists(input_file_path):
-        df = pd.read_json(input_file_path, typ='series', orient='index')
-    else:
+    if not Path(input_file_path).exists():
         raise FileNotFoundError('json does not exist')
+    
+    df = pd.read_json(input_file_path, typ='series', orient='index')
 
     count_matrix = np.array(df['counts'], dtype='int')
     n_sample = count_matrix.shape[1]
@@ -55,7 +59,6 @@ def process_data(input_file_path, path_to_output, testing_mode=False):
     unique_concentration = np.log10(unique_concentration)
 
     for probe_index, (probe, probe_count) in enumerate(zip(df['probes'], count_matrix)):
-
         if testing_mode and probe_index > 0:
             break
 
@@ -65,7 +68,7 @@ def process_data(input_file_path, path_to_output, testing_mode=False):
         n_low_count = len(low_count_index)
         n_high_count = len(high_count_index)
 
-        data = {
+        data: Dict[str, Any] = {
             'n_sample': n_sample,
             'n_treatment_batch': n_treatment_batch,
             'count': probe_count,
@@ -85,13 +88,19 @@ def process_data(input_file_path, path_to_output, testing_mode=False):
             'high_count_index': high_count_index,
         }
 
-        pickle.dump(data, open(f'{path_to_output}/{probe}.pkl', 'wb'))
+        with open(data_dir / f"{probe}.pkl", 'wb') as f:
+            pickle.dump(data, f)
 
 
-if __name__ == '__main__':
+def main() -> None:
+    """Main entry point for the script."""
     parser = argparse.ArgumentParser()
     parser.add_argument('--input-file', type=str, help='path to input data json')
     parser.add_argument('--analysis-dir', type=str, help='path to analysis directory')
     args = parser.parse_args()
 
     process_data(args.input_file, args.analysis_dir)
+
+
+if __name__ == '__main__':
+    main()
