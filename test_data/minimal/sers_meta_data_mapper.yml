@@ -1,0 +1,40 @@
+# Required fields
+Sample ID:
+  - SAMPLE_ID
+
+Cell type:
+  - CELL_TYPE
+
+Test substance:
+  - TEST_SUBSTANCE
+
+Concentration:
+  - CONCENTRATION
+
+Num. mapped reads:
+  - NUM_MAPPED_READS
+
+Percent mapped reads:
+  - PERCENT_MAPPED_READS
+
+# Optional fields
+Exposure duration:
+  - EXPOSURE_TIME
+
+Exposure plate ID:
+  - TREATMENT_VESSEL_ID
+
+Exposure well ID:
+  - TREATMENT_WELL_ID
+
+Sequencing plate ID:
+  - SEQUENCING_PLATE_ID
+
+Sequencing well ID:
+  - SEQUENCING_WELL_ID
+
+Date:
+  - MEASUREMENT_DATE
+
+Num. unmapped reads:
+  - NUM_UNMAPPED_READS
