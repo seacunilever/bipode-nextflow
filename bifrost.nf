@@ -28,7 +28,8 @@ workflow {
         params.min_num_mapped_reads,
         params.min_avg_treatment_count,
         params.specific_filters,
-        params.results_dir
+        params.results_dir,
+        params.test_probes
     )
 
     // Create channel for model file

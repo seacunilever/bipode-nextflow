@@ -1,5 +1,4 @@
 model_file: model/BIFROST_HTTr_beta_logistic_batch
-work_dir: ./work
 results_dir: ./results
 n_cores: 4
 max_nodes: 1

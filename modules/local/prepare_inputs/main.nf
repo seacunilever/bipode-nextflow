@@ -13,11 +13,13 @@ process PREPARE_INPUTS {
     val min_avg_treatment_count
     val specific_filters
     val results_dir
+    val test_probes
 
     output:
     path "bifrost_inputs/*.json", emit: prepared_inputs
 
     script:
+    def test_probes_arg = test_probes ? "--test-probes $test_probes" : ""
     """
     prepare_bifrost_inputs.py \
         --meta-data $meta_data \
@@ -30,7 +32,8 @@ process PREPARE_INPUTS {
         --min-num-mapped-reads $min_num_mapped_reads \
         --min-avg-treatment-count $min_avg_treatment_count \
         --specific-filters '$specific_filters' \
-        --output-dir bifrost_inputs
+        --output-dir bifrost_inputs \
+        $test_probes_arg
     """
 }
  

@@ -82,6 +82,11 @@
       "type": "object",
       "description": "Additional specific filters to apply",
       "default": {}
+    },
+    "test_probes": {
+      "type": "integer",
+      "description": "Number of probes to sample for testing (optional)",
+      "minimum": 0
     }
   },
   "required": [
