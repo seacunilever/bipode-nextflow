@@ -137,12 +137,15 @@ def parse_args():
     parser.add_argument('--min-avg-treatment-count', type=float, default=5.0, help='Minimum average treatment count required')
     parser.add_argument('--specific-filters', default='{}', help='Additional specific filters to apply (JSON string)')
     parser.add_argument('--output-dir', default='bifrost_inputs', help='Directory to store outputs')
-    parser.add_argument('--test-probes', type=int, default=5, help='Number of probes to sample for testing')
-    parser.add_argument('--test-pattern', default='HepG2', help='Pattern to match files for testing')
+    parser.add_argument('--test-probes', type=int, default=0,help='Number of probes to sample for testing (optional)')
+    parser.add_argument('--random-seed', type=int, default=5, help='Random seed for reproducible probe selection')
     return parser.parse_args()
 
 def main():
     args = parse_args()
+    
+    # Set random seed for reproducibility
+    np.random.seed(args.random_seed)
     
     # Load meta data file and convert in to common format
     meta_raw = pd.read_csv(args.meta_data)
@@ -173,9 +176,9 @@ def main():
         os.makedirs(output_dir)
     generate_bifrost_inputs(meta, counts, config_dict, output_dir)
 
-    # Reduce datasets to specified number of probes (for testing pipeline on small datasets)
-    for i in os.listdir(output_dir):
-        if args.test_pattern in i:
+    # Reduce datasets to specified number of probes if test_probes is provided
+    if args.test_probes > 0:
+        for i in os.listdir(output_dir):
             df = pd.read_json(f'{output_dir}/{i}', orient='index', typ='series')
             print(df['probes'][:args.test_probes])
             index = np.random.choice(len(df['probes']), size=args.test_probes, replace=False)
