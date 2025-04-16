@@ -3,11 +3,14 @@
 import os
 import argparse
 import sys
+from pathlib import Path
+from typing import Dict, Any, Union, List, Optional, Tuple, Callable
 import numpy as np
 import pandas as pd
 import cmdstanpy
 import pickle
 import time
+from contextlib import contextmanager
 
 from shutil import rmtree
 from multiprocessing import Pool
@@ -18,67 +21,65 @@ from scipy.special import logit, expit, betainc, digamma, polygamma, beta
 from scipy.optimize import brentq
 
 
-class suppress_stdout_stderr(object):
+@contextmanager
+def suppress_stdout_stderr() -> None:
     """
-    A context manager for doing a "deep suppression" of stdout and stderr in
-    Python, i.e. will suppress all print, even if the print originates in a
-    compiled C/Fortran sub-function.
-       This will not suppress raised exceptions, since exceptions are printed
-    to stderr just before a script exits, and after the context manager has
-    exited (at least, I think that is why it lets exceptions through).
+    A context manager for suppressing stdout and stderr in Python.
+    
+    This will suppress all print statements, even if they originate in compiled
+    C/Fortran sub-functions. It will not suppress raised exceptions.
     """
+    # Open a pair of null files
+    null_fds = [os.open(os.devnull, os.O_RDWR) for _ in range(2)]
+    # Save the actual stdout (1) and stderr (2) file descriptors
+    save_fds = (os.dup(1), os.dup(2))
 
-    def __init__(self):
-        # Open a pair of null files
-        self.null_fds = [os.open(os.devnull, os.O_RDWR) for _ in range(2)]
-        # Save the actual stdout (1) and stderr (2) file descriptors.
-        self.save_fds = (os.dup(1), os.dup(2))
-
-    def __enter__(self):
-        # Assign the null pointers to stdout and stderr.
-        os.dup2(self.null_fds[0], 1)
-        os.dup2(self.null_fds[1], 2)
-
-    def __exit__(self, *_):
+    try:
+        # Assign the null pointers to stdout and stderr
+        os.dup2(null_fds[0], 1)
+        os.dup2(null_fds[1], 2)
+        yield
+    finally:
         # Re-assign the real stdout/stderr back to (1) and (2)
-        os.dup2(self.save_fds[0], 1)
-        os.dup2(self.save_fds[1], 2)
+        os.dup2(save_fds[0], 1)
+        os.dup2(save_fds[1], 2)
         # Close the null files
-        os.close(self.null_fds[0])
-        os.close(self.null_fds[1])
+        os.close(null_fds[0])
+        os.close(null_fds[1])
 
 
 class BetaLogistic:
+    """
+    A class representing a double skew logistic distribution.
+    
+    This class provides methods for calculating the PDF, CDF, and quantiles
+    of a double skew logistic distribution.
+    """
 
-    def __init__(self, mu, sigma, a, b):
+    def __init__(self, mu: float, sigma: float, a: float, b: float) -> None:
         """
-        Initalises an instance of the class representing a double skew logistic distribution.
+        Initialize a BetaLogistic instance.
 
-        Accepts:
-            mu - mean of distribution
-            sigma - standard deviation of distribution
-            a - shape parameter for left tail
-            b - shape parameter for right tail
-
-        Returns:
-             None
+        Args:
+            mu: Mean of the distribution
+            sigma: Standard deviation of the distribution
+            a: Shape parameter for the left tail
+            b: Shape parameter for the right tail
         """
-
         self.mu, self.sigma, self.a, self.b = mu, sigma, a, b
         self.m = digamma(a) - digamma(b)
         self.s = np.sqrt(polygamma(1, a) + polygamma(1, b))
 
-    def cdf(self, x):
+    def cdf(self, x: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
         """
-        Returns the CDF of double skew logistic distribution.
+        Calculate the cumulative distribution function (CDF).
 
-        Accepts:
-            x - independent variable
+        Args:
+            x: Value(s) at which to evaluate the CDF
 
         Returns:
-            cdf - cumulative density function evaluated at x
+            CDF evaluated at x
         """
-
         y = self.m + self.s * (x - self.mu) / self.sigma
 
         if isinstance(y, (list, np.ndarray)):
@@ -87,24 +88,22 @@ class BetaLogistic:
             cdf[index] = betainc(self.a, self.b, expit(y[index]))
             index = np.where(y > 0)[0]
             cdf[index] = 1 - betainc(self.b, self.a, expit(-y[index]))
-
         else:
             cdf = betainc(self.a, self.b, expit(y)) if y <= 0 else 1 - betainc(self.b, self.a, expit(-y))
 
         return cdf
 
-    def ppf(self, q):
+    def ppf(self, q: float) -> float:
         """
-        Computes quantiles of the double skew logistic distribution
+        Calculate the percent point function (inverse of CDF).
 
-        Accepts:
-            q - quantile
+        Args:
+            q: Quantile at which to evaluate the PPF
 
         Returns:
-            x
+            Value x such that P(X <= x) = q
         """
-
-        def func(x, *args):
+        def func(x: float, *args: Any) -> float:
             return self.cdf(x) - args[0]
 
         # Find a value of x with func < 0
@@ -115,7 +114,7 @@ class BetaLogistic:
             else:
                 lower_bracket -= 5
 
-        # Find a value of x with func < 0
+        # Find a value of x with func > 0
         upper_bracket = 5
         while True:
             if func(upper_bracket, *(q,)) > 0:
@@ -124,72 +123,62 @@ class BetaLogistic:
                 upper_bracket += 5
 
         x = brentq(func, a=lower_bracket, b=upper_bracket, args=(q, ))
-
         return x
 
-    def pdf(self, x):
+    def pdf(self, x: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
         """
-        Returns the PDF of double skew logistic distribution.
+        Calculate the probability density function (PDF).
 
-        Accepts:
-            x - independent variable
+        Args:
+            x: Value(s) at which to evaluate the PDF
 
         Returns:
-            pdf - probability density function evaluated at x
+            PDF evaluated at x
         """
-
         y = self.m + self.s * (x - self.mu) / self.sigma
         pdf = expit(y) ** self.a * expit(-y) ** self.b / beta(self.a, self.b) * self.s / self.sigma
-
         return pdf
 
-    def logpdf(self, x):
+    def logpdf(self, x: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
         """
-        Returns the log PDF of double skew logistic distribution.
+        Calculate the log probability density function.
 
-        Accepts:
-            x - independent variable
+        Args:
+            x: Value(s) at which to evaluate the log PDF
 
         Returns:
-            logpdf - log probability density function evaluated at x
+            Log PDF evaluated at x
         """
-
         y = self.m + self.s * (x - self.mu) / self.sigma
         logpdf = (- self.a * np.logaddexp(0, -y) - self.b * np.logaddexp(0, y)
                   - np.log(beta(self.a, self.b)) + np.log(self.s) - np.log(self.sigma))
-
         return logpdf
 
 
-def compile_stan_model(path_to_stan_file):
+def compile_stan_model(path_to_stan_file: Union[str, Path]) -> str:
     """
-    Compiles the Stan model
+    Compile the Stan model.
 
     Args:
-        path_to_stan_file (str) - path to Stan code defining the model
+        path_to_stan_file: Path to Stan code defining the model
 
     Returns:
-        executable_file_path (str) - path to compiled executable
+        Path to compiled executable
     """
-
-    # Compile PyStan model and pickle
     model = cmdstanpy.CmdStanModel(stan_file=path_to_stan_file)
-
     return model.exe_file
 
 
-def get_inits(data):
+def get_inits(data: Dict[str, Any]) -> Dict[str, Any]:
     """
-    Returns point-estimates of the log-odds for all counts in the
-    provided data file.
+    Calculate initial values for the model parameters.
 
-    Accepts:
-        data (dict) - Stan input dictionary
+    Args:
+        data: Stan input dictionary
 
     Returns:
-         log_odds (dict) - log-odds estimates
+        Dictionary of initial values for model parameters
     """
-
     log_odds = logit((np.array(data['count']) + 0.5) / (np.array(data['total_count']) + 1))
 
     mu = np.empty(data['n_batch'])
@@ -200,20 +189,22 @@ def get_inits(data):
     return {'log_odds': log_odds, 'mu': mu, 'theta_raw': 0.}
 
 
-def fit_model(path_to_executable, data, n_cores):
+def fit_model(
+    path_to_executable: Union[str, Path],
+    data: Dict[str, Any],
+    n_cores: int
+) -> Dict[str, Any]:
     """
-    This function fits the BIFROST model using PyStan.
-    The stan_utility library is required to export convergence diagnostics
+    Fit the BIFROST model using PyStan.
 
-    Accepts:
-        model - instance of the BIFROST model
-        data (pd.Series/dict) - data object to be passed to the model
-        n_cores (int) - number of cores to use for parallel chains
+    Args:
+        path_to_executable: Path to compiled Stan model
+        data: Data object to be passed to the model
+        n_cores: Number of cores to use for parallel chains
 
     Returns:
-        a dictionary containing the posterior samples and the diagnostic string
+        Dictionary containing the posterior samples and diagnostics
     """
-
     # Attempt using standard settings
     model = cmdstanpy.CmdStanModel(exe_file=path_to_executable)
     fit = model.sample(data=data,
@@ -228,10 +219,10 @@ def fit_model(path_to_executable, data, n_cores):
                        adapt_delta=0.95,
                        )
 
-    # Extract diagnostics if return_diagnostics is true
+    # Extract diagnostics
     diagnostics = fit.diagnose()
 
-    # Check for mulitmodality and refit with more chains if detected
+    # Check for multimodality and refit with more chains if detected
     s = 'Split R-hat values satisfactory all parameters.'
     if s not in diagnostics:
         fit = model.sample(data=data,
@@ -258,20 +249,24 @@ def fit_model(path_to_executable, data, n_cores):
     return {'samples': samples, 'diagnostics': diagnostics}
 
 
-def calc_pod_sample(conc, response, lower_limit, upper_limit):
+def calc_pod_sample(
+    conc: np.ndarray,
+    response: np.ndarray,
+    lower_limit: float,
+    upper_limit: float
+) -> float:
     """
-    Calculates the PoD given a sample of the curve describing the mean response
+    Calculate the PoD given a sample of the curve describing the mean response.
 
-    Accepts:
-        conc - 1D array of concentrations at which the curve has been evaluated
-        response - 1D array containing sample for mean response
-        lower_limit - lower limit of the distribution for the control response
-        upper_limit - upper limit of the distribution for the control response
+    Args:
+        conc: Array of concentrations at which the curve has been evaluated
+        response: Array containing sample for mean response
+        lower_limit: Lower limit of the distribution for the control response
+        upper_limit: Upper limit of the distribution for the control response
 
     Returns:
-        pod - sample for the PoD based on the supplied sample of the concentration-response
+        Sample for the PoD based on the supplied sample of the concentration-response
     """
-
     # Determine which direction of largest change
     abs_response_up = np.abs(np.max(response))
     abs_response_down = np.abs(np.min(response))
@@ -303,20 +298,24 @@ def calc_pod_sample(conc, response, lower_limit, upper_limit):
     return pod
 
 
-def get_bifrost_covariance(data, samples, conc=None, add_sigma=True):
+def get_bifrost_covariance(
+    data: Dict[str, Any],
+    samples: Dict[str, Any],
+    conc: Optional[np.ndarray] = None,
+    add_sigma: bool = True
+) -> np.ndarray:
     """
-    Computes the BIFROST kernel for the supplied concentration arrays.
+    Compute the BIFROST kernel for the supplied concentration arrays.
 
-    Arguments:
-        data (pd.Series) - series of concentration-response
-        samples (collections.OrderedDict) - dictionary of parameter estimates
-        conc (np.ndarray) (optional) - concentrations to extrapolate to
-        add_sigma (bool) - True/False used to decide whether s term is added
+    Args:
+        data: Dictionary of concentration-response data
+        samples: Dictionary of parameter estimates
+        conc: Optional array of concentrations to extrapolate to
+        add_sigma: Whether to add the sigma term to the covariance
 
     Returns:
-        Sigma (np.ndarray) - Covariance matrix
+        Covariance matrix
     """
-
     n_samp = len(samples['lp__'])
     if conc is None:
         Sigma = np.zeros((n_samp, data['n_conc'], data['n_conc']))
@@ -339,7 +338,7 @@ def get_bifrost_covariance(data, samples, conc=None, add_sigma=True):
                                    / (1 + np.exp(np.log(19) * (cj - beta) / (theta - beta)))
                                    * np.exp(- 0.5 * ((ci - cj) / rho) ** 2))
 
-                # Fill oppositr diagonal
+                # Fill opposite diagonal
                 Sigma[:, j, i] = Sigma[:, i, j]
 
     else:
@@ -361,36 +360,39 @@ def get_bifrost_covariance(data, samples, conc=None, add_sigma=True):
     return Sigma
 
 
-def run_concentration_response_analysis(files_to_process, model_name, number_of_cores, fit_dir=None):
+def run_concentration_response_analysis(
+    files_to_process: List[Union[str, Path]],
+    model_name: Union[str, Path],
+    number_of_cores: int,
+    fit_dir: Optional[Union[str, Path]] = None
+) -> None:
     """
-    Uses the multiprocessing module to fit Pystan model for dataset specified by
-    chemical and cell type.
+    Fit Pystan model for dataset specified by chemical and cell type.
 
     Args:
-        files_to_process (list): List of probe .pkl files to process
-        model_name (str): Path to the Stan model file
-        number_of_cores (int): Number of cores to use
-        fit_dir (str, optional): Directory to contain model fits
+        files_to_process: List of probe .pkl files to process
+        model_name: Path to the Stan model file
+        number_of_cores: Number of cores to use
+        fit_dir: Optional directory to contain model fits
 
-    Returns:
-        None
+    Raises:
+        ValueError: If fit_dir is not a string
+        FileNotFoundError: If any input file does not exist
     """
-
     # Define path to directory to contain model fits
     if fit_dir is None:
-        path_to_fits = f'Fits'
-    elif isinstance(fit_dir, str):
-        path_to_fits = f'{fit_dir}/Fits'
+        path_to_fits = Path('Fits')
+    elif isinstance(fit_dir, (str, Path)):
+        path_to_fits = Path(fit_dir) / 'Fits'
     else:
-        raise ValueError(f'Directory to contain model fits must be specified as a string')
+        raise ValueError('Directory to contain model fits must be specified as a string or Path')
 
     # Create directory if it does not exist
-    if not os.path.exists(path_to_fits):
-        os.makedirs(path_to_fits)
+    path_to_fits.mkdir(parents=True, exist_ok=True)
 
     # Check all inputs are present
     for f in files_to_process:
-        if not os.path.isfile(f):
+        if not Path(f).is_file():
             raise FileNotFoundError(f"Data file '{f}' does not exist")
 
     # Compile model
@@ -399,7 +401,7 @@ def run_concentration_response_analysis(files_to_process, model_name, number_of_
     # Create list of arguments to pass to standard_analysis function
     fitting_args = [(path_to_model,
                      i,
-                     f'{path_to_fits}/{os.path.splitext(os.path.basename(i))[0]}.pkl',
+                     path_to_fits / f"{Path(i).stem}.pkl",
                      number_of_cores)
                     for i in files_to_process]
 
@@ -407,21 +409,21 @@ def run_concentration_response_analysis(files_to_process, model_name, number_of_
         p.map(standard_analysis, fitting_args)
 
 
-def standard_analysis(paths):
+def standard_analysis(paths: Tuple[Union[str, Path], ...]) -> None:
     """
-    Wrapper for the functions used to fit model and generate plotting data
+    Wrapper for the functions used to fit model and generate plotting data.
 
-    Also generates concentration-response curves.
-
-    Argument:
-        paths (tuple) - tuple of paths to the model instance, data file, fit file, and number of cores
-
-    Returns:    None
+    Args:
+        paths: Tuple containing paths to:
+            - model executable
+            - data file
+            - fit file
+            - number of cores
     """
-
     path_to_executable, path_to_data, path_to_fit, n_cores = paths
 
-    data = pickle.load(open(path_to_data, 'rb'))
+    with open(path_to_data, 'rb') as f:
+        data = pickle.load(f)
 
     # Generate posterior samples
     with suppress_stdout_stderr():
@@ -434,11 +436,16 @@ def standard_analysis(paths):
                           fit_dict['diagnostics'])
 
 
-def get_response_window(samples):
+def get_response_window(samples: Dict[str, Any]) -> Dict[str, Any]:
     """
-    Updates samples file with response window for calculating PoDs
-    """
+    Calculate response window for calculating PoDs.
 
+    Args:
+        samples: Dictionary of parameter samples
+
+    Returns:
+        Updated samples dictionary with response window
+    """
     rtl = np.array([BetaLogistic(0, s, a, b).ppf(0.05)
                     for s, a, b in zip(samples['sigma'], samples['a'], samples['b'])])
     rtu = np.array([BetaLogistic(0, s, a, b).ppf(0.95)
@@ -450,18 +457,20 @@ def get_response_window(samples):
     return samples
 
 
-def interpolate_treatment_effect(data, samples):
+def interpolate_treatment_effect(
+    data: Dict[str, Any],
+    samples: Dict[str, Any]
+) -> pd.Series:
     """
-    Calculates the posterior predictive mean effect of the treatment
+    Calculate the posterior predictive mean effect of the treatment.
 
-    Accepts:
-        data (pd.Series) - series of concentration-response
-        samples (collections.OrderedDict) - dictionary of parameter estimates
+    Args:
+        data: Dictionary of concentration-response data
+        samples: Dictionary of parameter estimates
 
     Returns:
-        results_dict (pd.Series) - pandas series containing concentration-response fit
+        Series containing concentration-response fit
     """
-
     n_x = 100
     x = np.linspace(min(np.min(data['conc']), np.min(samples['theta'])), np.max(data['conc']), n_x)
     Sigma = get_bifrost_covariance(data, samples)
@@ -498,19 +507,21 @@ def interpolate_treatment_effect(data, samples):
     return results_dict
 
 
-def gen_plotting_data(data, samples, path_to_output, diagnostics):
+def gen_plotting_data(
+    data: Dict[str, Any],
+    samples: Dict[str, Any],
+    path_to_output: Union[str, Path],
+    diagnostics: str
+) -> None:
     """
-    Generate dose response curves for the BIFROST model
+    Generate dose response curves for the BIFROST model.
 
-    Accepts:
-        data (pd.Series/dict) - data used to estimate model parameters
-        samples (collections.OrderedDict) - posterior samples from the model fit
-        path_to_output (str) - path to which the plotting data will be stored
-        diagnostics (str) - diagnostic string for the fit
-
-    Returns:    None
+    Args:
+        data: Data used to estimate model parameters
+        samples: Posterior samples from the model fit
+        path_to_output: Path to which the plotting data will be stored
+        diagnostics: Diagnostic string for the fit
     """
-
     # Calculate response window and add to samples
     samples = get_response_window(samples)
 
@@ -530,16 +541,18 @@ def gen_plotting_data(data, samples, path_to_output, diagnostics):
         else:
             data['parameters'][p] = np.mean(samples[p], axis=0)
 
-    # Interpolate treatment effects and add to data file, indexed by chemical ID
+    # Interpolate treatment effects and add to data file
     data['fit'] = interpolate_treatment_effect(data, samples)
 
     # Add diagnostics
     data['diagnostics'] = diagnostics
 
-    pickle.dump(data, open(path_to_output, 'wb'))
+    with open(path_to_output, 'wb') as f:
+        pickle.dump(data, f)
 
 
-if __name__ == '__main__':
+def main() -> None:
+    """Main entry point for the script."""
     parser = argparse.ArgumentParser()
     parser.add_argument('--data-files', nargs='+', type=str,
                         help='list of probe .pkl files to process separated by spaces')
@@ -550,3 +563,7 @@ if __name__ == '__main__':
     run_concentration_response_analysis(args.data_files,
                                         args.model_name,
                                         args.n_cores)
+
+
+if __name__ == '__main__':
+    main()
