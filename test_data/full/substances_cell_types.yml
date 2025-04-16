@@ -1,0 +1,9 @@
+# Test substances to analyze
+Test substances:
+  - Paracetamol
+  - Nitrofurantoin
+
+# Cell types to analyze
+Cell types:
+  - HepG2
+  - HepaRG 
