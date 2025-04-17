@@ -1,0 +1,11 @@
+# Test substances to analyze
+Test substances:
+  - Nitrofurantoin
+
+# Cell types to analyze
+Cell types:
+  - HepG2
+
+Additional divider: N/A
+
+Specific filters: null
