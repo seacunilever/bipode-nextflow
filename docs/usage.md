@@ -1,54 +1,114 @@
 # nf-core/bifrost: Usage
 
-## :warning: Please read this documentation on the nf-core website: [https://nf-co.re/bifrost/usage](https://nf-co.re/bifrost/usage)
-
-> _Documentation of pipeline parameters is generated automatically from the pipeline schema and can no longer be found in markdown files._
-
 ## Introduction
 
-<!-- TODO nf-core: Add documentation about anything specific to running your pipeline. For general topics, please point to (and add to) the main nf-core website. -->
+This document describes how to use the Bifrost pipeline. The pipeline is designed to be portable across different execution environments (local, HPC, cloud providers) and takes in pre-formatted json data files for one cell line/chemical (referred to as one dataset).
+
+## Prerequisites
+
+- Linux (required for Nextflow, can be WSL2 https://learn.microsoft.com/en-us/windows/wsl/install)
+- Nextflow version 21.04.0 or later (https://www.nextflow.io/docs/latest/getstarted.html)
 
 ## Samplesheet input
 
-You will need to create a samplesheet with information about the samples you would like to analyse before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with 3 columns, and a header row as shown in the examples below.
+You will need to create a samplesheet with information about the samples you would like to analyse before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with a header row, containing the required columns as defined in the schema.
 
 ```bash
 --input '[path to samplesheet file]'
 ```
 
-### Multiple runs of the same sample
+### Required Columns
 
-The `sample` identifiers have to be the same when you have re-sequenced the same sample more than once e.g. to increase sequencing depth. The pipeline will concatenate the raw reads before performing any downstream analysis. Below is an example for the same sample sequenced across 3 lanes:
+The samplesheet must contain the following required columns:
 
-```csv title="samplesheet.csv"
-sample,fastq_1,fastq_2
-CONTROL_REP1,AEG588A1_S1_L002_R1_001.fastq.gz,AEG588A1_S1_L002_R2_001.fastq.gz
-CONTROL_REP1,AEG588A1_S1_L003_R1_001.fastq.gz,AEG588A1_S1_L003_R2_001.fastq.gz
-CONTROL_REP1,AEG588A1_S1_L004_R1_001.fastq.gz,AEG588A1_S1_L004_R2_001.fastq.gz
+| Column | Description |
+|--------|-------------|
+| `SAMPLE_ID` | Unique identifier for each sample. Must not contain spaces. |
+| `CELL_TYPE` | The type of cell used in the experiment. Must not contain spaces. |
+| `TEST_SUBSTANCE` | The substance being tested. Must not contain spaces. |
+| `CONCENTRATION` | The concentration of the test substance (numeric) |
+| `NUM_MAPPED_READS` | Number of mapped reads (numeric) |
+| `PERCENT_MAPPED_READS` | Percentage of mapped reads (numeric) |
+
+### Optional Columns
+
+The following columns are optional but may be required depending on your analysis:
+
+| Column | Description |
+|--------|-------------|
+| `TREATMENT_VESSEL_ID` | ID of the treatment vessel (used as batch key by default) |
+| `EXPOSURE_TIME` | Duration of exposure (numeric) |
+
+### Additional Requirements
+
+- The pipeline will filter samples based on the following criteria:
+  - Minimum percentage of mapped reads (default: 50%)
+  - Minimum number of mapped reads (default: 100,000)
+  - Minimum average treatment count (default: 5.0)
+- Sample IDs must not contain spaces
+- Numeric values should be provided as numbers, not strings
+
+### Example Samplesheet
+
+Here's an example of a minimal samplesheet for testing Nitrofurantoin on HepG2 cells:
+
+```csv
+SAMPLE_ID,CELL_TYPE,TEST_SUBSTANCE,CONCENTRATION,NUM_MAPPED_READS,PERCENT_MAPPED_READS,TREATMENT_VESSEL_ID,EXPOSURE_TIME
+S_O5180393_HG2_NFUR_1,HepG2,Nitrofurantoin,0.0192,2857440,86.0,A18039301,24.0
+S_M5180393_HG2_NFUR_2,HepG2,Nitrofurantoin,0.096,5710831,95.35,A18039301,24.0
+S_K5180393_HG2_NFUR_3,HepG2,Nitrofurantoin,0.48,4481281,84.35,A18039301,24.0
+S_I5180393_HG2_NFUR_4,HepG2,Nitrofurantoin,2.4,5654424,95.05,A18039301,24.0
+S_G5180393_HG2_NFUR_5,HepG2,Nitrofurantoin,12.0,3290920,78.26,A18039301,24.0
+S_E5180393_HG2_NFUR_6,HepG2,Nitrofurantoin,60.0,6389756,95.9,A18039301,24.0
+S_C5180393_HG2_NFUR_7,HepG2,Nitrofurantoin,300.0,1538838,76.1,A18039301,24.0
 ```
 
-### Full samplesheet
+### Substances and Cell Types Configuration
 
-The pipeline will auto-detect whether a sample is single- or paired-end using the information provided in the samplesheet. The samplesheet can have as many columns as you desire, however, there is a strict requirement for the first 3 columns to match those defined in the table below.
+You also need to provide a YAML file specifying which test substances and cell types to analyze. This file should be provided using the `--substances-cell-types` parameter:
 
-A final samplesheet file consisting of both single- and paired-end data may look something like the one below. This is for 6 samples, where `TREATMENT_REP3` has been sequenced twice.
-
-```csv title="samplesheet.csv"
-sample,fastq_1,fastq_2
-CONTROL_REP1,AEG588A1_S1_L002_R1_001.fastq.gz,AEG588A1_S1_L002_R2_001.fastq.gz
-CONTROL_REP2,AEG588A2_S2_L002_R1_001.fastq.gz,AEG588A2_S2_L002_R2_001.fastq.gz
-CONTROL_REP3,AEG588A3_S3_L002_R1_001.fastq.gz,AEG588A3_S3_L002_R2_001.fastq.gz
-TREATMENT_REP1,AEG588A4_S4_L003_R1_001.fastq.gz,
-TREATMENT_REP2,AEG588A5_S5_L003_R1_001.fastq.gz,
-TREATMENT_REP3,AEG588A6_S6_L003_R1_001.fastq.gz,
-TREATMENT_REP3,AEG588A6_S6_L004_R1_001.fastq.gz,
+```bash
+--substances-cell-types '[path to substances_cell_types.yml]'
 ```
 
-| Column    | Description                                                                                                                                                                            |
-| --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `sample`  | Custom sample name. This entry will be identical for multiple sequencing libraries/runs from the same sample. Spaces in sample names are automatically converted to underscores (`_`). |
-| `fastq_1` | Full path to FastQ file for Illumina short reads 1. File has to be gzipped and have the extension ".fastq.gz" or ".fq.gz".                                                             |
-| `fastq_2` | Full path to FastQ file for Illumina short reads 2. File has to be gzipped and have the extension ".fastq.gz" or ".fq.gz".                                                             |
+Example `substances_cell_types.yml`:
+```yaml
+# Test substances to analyze
+Test substances:
+  - Nitrofurantoin
+
+# Cell types to analyze
+Cell types:
+  - HepG2
+
+Additional divider: N/A
+
+Specific filters: null
+```
+
+This configuration tells the pipeline to analyze Nitrofurantoin on HepG2 cells. The following fields are available:
+
+- `Test substances`: List of substances to analyze
+- `Cell types`: List of cell types to analyze
+- `Additional divider`: Optional field to further subdivide the analysis. If set to a column name from your samplesheet, the pipeline will create separate analyses for each unique value in that column. For example, if set to `TREATMENT_VESSEL_ID`, it will create separate analyses for each treatment vessel. Set to `N/A` to disable.
+- `Specific filters`: Optional dictionary of filters to exclude specific values. For example:
+  ```yaml
+  Specific filters:
+    TREATMENT_VESSEL_ID:
+      - A18039301  # Exclude this treatment vessel
+    CELL_TYPE:
+      - HepG2      # Exclude this cell type
+  ```
+
+### Batch Key Configuration
+
+The pipeline uses a batch key to group samples for statistical analysis. By default, it uses the `TREATMENT_VESSEL_ID` column, but you can change this using the `--batch-key` parameter:
+
+```bash
+--batch-key 'YOUR_COLUMN_NAME'
+```
+
+The batch key should be a column in your samplesheet that identifies groups of samples that were processed together (e.g., same plate, same experiment, etc.). This is used to account for batch effects in the statistical model.
 
 An [example samplesheet](../assets/samplesheet.csv) has been provided with the pipeline.
 
@@ -57,7 +117,7 @@ An [example samplesheet](../assets/samplesheet.csv) has been provided with the p
 The typical command for running the pipeline is as follows:
 
 ```bash
-nextflow run nf-core/bifrost --input ./samplesheet.csv --outdir ./results  -profile docker
+nextflow run bifrost --input ./samplesheet.csv --outdir ./results -profile docker
 ```
 
 This will launch the pipeline with the `docker` configuration profile. See below for more information about profiles.
@@ -71,49 +131,94 @@ work                # Directory containing the nextflow working files
 # Other nextflow hidden files, eg. history of pipeline runs and old logs.
 ```
 
-If you wish to repeatedly use the same parameters for multiple runs, rather than specifying each flag in the command, you can specify these in a params file.
+### Running in the background
 
-Pipeline settings can be provided in a `yaml` or `json` file via `-params-file <file>`.
+Nextflow handles job submissions and supervises the running jobs. The Nextflow process must run until the pipeline is finished.
 
-> [!WARNING]
-> Do not use `-c <file>` to specify parameters as this will result in errors. Custom config files specified with `-c` must only be used for [tuning process resource specifications](https://nf-co.re/docs/usage/configuration#tuning-workflow-resources), other infrastructural tweaks (such as output directories), or module arguments (args).
+The Nextflow `-bg` flag launches Nextflow in the background, detached from your terminal so that the workflow does not stop if you log out of your session. The logs are saved to a file.
 
-The above pipeline run specified with a params file in yaml format:
+Alternatively, you can use `screen` / `tmux` or similar tool to create a detached session which you can log back into at a later time.
+Some HPC setups also allow you to run nextflow within a cluster job submitted your job scheduler (from where it submits more jobs).
+
+### Resuming
+
+Add `-resume` when restarting a pipeline. Nextflow will use cached results from any pipeline steps where the inputs are the same, continuing from where it got to previously.
+
+### Cleanup
+
+Nextflow keeps all logs and files generated for runs in the work directory unless they are removed, so the workflow can be resumed.
+
+## Azure Cloud Execution
+
+The pipeline supports execution on Azure Batch, which allows for cost-effective processing using Low Priority instances. This section describes the Azure-specific setup and configuration.
+
+### Prerequisites
+
+- Azure Batch account
+- Azure Blob storage container (associated with batch account)
+- Azure Container Registry (ACR)
+
+### Configuration
+
+Set your Azure account details for storage, container registry and batch in a file `credentials.json` with format:
+
+```json
+{
+    "storageAccountName": "",
+    "storageAccountKey": "",
+    "batchAccountName": "",
+    "batchAccountKey": "",
+    "AcrUserName": "",
+    "AcrPassword": ""
+}
+```
+
+These account details can be found on the Azure portal http://portal.azure.com and are not included in this repo for security reasons.
+
+A template is included in this repo as `credentials_example.json`
+
+### Running on Azure
+
+Set the run parameters in the appropriate parameter settings file `params_az.yml`. Make sure `n_cores` matches with the cloud machine set in `nextflow.config`. Note that Azure cloud files should be prefixed with `az://`. You can also use files local to where you are running the workflow, they do not need to be on azure cloud storage.
 
 ```bash
-nextflow run nf-core/bifrost -profile docker -params-file params.yaml
+nextflow run bifrost.nf -profile az -params-file params_az.yml
 ```
 
-with:
+### Azure Cloud Notes
 
-```yaml title="params.yaml"
-input: './samplesheet.csv'
-outdir: './results/'
-<...>
-```
+- A pool is created on workflow execution and deleted after finishing
+- Low priority nodes are used to save cost (20% of Dedicated instances)
+- The compute pool scaling formula will scale up and down the pool size based on the amount of work in the queue up to a provided maximum number of nodes
+- Processes are set to retry 3 times before failing so if any tasks are kicked by Azure they will restart
+- If all tasks do not complete re-running with `-resume` will process these as long as the work directory has not been touched or settings changed
+- Costs for compute can be found here https://azure.microsoft.com/en-gb/pricing/details/batch/windows-virtual-machines/
+- Azure machine type `Standard_F4s_v2` is used by default and set in `nextflow.config`
 
-You can also generate such `YAML`/`JSON` files via [nf-core/launch](https://nf-co.re/launch).
+### Known Issues with Azure
 
-### Updating the pipeline
+- Running locally using the Azure `az` profile may be blocked by Zscalar
+- Conda installed Nextflow may cause `java.lang.UnsupportedOperationException: Not a valid Azure Blob Storage file attribute view: interface`
+- Do not use `scratch = true` directive in any nextflow process as this causes issues writing files to cloud blob store as working directory
+- If using azure cloud, run from an Azure VM. Using `SEACserver` has incurred timeout errors
 
-When you run the above command, Nextflow automatically pulls the pipeline code from GitHub and stores it as a cached version. When running the pipeline after this, it will always use the cached version if available - even if the pipeline has been updated since. To make sure that you're running the latest version of the pipeline, make sure that you regularly update the cached version of the pipeline:
+## Developer Notes
 
-```bash
-nextflow pull nf-core/bifrost
-```
+Many execution platforms are inefficient if a workflow tries to execute many short running processes. It can take more time to schedule and request resources for each small instance than bundling the short processes into a larger process task. Nextflow channel operators collate groups together inputs into batches which can run for longer with the short tasks themselves parallelised inside the process script which is what is done in `conc_response_analysis.py`.
 
-### Reproducibility
+The tens of thousands of probe pkl files from `split_data.py` were taking almost 2hrs to be transferred to the cloud blob storage work directory due to the large number of files. The solution implemented here compresses the pkl files into a `.tar.gz`, then each of the concentration response modelling processes then extract the files they need from it.
 
-It is a good idea to specify the pipeline version when running the pipeline on your data. This ensures that a specific version of the pipeline code and software are used when you run your pipeline. If you keep using the same tag, you'll be running the same version of the pipeline, even if there have been changes to the code since.
+In order to facilitate inspection of dataset results as early as possible during running, `groupTuple()` is used with a `groupKey()` which is produced from the number of fit tar.gz files or each dataset. Doing this means Nextflow knows when all the of fits are available to run the compress process for the dataset rather than waiting until all the fits for all the datasets are complete.
 
-First, go to the [nf-core/bifrost releases page](https://github.com/nf-core/bifrost/releases) and find the latest pipeline version - numeric only (eg. `1.3.1`). Then specify this when running the pipeline with `-r` (one hyphen) - eg. `-r 1.3.1`. Of course, you can switch to another version by changing the number after the `-r` flag.
+## Useful Links
 
-This version number will be logged in reports when you run the pipeline, so that you'll know what you used when you look back in the future.
-
-To further assist in reproducibility, you can use share and reuse [parameter files](#running-the-pipeline) to repeat pipeline runs with the same settings without having to write out a command with every single parameter.
-
-> [!TIP]
-> If you wish to share such profile (such as upload as supplementary material for academic publications), make sure to NOT include cluster specific paths to files, nor institutional specific profiles.
+- Nextflow docs for Azure https://www.nextflow.io/docs/latest/azure.html
+- Setup for Azure
+  - https://shaunchuah.github.io/posts/setting-up-azure-with-nextflow
+  - https://seqera.io/blog/nextflow-and-azure-batch-part-1-of-2/
+  - https://techcommunity.microsoft.com/t5/healthcare-and-life-sciences/covid-variant-analysis-on-azure-using-nextflow-part-2/ba-p/3075741
+- Batch pool scaling https://learn.microsoft.com/en-us/azure/batch/batch-automatic-scaling
+- Pool scaling formula was taken from here https://github.com/Azure/doAzureParallel/blob/master/R/autoscale.R
 
 ## Core Nextflow arguments
 
