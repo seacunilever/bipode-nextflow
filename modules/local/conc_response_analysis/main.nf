@@ -1,4 +1,5 @@
 process CONC_RESPONSE_ANALYSIS {
+    tag "${meta.id}"
     cpus params.n_cores
 
     conda "${moduleDir}/environment.yml"
@@ -8,14 +9,15 @@ process CONC_RESPONSE_ANALYSIS {
 
     input:
     path model
-    tuple val(name), val(probes), path(all_probe_file)
+    tuple val(meta), val(probes), path(all_probe_file)
 
     output:
-    tuple val(name), path("${name}_fits_${task.index}.tar.gz"), emit: all_fits_files
+    tuple val(meta), path("${prefix}.tar.gz"), emit: all_fits_files
 
     script:
     def probe_files = probes.collect { "./" + it + ".pkl" }.join(" ")
     def probe_files_extract = probes.collect { "Data/" + it + ".pkl" }.join(" ")
+    prefix = task.ext.prefix ?: "${meta.id}"
     """
     mkdir Data
     tar -zxf $all_probe_file -C Data/ $probe_files
@@ -28,6 +30,6 @@ process CONC_RESPONSE_ANALYSIS {
         --n-cores $task.cpus
 
     sleep 5
-    tar -czf ${name}_fits_${task.index}.tar.gz -C Fits/ .
+    tar -czf ${prefix}.tar.gz -C Fits/ .
     """
 }

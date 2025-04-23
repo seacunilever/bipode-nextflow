@@ -47,23 +47,30 @@ workflow BIFROST {
     ch_named_prepared_inputs = PREPARE_INPUTS.out.prepared_inputs
         .flatten()
         .multiMap{
-            inputs: tuple(it.simpleName, it)
-            probes: tuple(it.simpleName, get_probes(it.toString()))
+            inputs: tuple([id: it.simpleName], it)
+            probes: tuple([id: it.simpleName], get_probes(it.toString()))
         }
 
     // Step 3: Split data for each input file
     SPLIT_DATA(ch_named_prepared_inputs.inputs)
-    SPLIT_DATA.out.all_probe_files
 
     // Step 4: Prepare probes channel for concentration response analysis
     // - Transpose to group probes by file
     // - Group into chunks based on number of cores
+    // - Count the number of chunks per file (for later use with groupKey)
     // - Combine with split data output
-    ch_probes = ch_named_prepared_inputs
-        .probes
-        .transpose()
-        .groupTuple(size: n_cores.toInteger(), remainder: true, sort: true)
-        .combine(SPLIT_DATA.out.all_probe_files, by: 0)
+    ch_probes = ch_named_prepared_inputs.probes                             // [name, [all_probes]]
+        .transpose()                                                        // [name, probe]
+        .groupTuple(size: n_cores.toInteger(), remainder: true, sort: true) // [name, [batch of probes]]
+        .groupTuple()                                                       // [name, [[batch of probes], [batch of probes], ...]]
+        .map{meta, batches ->
+            [meta, batches.size(), batches, (1..batches.size())]            // [name, n_batches, [batches], [batch_numbers]]
+        }
+        .transpose()                                                        // [name, n_batches, batch, batch_number]
+        .combine(SPLIT_DATA.out.all_probe_files, by: 0)                     // [name, n_batches, batch, batch_number, probe_file]
+        .map{ meta, n_batches, batch, batch_number, probe_file ->
+            [[id: meta.id + "_" + batch_number, name: meta.id, n_batches: n_batches, batch_number: batch_number], batch, probe_file]
+        }
 
     // Step 5: Run concentration response analysis
     CONC_RESPONSE_ANALYSIS(
@@ -72,7 +79,13 @@ workflow BIFROST {
     )
 
     // Step 6: Compress and output results
-    COMPRESS_OUTPUT(
-        CONC_RESPONSE_ANALYSIS.out.all_fits_files.groupTuple()
-    )
+
+    ch_results_for_compression = CONC_RESPONSE_ANALYSIS.out.all_fits_files
+            .map { meta, fits ->
+                tuple(groupKey([id: meta.name], meta.n_batches), fits) // Use groupKey to release results as soon as all batches for a file have been processed
+            }
+            .groupTuple()
+
+    COMPRESS_OUTPUT(ch_results_for_compression)
+
 }

@@ -9,8 +9,7 @@ This document describes the output produced by the pipeline. The directories lis
 The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes data using the following steps:
 
 - [Pipeline information](#pipeline-information) - Report metrics generated during the workflow execution
-- [Concentration Response Analysis](#concentration-response-analysis) - Analysis of concentration response data
-- [Data Compression](#data-compression) - Compression of output files for efficient storage and transfer
+- [Concentration Response Analysis](#concentration-response-analysis) - Compressed output files for efficient storage and transfer
 
 ### Pipeline information
 
@@ -30,22 +29,10 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 <details markdown="1">
 <summary>Output files</summary>
 
-- `conc_response_analysis/`
+- `compressed_results/`
   - Processed concentration response data for each cell line/chemical combination
   - Individual probe analysis results
   - Summary statistics and visualizations
-
-</details>
-
-### Data Compression
-
-<details markdown="1">
-<summary>Output files</summary>
-
-- `compressed_output/`
-  - Compressed tar.gz files containing processed data
-  - Organized by dataset and analysis type
-  - Includes task IDs to avoid name clashes
 
 </details>
 
