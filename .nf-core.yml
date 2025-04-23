@@ -3,6 +3,9 @@ repository_type: pipeline
 nf_core_version: 3.2.0
 
 lint:
+  nextflow_config:
+    - manifest.name
+    - manifest.homePage
   files_unchanged:
     - .github/CONTRIBUTING.md
     - assets/sendmail_template.txt
@@ -18,7 +21,7 @@ lint:
     - assets/multiqc_config.yml
 
 template:
-  org: nf-core
+  org: seqera-services
   name: bifrost
   description: Bifrost pipeline
   author: Joe Reynolds, Mark Liddell, Jonathan Manning
@@ -29,4 +32,4 @@ template:
     - igenomes
     - multiqc
     - fastqc
-  is_nfcore: true
+  is_nfcore: false

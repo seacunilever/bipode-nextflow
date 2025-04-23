@@ -61,14 +61,7 @@
         "model_file": {
           "type": "string",
           "description": "Path to the Stan model file (without .stan extension)",
-          "default": "model/BIFROST_HTTr_beta_logistic_batch",
           "fa_icon": "fas fa-file-code"
-        },
-        "work_dir": {
-          "type": "string",
-          "description": "Directory where temporary files will be stored",
-          "default": "./work",
-          "fa_icon": "fas fa-folder"
         },
         "n_cores": {
           "type": "integer",
