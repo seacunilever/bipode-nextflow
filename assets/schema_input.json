@@ -100,6 +100,6 @@
                 "type": "string"
             }
         },
-        "required": ["SAMPLE_ID", "CELL_TYPE", "TEST_SUBSTANCE"]
+        "required": ["SAMPLE_ID", "CELL_TYPE", "TEST_SUBSTANCE", "CONCENTRATION", "NUM_MAPPED_READS", "PERCENT_MAPPED_READS"]
     }
 }

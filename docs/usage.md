@@ -1,4 +1,4 @@
-# nf-core/bifrost: Usage
+# seqera-services/bifrost: Usage
 
 ## Introduction
 
