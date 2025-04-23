@@ -27,6 +27,7 @@ process CONC_RESPONSE_ANALYSIS {
         --model-name $model \
         --n-cores $task.cpus
 
+    sleep 5
     tar -czf ${name}_fits_${task.index}.tar.gz -C Fits/ .
     """
 }
