@@ -1,5 +1,5 @@
 //
-// Subworkflow with functionality specific to the nf-core/bifrost pipeline
+// Subworkflow with functionality specific to the seqera-services/bifrost pipeline
 //
 
 /*

@@ -1,7 +1,7 @@
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://raw.githubusercontent.com/nf-core/bifrost/master/assets/schema_input.json",
-    "title": "nf-core/bifrost pipeline - params.input schema",
+    "$id": "https://raw.githubusercontent.com/seqera-services/bifrost/master/assets/schema_input.json",
+    "title": "seqera-services/bifrost pipeline - params.input schema",
     "description": "Schema for the file provided with params.input",
     "type": "array",
     "ignoreUnrecognizedHeaders": true,

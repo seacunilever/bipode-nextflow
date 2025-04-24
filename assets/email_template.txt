@@ -27,5 +27,5 @@ Pipeline Configuration:
 <% out << summary.collect{ k,v -> " - $k: $v" }.join("\n") %>
 
 --
-nf-core/bifrost
+seqera-services/bifrost
 https://github.com/seqera-services/bifrost

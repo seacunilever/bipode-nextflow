@@ -1,6 +1,6 @@
 {
-    "name": "nf-core/bifrost",
-    "homePage": "https://github.com/nf-core/bifrost",
+    "name": "seqera-services/bifrost",
+    "homePage": "https://github.com/seqera-services/bifrost",
     "repos": {
         "https://github.com/nf-core/modules.git": {
             "modules": {

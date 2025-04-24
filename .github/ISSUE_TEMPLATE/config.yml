@@ -4,4 +4,4 @@ contact_links:
     about: Please join the nf-core community here
   - name: "Slack #bifrost channel"
     url: https://nfcore.slack.com/channels/bifrost
-    about: Discussion about the nf-core/bifrost pipeline
+    about: Discussion about the seqera-services/bifrost pipeline

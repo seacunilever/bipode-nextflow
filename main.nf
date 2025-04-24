@@ -1,9 +1,9 @@
 #!/usr/bin/env nextflow
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    nf-core/bifrost
+    seqera-services/bifrost
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    Github : https://github.com/nf-core/bifrost
+    Github : https://github.com/seqera-services/bifrost
     Website: https://nf-co.re/bifrost
     Slack  : https://nfcore.slack.com/channels/bifrost
 ----------------------------------------------------------------------------------------
