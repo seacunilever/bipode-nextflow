@@ -158,28 +158,9 @@ The pipeline supports execution on Azure Batch, which allows for cost-effective 
 - Azure Blob storage container (associated with batch account)
 - Azure Container Registry (ACR)
 
-### Configuration
-
-Set your Azure account details for storage, container registry and batch in a file `credentials.json` with format:
-
-```json
-{
-    "storageAccountName": "",
-    "storageAccountKey": "",
-    "batchAccountName": "",
-    "batchAccountKey": "",
-    "AcrUserName": "",
-    "AcrPassword": ""
-}
-```
-
-These account details can be found on the Azure portal http://portal.azure.com and are not included in this repo for security reasons.
-
-A template is included in this repo as `credentials_example.json`
-
 ### Running on Azure
 
-Set the run parameters in the appropriate parameter settings file `params_az.yml`. Make sure `n_cores` matches with the cloud machine set in `nextflow.config`. Note that Azure cloud files should be prefixed with `az://`. You can also use files local to where you are running the workflow, they do not need to be on azure cloud storage.
+Make sure `n_cores` matches with the cloud machine set in `nextflow.config`. Note that Azure cloud files should be prefixed with `az://`. You can also use files local to where you are running the workflow, they do not need to be on azure cloud storage.
 
 ```bash
 nextflow run bifrost.nf -profile az -params-file params_az.yml
