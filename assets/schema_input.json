@@ -1,0 +1,105 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://raw.githubusercontent.com/seqera-services/bifrost/master/assets/schema_input.json",
+    "title": "seqera-services/bifrost pipeline - params.input schema",
+    "description": "Schema for the file provided with params.input",
+    "type": "array",
+    "ignoreUnrecognizedHeaders": true,
+    "items": {
+        "type": "object",
+        "properties": {
+            "SAMPLE_ID": {
+                "type": "string",
+                "pattern": "^\\S+$",
+                "errorMessage": "SAMPLE_ID name must be provided and cannot contain spaces"
+            },
+            "CELL_TYPE": {
+                "type": "string",
+                "pattern": "^\\S+$",
+                "errorMessage": "CELL_TYPE must be provided and cannot contain spaces"
+            },
+            "TEST_SUBSTANCE": {
+                "type": "string",
+                "pattern": "^\\S+$",
+                "errorMessage": "TEST_SUBSTANCE must be provided and cannot contain spaces"
+            },
+            "CELL_BATCH_ID": {
+                "oneOf": [
+                    { "type": "string" },
+                    { "type": "number" }
+                ]
+            },
+            "qPCR_HUMAN_REFERENCE_TOTAL_RNA_LOT": {
+                "type": "string"
+            },
+            "HUMAN_BRAIN_TOTAL_RNA_LOT": {
+                "type": "number"
+            },
+            "CONTROL": {
+                "type": "number"
+            },
+            "CONCENTRATION": {
+                "type": "number"
+            },
+            "CONCENTRATION_UNITS": {
+                "type": "string"
+            },
+            "EXPOSURE_TYPE": {
+                "type": "string"
+            },
+            "EXPOSURE_TIME": {
+                "type": "number"
+            },
+            "EXPOSURE_UNITS": {
+                "type": "string"
+            },
+            "TREATMENT_VESSEL_ID": {
+                "type": "string"
+            },
+            "TREATMENT_VESSEL_TYPE": {
+                "type": "string"
+            },
+            "TREATMENT_WELL_ID": {
+                "type": "string"
+            },
+            "FASTQ_FILENAME": {
+                "type": "string"
+            },
+            "SUPPLIER": {
+                "type": "string"
+            },
+            "MEASUREMENT_DATE": {
+                "type": "string",
+                "pattern": "^\\d{1,2}/\\d{1,2}/\\d{4}$"
+            },
+            "NUM_UNMAPPED_READS": {
+                "type": "number"
+            },
+            "NUM_MAPPED_READS": {
+                "type": "number"
+            },
+            "PERCENT_MAPPED_READS": {
+                "type": "number"
+            },
+            "SEQUENCING_PLATE_ID": {
+                "type": "string"
+            },
+            "SEQUENCING_WELL_ID": {
+                "type": "string"
+            },
+            "ATTENUATION_MANIFEST_VERSION": {
+                "type": "string"
+            },
+            "PROBE_MANIFEST_VERSION": {
+                "type": "string"
+            },
+            "LYSIS_BUFFER": {
+                "type": "string"
+            },
+            "FLOWCELL_CHANNEL": {
+                "type": "string"
+            }
+        },
+        "required": ["SAMPLE_ID", "CELL_TYPE", "TEST_SUBSTANCE", "CONCENTRATION", "NUM_MAPPED_READS", "PERCENT_MAPPED_READS"]
+    }
+}

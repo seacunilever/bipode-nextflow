@@ -117,10 +117,11 @@ def write_bifrost_input(
     df = filter_percent_mapped_reads(df, config_dict['Minimum percent mapped reads'])
     df = filter_total_mapped_reads(df, config_dict['Minimum number mapped reads'])
 
-    # Apply specific filters
-    for key in config_dict['Specific filters']:
-        for value in config_dict['Specific filters'][key]:
-            df = df[df[key] != value]
+    # Apply specific filters if they exist and are not null
+    if 'Specific filters' in config_dict and config_dict['Specific filters'] is not None:
+        for key in config_dict['Specific filters']:
+            for value in config_dict['Specific filters'][key]:
+                df = df[df[key] != value]
 
     # Define Stan variables
     concentration = df['Concentration'].values
@@ -204,12 +205,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument('--meta-mapper', required=True, help='Path to meta data mapper YAML file')
     parser.add_argument('--counts', required=True, help='Path to counts CSV file')
     parser.add_argument('--substances-cell-types', required=True, help='Path to substances and cell types YAML file')
-    parser.add_argument('--additional-divider', default='N/A', help='Additional field to use for dividing data')
     parser.add_argument('--batch-key', default='Exposure plate ID', help='Field to use as batch key in the BIFROST model')
     parser.add_argument('--min-percent-mapped-reads', type=float, default=50.0, help='Minimum percentage of mapped reads required')
     parser.add_argument('--min-num-mapped-reads', type=int, default=100000, help='Minimum number of mapped reads required')
     parser.add_argument('--min-avg-treatment-count', type=float, default=5.0, help='Minimum average treatment count required')
-    parser.add_argument('--specific-filters', default='{}', help='Additional specific filters to apply (JSON string)')
     parser.add_argument('--output-dir', default='bifrost_inputs', help='Directory to store outputs')
     parser.add_argument('--test-probes', type=int, default=0,help='Number of probes to sample for testing (optional)')
     parser.add_argument('--random-seed', type=int, default=5, help='Random seed for reproducible probe selection')
@@ -218,10 +217,10 @@ def parse_args() -> argparse.Namespace:
 def main() -> None:
     """Main entry point for the script."""
     args = parse_args()
-    
+
     # Set random seed for reproducibility
     np.random.seed(args.random_seed)
-    
+
     # Load meta data file and convert in to common format
     meta_raw = pd.read_csv(args.meta_data)
     meta_data_mapper = load_yaml_file(args.meta_mapper)
@@ -237,12 +236,12 @@ def main() -> None:
     config_dict = {
         'Test substances': substances_cell_types['Test substances'],
         'Cell types': substances_cell_types['Cell types'],
-        'Additional divider': args.additional_divider,
+        'Additional divider': substances_cell_types['Additional divider'],
+        'Specific filters': substances_cell_types['Specific filters'],
         'Batch key': args.batch_key,
         'Minimum percent mapped reads': args.min_percent_mapped_reads,
         'Minimum number mapped reads': args.min_num_mapped_reads,
-        'Minimum average treatment count': args.min_avg_treatment_count,
-        'Specific filters': eval(args.specific_filters)  # Convert JSON string to dict
+        'Minimum average treatment count': args.min_avg_treatment_count
     }
 
     # Make directory for storing outputs
