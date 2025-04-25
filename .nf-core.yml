@@ -20,6 +20,7 @@ lint:
     - assets/sendmail_template.txt
     - .github/CONTRIBUTING.md
     - assets/sendmail_template.txt
+    - .github/workflows/branch.yml
   multiqc_config: false
   files_exist:
     - .github/workflows/awstest.yml
