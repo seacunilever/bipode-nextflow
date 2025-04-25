@@ -117,7 +117,7 @@ An [example samplesheet](../assets/samplesheet.csv) has been provided with the p
 The typical command for running the pipeline is as follows:
 
 ```bash
-nextflow run bifrost --input ./samplesheet.csv --outdir ./results -profile docker
+nextflow run seqera-services/bifrost --input ./samplesheet.csv --counts ./counts.csv --substances_cell_types ./substances_cell_types.yml --outdir ./results  -profile docker
 ```
 
 This will launch the pipeline with the `docker` configuration profile. See below for more information about profiles.
@@ -130,76 +130,6 @@ work                # Directory containing the nextflow working files
 .nextflow_log       # Log file from Nextflow
 # Other nextflow hidden files, eg. history of pipeline runs and old logs.
 ```
-
-### Running in the background
-
-Nextflow handles job submissions and supervises the running jobs. The Nextflow process must run until the pipeline is finished.
-
-The Nextflow `-bg` flag launches Nextflow in the background, detached from your terminal so that the workflow does not stop if you log out of your session. The logs are saved to a file.
-
-Alternatively, you can use `screen` / `tmux` or similar tool to create a detached session which you can log back into at a later time.
-Some HPC setups also allow you to run nextflow within a cluster job submitted your job scheduler (from where it submits more jobs).
-
-### Resuming
-
-Add `-resume` when restarting a pipeline. Nextflow will use cached results from any pipeline steps where the inputs are the same, continuing from where it got to previously.
-
-### Cleanup
-
-Nextflow keeps all logs and files generated for runs in the work directory unless they are removed, so the workflow can be resumed.
-
-## Azure Cloud Execution
-
-The pipeline supports execution on Azure Batch, which allows for cost-effective processing using Low Priority instances. This section describes the Azure-specific setup and configuration.
-
-### Prerequisites
-
-- Azure Batch account
-- Azure Blob storage container (associated with batch account)
-- Azure Container Registry (ACR)
-
-### Running on Azure
-
-Make sure `n_cores` matches with the cloud machine set in `nextflow.config`. Note that Azure cloud files should be prefixed with `az://`. You can also use files local to where you are running the workflow, they do not need to be on azure cloud storage.
-
-```bash
-nextflow run bifrost.nf -profile az -params-file params_az.yml
-```
-
-### Azure Cloud Notes
-
-- A pool is created on workflow execution and deleted after finishing
-- Low priority nodes are used to save cost (20% of Dedicated instances)
-- The compute pool scaling formula will scale up and down the pool size based on the amount of work in the queue up to a provided maximum number of nodes
-- Processes are set to retry 3 times before failing so if any tasks are kicked by Azure they will restart
-- If all tasks do not complete re-running with `-resume` will process these as long as the work directory has not been touched or settings changed
-- Costs for compute can be found here https://azure.microsoft.com/en-gb/pricing/details/batch/windows-virtual-machines/
-- Azure machine type `Standard_F4s_v2` is used by default and set in `nextflow.config`
-
-### Known Issues with Azure
-
-- Running locally using the Azure `az` profile may be blocked by Zscalar
-- Conda installed Nextflow may cause `java.lang.UnsupportedOperationException: Not a valid Azure Blob Storage file attribute view: interface`
-- Do not use `scratch = true` directive in any nextflow process as this causes issues writing files to cloud blob store as working directory
-- If using azure cloud, run from an Azure VM. Using `SEACserver` has incurred timeout errors
-
-## Developer Notes
-
-Many execution platforms are inefficient if a workflow tries to execute many short running processes. It can take more time to schedule and request resources for each small instance than bundling the short processes into a larger process task. Nextflow channel operators collate groups together inputs into batches which can run for longer with the short tasks themselves parallelised inside the process script which is what is done in `conc_response_analysis.py`.
-
-The tens of thousands of probe pkl files from `split_data.py` were taking almost 2hrs to be transferred to the cloud blob storage work directory due to the large number of files. The solution implemented here compresses the pkl files into a `.tar.gz`, then each of the concentration response modelling processes then extract the files they need from it.
-
-In order to facilitate inspection of dataset results as early as possible during running, `groupTuple()` is used with a `groupKey()` which is produced from the number of fit tar.gz files or each dataset. Doing this means Nextflow knows when all the of fits are available to run the compress process for the dataset rather than waiting until all the fits for all the datasets are complete.
-
-## Useful Links
-
-- Nextflow docs for Azure https://www.nextflow.io/docs/latest/azure.html
-- Setup for Azure
-  - https://shaunchuah.github.io/posts/setting-up-azure-with-nextflow
-  - https://seqera.io/blog/nextflow-and-azure-batch-part-1-of-2/
-  - https://techcommunity.microsoft.com/t5/healthcare-and-life-sciences/covid-variant-analysis-on-azure-using-nextflow-part-2/ba-p/3075741
-- Batch pool scaling https://learn.microsoft.com/en-us/azure/batch/batch-automatic-scaling
-- Pool scaling formula was taken from here https://github.com/Azure/doAzureParallel/blob/master/R/autoscale.R
 
 ## Core Nextflow arguments
 
@@ -214,8 +144,6 @@ Several generic profiles are bundled with the pipeline which instruct the pipeli
 
 > [!IMPORTANT]
 > We highly recommend the use of Docker or Singularity containers for full pipeline reproducibility, however when this is not possible, Conda is also supported.
-
-The pipeline also dynamically loads configurations from [https://github.com/nf-core/configs](https://github.com/nf-core/configs) when it runs, making multiple config profiles for various institutional clusters available at run time. For more information and to check if your system is supported, please see the [nf-core/configs documentation](https://github.com/nf-core/configs#documentation).
 
 Note that multiple profiles can be loaded, for example: `-profile test,docker` - the order of arguments is important!
 They are loaded in sequence, so later profiles can overwrite earlier profiles.
@@ -269,16 +197,6 @@ To use a different container from the default container or conda environment spe
 ### Custom Tool Arguments
 
 A pipeline might not always support every possible argument or option of a particular tool used in pipeline. Fortunately, nf-core pipelines provide some freedom to users to insert additional parameters that the pipeline does not include by default.
-
-To learn how to provide additional arguments to a particular tool of the pipeline, please see the [customising tool arguments](https://nf-co.re/docs/usage/configuration#customising-tool-arguments) section of the nf-core website.
-
-### nf-core/configs
-
-In most cases, you will only need to create a custom config as a one-off but if you and others within your organisation are likely to be running nf-core pipelines regularly and need to use the same settings regularly it may be a good idea to request that your custom config file is uploaded to the `nf-core/configs` git repository. Before you do this please can you test that the config file works with your pipeline of choice using the `-c` parameter. You can then create a pull request to the `nf-core/configs` repository with the addition of your config file, associated documentation file (see examples in [`nf-core/configs/docs`](https://github.com/nf-core/configs/tree/master/docs)), and amending [`nfcore_custom.config`](https://github.com/nf-core/configs/blob/master/nfcore_custom.config) to include your custom profile.
-
-See the main [Nextflow documentation](https://www.nextflow.io/docs/latest/config.html) for more information about creating your own configuration files.
-
-If you have any questions or issues please send us a message on [Slack](https://nf-co.re/join/slack) on the [`#configs` channel](https://nfcore.slack.com/channels/configs).
 
 ## Running in the background
 

@@ -4,8 +4,6 @@
     seqera-services/bifrost
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     Github : https://github.com/seqera-services/bifrost
-    Website: https://nf-co.re/bifrost
-    Slack  : https://nfcore.slack.com/channels/bifrost
 ----------------------------------------------------------------------------------------
 */
 
@@ -81,12 +79,8 @@ workflow {
     // SUBWORKFLOW: Run completion tasks
     //
     PIPELINE_COMPLETION (
-        params.email,
-        params.email_on_fail,
-        params.plaintext_email,
         params.outdir,
         params.monochrome_logs,
-        params.hook_url,
     )
 }
 

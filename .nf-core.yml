@@ -6,6 +6,11 @@ lint:
   nextflow_config:
     - manifest.name
     - manifest.homePage
+    - custom_config
+    - params.custom_config_version
+    - params.custom_config_base
+    - manifest.name
+    - manifest.homePage
   files_unchanged:
     - .github/CONTRIBUTING.md
     - assets/sendmail_template.txt
@@ -16,11 +21,20 @@ lint:
     - conf/igenomes.config
     - conf/igenomes_ignored.config
     - assets/multiqc_config.yml
+    - assets/email_template.html
+    - assets/sendmail_template.txt
+    - assets/email_template.txt
     - conf/igenomes.config
     - conf/igenomes_ignored.config
     - assets/multiqc_config.yml
     - assets/email_template.html
+    - assets/sendmail_template.txt
     - assets/email_template.txt
+    - CODE_OF_CONDUCT.md
+    - assets/nf-core-bifrost_logo_light.png
+    - docs/images/nf-core-bifrost_logo_light.png
+    - docs/images/nf-core-bifrost_logo_dark.png
+  included_configs: false
 
 template:
   org: seqera-services
@@ -32,6 +46,10 @@ template:
   outdir: .
   skip_features:
     - igenomes
+    - nf_core_configs
     - multiqc
     - fastqc
+    - email
+    - adaptivecard
+    - slackreport
   is_nfcore: false
