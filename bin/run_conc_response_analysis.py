@@ -25,7 +25,7 @@ from scipy.optimize import brentq
 def suppress_stdout_stderr() -> None:
     """
     A context manager for suppressing stdout and stderr in Python.
-    
+
     This will suppress all print statements, even if they originate in compiled
     C/Fortran sub-functions. It will not suppress raised exceptions.
     """
@@ -51,7 +51,7 @@ def suppress_stdout_stderr() -> None:
 class BetaLogistic:
     """
     A class representing a double skew logistic distribution.
-    
+
     This class provides methods for calculating the PDF, CDF, and quantiles
     of a double skew logistic distribution.
     """
