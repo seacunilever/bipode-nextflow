@@ -21,23 +21,23 @@ You will need to create a samplesheet with information about the samples you wou
 
 The samplesheet must contain the following required columns:
 
-| Column | Description |
-|--------|-------------|
-| `SAMPLE_ID` | Unique identifier for each sample. Must not contain spaces. |
-| `CELL_TYPE` | The type of cell used in the experiment. Must not contain spaces. |
-| `TEST_SUBSTANCE` | The substance being tested. Must not contain spaces. |
-| `CONCENTRATION` | The concentration of the test substance (numeric) |
-| `NUM_MAPPED_READS` | Number of mapped reads (numeric) |
-| `PERCENT_MAPPED_READS` | Percentage of mapped reads (numeric) |
+| Column                 | Description                                                       |
+| ---------------------- | ----------------------------------------------------------------- |
+| `SAMPLE_ID`            | Unique identifier for each sample. Must not contain spaces.       |
+| `CELL_TYPE`            | The type of cell used in the experiment. Must not contain spaces. |
+| `TEST_SUBSTANCE`       | The substance being tested. Must not contain spaces.              |
+| `CONCENTRATION`        | The concentration of the test substance (numeric)                 |
+| `NUM_MAPPED_READS`     | Number of mapped reads (numeric)                                  |
+| `PERCENT_MAPPED_READS` | Percentage of mapped reads (numeric)                              |
 
 ### Optional Columns
 
 The following columns are optional but may be required depending on your analysis:
 
-| Column | Description |
-|--------|-------------|
+| Column                | Description                                               |
+| --------------------- | --------------------------------------------------------- |
 | `TREATMENT_VESSEL_ID` | ID of the treatment vessel (used as batch key by default) |
-| `EXPOSURE_TIME` | Duration of exposure (numeric) |
+| `EXPOSURE_TIME`       | Duration of exposure (numeric)                            |
 
 ### Additional Requirements
 
@@ -72,6 +72,7 @@ You also need to provide a YAML file specifying which test substances and cell t
 ```
 
 Example `substances_cell_types.yml`:
+
 ```yaml
 # Test substances to analyze
 Test substances:
@@ -95,9 +96,9 @@ This configuration tells the pipeline to analyze Nitrofurantoin on HepG2 cells. 
   ```yaml
   Specific filters:
     TREATMENT_VESSEL_ID:
-      - A18039301  # Exclude this treatment vessel
+      - A18039301 # Exclude this treatment vessel
     CELL_TYPE:
-      - HepG2      # Exclude this cell type
+      - HepG2 # Exclude this cell type
   ```
 
 ### Batch Key Configuration
