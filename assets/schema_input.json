@@ -24,10 +24,7 @@
                 "errorMessage": "TEST_SUBSTANCE must be provided and cannot contain spaces"
             },
             "CELL_BATCH_ID": {
-                "oneOf": [
-                    { "type": "string" },
-                    { "type": "number" }
-                ]
+                "oneOf": [{ "type": "string" }, { "type": "number" }]
             },
             "qPCR_HUMAN_REFERENCE_TOTAL_RNA_LOT": {
                 "type": "string"
@@ -100,6 +97,13 @@
                 "type": "string"
             }
         },
-        "required": ["SAMPLE_ID", "CELL_TYPE", "TEST_SUBSTANCE", "CONCENTRATION", "NUM_MAPPED_READS", "PERCENT_MAPPED_READS"]
+        "required": [
+            "SAMPLE_ID",
+            "CELL_TYPE",
+            "TEST_SUBSTANCE",
+            "CONCENTRATION",
+            "NUM_MAPPED_READS",
+            "PERCENT_MAPPED_READS"
+        ]
     }
 }

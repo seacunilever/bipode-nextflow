@@ -17,6 +17,7 @@ process SPLIT_DATA {
 
     """
     split_data.py --input-file $input_data --analysis-dir .
+    sleep 5
     tar -czf ${prefix}.tar.gz -C Data/ .
     """
 }

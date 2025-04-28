@@ -21,23 +21,23 @@ You will need to create a samplesheet with information about the samples you wou
 
 The samplesheet must contain the following required columns:
 
-| Column | Description |
-|--------|-------------|
-| `SAMPLE_ID` | Unique identifier for each sample. Must not contain spaces. |
-| `CELL_TYPE` | The type of cell used in the experiment. Must not contain spaces. |
-| `TEST_SUBSTANCE` | The substance being tested. Must not contain spaces. |
-| `CONCENTRATION` | The concentration of the test substance (numeric) |
-| `NUM_MAPPED_READS` | Number of mapped reads (numeric) |
-| `PERCENT_MAPPED_READS` | Percentage of mapped reads (numeric) |
+| Column                 | Description                                                       |
+| ---------------------- | ----------------------------------------------------------------- |
+| `SAMPLE_ID`            | Unique identifier for each sample. Must not contain spaces.       |
+| `CELL_TYPE`            | The type of cell used in the experiment. Must not contain spaces. |
+| `TEST_SUBSTANCE`       | The substance being tested. Must not contain spaces.              |
+| `CONCENTRATION`        | The concentration of the test substance (numeric)                 |
+| `NUM_MAPPED_READS`     | Number of mapped reads (numeric)                                  |
+| `PERCENT_MAPPED_READS` | Percentage of mapped reads (numeric)                              |
 
 ### Optional Columns
 
 The following columns are optional but may be required depending on your analysis:
 
-| Column | Description |
-|--------|-------------|
+| Column                | Description                                               |
+| --------------------- | --------------------------------------------------------- |
 | `TREATMENT_VESSEL_ID` | ID of the treatment vessel (used as batch key by default) |
-| `EXPOSURE_TIME` | Duration of exposure (numeric) |
+| `EXPOSURE_TIME`       | Duration of exposure (numeric)                            |
 
 ### Additional Requirements
 
@@ -72,6 +72,7 @@ You also need to provide a YAML file specifying which test substances and cell t
 ```
 
 Example `substances_cell_types.yml`:
+
 ```yaml
 # Test substances to analyze
 Test substances:
@@ -95,9 +96,9 @@ This configuration tells the pipeline to analyze Nitrofurantoin on HepG2 cells. 
   ```yaml
   Specific filters:
     TREATMENT_VESSEL_ID:
-      - A18039301  # Exclude this treatment vessel
+      - A18039301 # Exclude this treatment vessel
     CELL_TYPE:
-      - HepG2      # Exclude this cell type
+      - HepG2 # Exclude this cell type
   ```
 
 ### Batch Key Configuration
@@ -117,7 +118,7 @@ An [example samplesheet](../assets/samplesheet.csv) has been provided with the p
 The typical command for running the pipeline is as follows:
 
 ```bash
-nextflow run bifrost --input ./samplesheet.csv --outdir ./results -profile docker
+nextflow run seqera-services/bifrost --input ./samplesheet.csv --counts ./counts.csv --substances_cell_types ./substances_cell_types.yml --outdir ./results  -profile docker
 ```
 
 This will launch the pipeline with the `docker` configuration profile. See below for more information about profiles.
@@ -215,8 +216,6 @@ Several generic profiles are bundled with the pipeline which instruct the pipeli
 > [!IMPORTANT]
 > We highly recommend the use of Docker or Singularity containers for full pipeline reproducibility, however when this is not possible, Conda is also supported.
 
-The pipeline also dynamically loads configurations from [https://github.com/nf-core/configs](https://github.com/nf-core/configs) when it runs, making multiple config profiles for various institutional clusters available at run time. For more information and to check if your system is supported, please see the [nf-core/configs documentation](https://github.com/nf-core/configs#documentation).
-
 Note that multiple profiles can be loaded, for example: `-profile test,docker` - the order of arguments is important!
 They are loaded in sequence, so later profiles can overwrite earlier profiles.
 
@@ -265,29 +264,6 @@ To change the resource requests, please see the [max resources](https://nf-co.re
 In some cases, you may wish to change the container or conda environment used by a pipeline steps for a particular tool. By default, nf-core pipelines use containers and software from the [biocontainers](https://biocontainers.pro/) or [bioconda](https://bioconda.github.io/) projects. However, in some cases the pipeline specified version maybe out of date.
 
 To use a different container from the default container or conda environment specified in a pipeline, please see the [updating tool versions](https://nf-co.re/docs/usage/configuration#updating-tool-versions) section of the nf-core website.
-
-### Custom Tool Arguments
-
-A pipeline might not always support every possible argument or option of a particular tool used in pipeline. Fortunately, nf-core pipelines provide some freedom to users to insert additional parameters that the pipeline does not include by default.
-
-To learn how to provide additional arguments to a particular tool of the pipeline, please see the [customising tool arguments](https://nf-co.re/docs/usage/configuration#customising-tool-arguments) section of the nf-core website.
-
-### nf-core/configs
-
-In most cases, you will only need to create a custom config as a one-off but if you and others within your organisation are likely to be running nf-core pipelines regularly and need to use the same settings regularly it may be a good idea to request that your custom config file is uploaded to the `nf-core/configs` git repository. Before you do this please can you test that the config file works with your pipeline of choice using the `-c` parameter. You can then create a pull request to the `nf-core/configs` repository with the addition of your config file, associated documentation file (see examples in [`nf-core/configs/docs`](https://github.com/nf-core/configs/tree/master/docs)), and amending [`nfcore_custom.config`](https://github.com/nf-core/configs/blob/master/nfcore_custom.config) to include your custom profile.
-
-See the main [Nextflow documentation](https://www.nextflow.io/docs/latest/config.html) for more information about creating your own configuration files.
-
-If you have any questions or issues please send us a message on [Slack](https://nf-co.re/join/slack) on the [`#configs` channel](https://nfcore.slack.com/channels/configs).
-
-## Running in the background
-
-Nextflow handles job submissions and supervises the running jobs. The Nextflow process must run until the pipeline is finished.
-
-The Nextflow `-bg` flag launches Nextflow in the background, detached from your terminal so that the workflow does not stop if you log out of your session. The logs are saved to a file.
-
-Alternatively, you can use `screen` / `tmux` or similar tool to create a detached session which you can log back into at a later time.
-Some HPC setups also allow you to run nextflow within a cluster job submitted your job scheduler (from where it submits more jobs).
 
 ## Nextflow memory requirements
 

@@ -111,7 +111,7 @@ def compress_output(analysis_dir: Union[str, Path], path_to_summary: Union[str, 
         path_to_summary: Path to summary file
     """
     analysis_path = Path(analysis_dir)
-    
+
     # Determine probe IDs
     data_files = [f for f in analysis_path.iterdir() if f.is_file()]
     probes = np.array([file.stem for file in data_files])
@@ -122,7 +122,7 @@ def compress_output(analysis_dir: Union[str, Path], path_to_summary: Union[str, 
     # Extract details inputs universal to all chemicals/probes
     with open(analysis_path / f"{probes[0]}.pkl", 'rb') as f:
         data = pickle.load(f)
-    
+
     for key in ['n_samp',
                 'n_sample', 'n_treatment_batch', 'total_count', 'n_batch', 'batch_index',
                 'n_conc', 'conc', 'conc_index', 'max_conc',

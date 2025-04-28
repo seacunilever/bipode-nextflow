@@ -24,14 +24,14 @@ def process_data(input_file_path: Union[str, Path], path_to_output: Union[str, P
     output_path = Path(path_to_output)
     data_dir = output_path / "Data"
     fits_dir = output_path / "Fits"
-    
+
     data_dir.mkdir(parents=True, exist_ok=True)
     fits_dir.mkdir(parents=True, exist_ok=True)
 
     # Load data
     if not Path(input_file_path).exists():
         raise FileNotFoundError('json does not exist')
-    
+
     df = pd.read_json(input_file_path, typ='series', orient='index')
 
     count_matrix = np.array(df['counts'], dtype='int')
