@@ -4,11 +4,11 @@
             5,
             [
                 "compressed_results",
-                "compressed_results/BIFROST_input_Nitrofurantoin_HepG2_results.json.ziz",
+                "compressed_results/BIFROST_input_Nitrofurantoin_HepG2_results.json",
                 "pipeline_info"
             ],
             [
-                "BIFROST_input_Nitrofurantoin_HepG2_results.json.zip:md5,50be73927a9a767731310a516dae8754"
+                "BIFROST_input_Nitrofurantoin_HepG2_results.json:md5,eeb8b1cd43667a732b792319ce737aaa"
             ]
         ],
         "meta": {
