@@ -80,7 +80,7 @@ workflow BIFROST {
 
     // Step 6: Compress and output results
 
-    ch_results_for_compression = CONC_RESPONSE_ANALYSIS.out.all_fits_files
+    ch_results_for_compression = CONC_RESPONSE_ANALYSIS.out.compressed_fits_files
             .map { meta, fits ->
                 tuple(groupKey([id: meta.name], meta.n_batches), fits) // Use groupKey to release results as soon as all batches for a file have been processed
             }

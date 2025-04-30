@@ -10,17 +10,20 @@ process COMPRESS_OUTPUT {
     tuple val(meta), path(all_fits_files)
 
     output:
-    path "${prefix}.json.zip"
+    path "${prefix}.json{,.zip}"
 
     script:
+    def args = task.ext.args ?: ''
     def fits_files = all_fits_files.join(" ")
     prefix = task.ext.prefix ?: "${meta.id}"
+    def output_ext = args.contains('--no-compression') ? '.json' : '.json.zip'
     """
     mkdir Fits
     for file in $fits_files; do tar -zxf "\$file" -C Fits/; done
 
     compress_output.py \
         --fits-dir Fits \
-        --output ${prefix}.json.zip
+        --output ${prefix}${output_ext} \
+        $args
     """
 }
