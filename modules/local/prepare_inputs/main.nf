@@ -12,8 +12,7 @@ process PREPARE_INPUTS {
     path substances_cell_types
 
     output:
-    path "bifrost_inputs/*.all.json"   , emit: prepared_inputs
-    path "bifrost_inputs/*.probes.json", emit: probes
+    path "bifrost_inputs/*.json", emit: prepared_inputs
 
     script:
     def args = task.ext.args ?: ''
@@ -24,7 +23,6 @@ process PREPARE_INPUTS {
         --counts $counts \
         --substances-cell-types $substances_cell_types \
         --output-dir bifrost_inputs \
-        --extract-probes \
         $args
     """
 }

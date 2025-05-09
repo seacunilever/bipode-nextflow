@@ -46,9 +46,7 @@ workflow BIFROST {
     // - Group into chunks based on number of cores
     // - Count the number of chunks per file (for later use with groupKey)
     // - Combine with split data output
-    ch_probes = PREPARE_INPUTS.out.probes                                   // [name, JSON probes files]
-        .flatten()
-        .map{ tuple([id: it.simpleName], it) }
+    ch_probes = ch_named_prepared_inputs
         .splitJson(path: 'probes')                                          // [name, [probe]]
         .map{ meta, probe -> tuple([id: meta.id], probe) }                  // [name, [batch of probes]]
         .groupTuple(size: n_cores.toInteger(), remainder: true, sort: true) // [name, [[batch of probes], [batch of probes], ...]]
