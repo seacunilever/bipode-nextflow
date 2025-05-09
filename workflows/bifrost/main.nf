@@ -19,7 +19,7 @@ include { COMPRESS_OUTPUT } from '../../modules/local/compress_output/main.nf'
 def get_probes(String data_file) {
     try {
         json_slurper = new JsonSlurper()
-        def dataset = json_slurper.parse(new File(data_file))
+        def dataset = json_slurper.parse(file(data_file))
         if (!dataset.probes) {
             throw new Exception("No 'probes' field found in JSON file: ${data_file}")
         }
@@ -55,7 +55,7 @@ workflow BIFROST {
         .flatten()
         .multiMap{
             inputs: tuple([id: it.simpleName], it)
-            probes: tuple([id: it.simpleName], get_probes(it.absolutePath))
+            probes: tuple([id: it.simpleName], get_probes(it.toString()))
         }
 
     // Step 3: Split data for each input file
