@@ -192,7 +192,8 @@ def get_inits(data: Dict[str, Any]) -> Dict[str, Any]:
 def fit_model(
     path_to_executable: Union[str, Path],
     data: Dict[str, Any],
-    n_cores: int
+    n_cores: int,
+    seed: Optional[int] = None
 ) -> Dict[str, Any]:
     """
     Fit the BIFROST model using PyStan.
@@ -201,6 +202,7 @@ def fit_model(
         path_to_executable: Path to compiled Stan model
         data: Data object to be passed to the model
         n_cores: Number of cores to use for parallel chains
+        seed: Optional random seed for reproducibility
 
     Returns:
         Dictionary containing the posterior samples and diagnostics
@@ -217,7 +219,7 @@ def fit_model(
                        save_warmup=False,
                        max_treedepth=15,
                        adapt_delta=0.95,
-                       )
+                       seed=seed)
 
     # Extract diagnostics
     diagnostics = fit.diagnose()
@@ -235,7 +237,7 @@ def fit_model(
                            save_warmup=False,
                            max_treedepth=15,
                            adapt_delta=0.95,
-                           )
+                           seed=seed)
 
         diagnostics = fit.diagnose()
 
@@ -364,7 +366,8 @@ def run_concentration_response_analysis(
     files_to_process: List[Union[str, Path]],
     model_name: Union[str, Path],
     number_of_cores: int,
-    fit_dir: Optional[Union[str, Path]] = None
+    fit_dir: Optional[Union[str, Path]] = None,
+    seed: Optional[int] = None
 ) -> None:
     """
     Fit Pystan model for dataset specified by chemical and cell type.
@@ -374,6 +377,7 @@ def run_concentration_response_analysis(
         model_name: Path to the Stan model file
         number_of_cores: Number of cores to use
         fit_dir: Optional directory to contain model fits
+        seed: Optional random seed for reproducibility
 
     Raises:
         ValueError: If fit_dir is not a string
@@ -402,7 +406,8 @@ def run_concentration_response_analysis(
     fitting_args = [(path_to_model,
                      i,
                      path_to_fits / f"{Path(i).stem}.pkl",
-                     number_of_cores)
+                     number_of_cores,
+                     seed)
                     for i in files_to_process]
 
     with Pool(number_of_cores) as p:
@@ -419,15 +424,16 @@ def standard_analysis(paths: Tuple[Union[str, Path], ...]) -> None:
             - data file
             - fit file
             - number of cores
+            - optional seed for reproducibility
     """
-    path_to_executable, path_to_data, path_to_fit, n_cores = paths
+    path_to_executable, path_to_data, path_to_fit, n_cores, seed = paths
 
     with open(path_to_data, 'rb') as f:
         data = pickle.load(f)
 
     # Generate posterior samples
     with suppress_stdout_stderr():
-        fit_dict = fit_model(path_to_executable, data, n_cores)
+        fit_dict = fit_model(path_to_executable, data, n_cores, seed)
 
         # Generate model fits
         gen_plotting_data(data,
@@ -558,11 +564,13 @@ def main() -> None:
                         help='list of probe .pkl files to process separated by spaces')
     parser.add_argument('--model-name', type=str, help='model name')
     parser.add_argument('--n-cores', type=int, help='number of cores to use in multiprocessing')
+    parser.add_argument('--seed', type=int, help='optional random seed for reproducibility')
     args = parser.parse_args()
 
     run_concentration_response_analysis(args.data_files,
                                         args.model_name,
-                                        args.n_cores)
+                                        args.n_cores,
+                                        seed=args.seed)
 
 
 if __name__ == '__main__':

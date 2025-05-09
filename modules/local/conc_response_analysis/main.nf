@@ -12,9 +12,12 @@ process CONC_RESPONSE_ANALYSIS {
     tuple val(meta), val(probes), path(all_probe_file)
 
     output:
-    tuple val(meta), path("${prefix}.tar.gz"), emit: all_fits_files
+    tuple val(meta), path("${prefix}.tar.gz"), emit: compressed_fits_files
 
     script:
+    def args = task.ext.args ?: ''
+    def args2 = task.ext.args2 ?: ''
+    def args3 = task.ext.args3 ?: ''
     def probe_files = probes.collect { "./" + it + ".pkl" }.join(" ")
     def probe_files_extract = probes.collect { "Data/" + it + ".pkl" }.join(" ")
     prefix = task.ext.prefix ?: "${meta.id}"
@@ -27,9 +30,11 @@ process CONC_RESPONSE_ANALYSIS {
     run_conc_response_analysis.py \
         --data-files $probe_files_extract \
         --model-name $model \
-        --n-cores $task.cpus
+        --n-cores $task.cpus \
+        $args
 
     sleep 5
-    tar -czf ${prefix}.tar.gz -C Fits/ .
+
+    tar $args2 -cf - -C Fits/ . | gzip $args3 > ${prefix}.tar.gz
     """
 }

@@ -1,0 +1,20 @@
+{
+    "Params: default": {
+        "content": [
+            5,
+            [
+                "compressed_results",
+                "compressed_results/BIFROST_input_Nitrofurantoin_HepG2_results.json",
+                "pipeline_info"
+            ],
+            [
+                "BIFROST_input_Nitrofurantoin_HepG2_results.json:md5,eeb8b1cd43667a732b792319ce737aaa"
+            ]
+        ],
+        "meta": {
+            "nf-test": "0.9.2",
+            "nextflow": "24.10.2"
+        },
+        "timestamp": "2025-04-28T18:25:42.86614"
+    }
+}

@@ -7,6 +7,7 @@ from typing import Dict, Any, Union, List, Optional, Tuple
 import numpy as np
 import pandas as pd
 import pickle
+import subprocess
 
 
 def get_confidence_threshold_probability_density(x: np.ndarray) -> np.ndarray:
@@ -67,16 +68,20 @@ def get_minimum_pod_means(
     return min_means, min_probes, min_cds
 
 
-def get_global_pod(df: pd.Series) -> Dict[str, Any]:
+def get_global_pod(df: pd.Series, seed: Optional[int] = None) -> Dict[str, Any]:
     """
     Calculate and return global PoD.
 
     Args:
         df: BIFROST summary Series
+        seed: Optional random seed for reproducibility
 
     Returns:
         Dictionary of global PoD-related statistics
     """
+    if seed is not None:
+        np.random.seed(seed)
+
     # Extract PoD means and CDS
     pod_means = np.array([np.mean(df[i]['pod']) if len(df[i]['pod']) > 0 else np.nan for i in df['probes']])
     cds = np.array([df[i]['cds'] for i in df['probes']])
@@ -102,14 +107,19 @@ def get_global_pod(df: pd.Series) -> Dict[str, Any]:
     return results
 
 
-def compress_output(analysis_dir: Union[str, Path], path_to_summary: Union[str, Path]) -> None:
+def compress_output(analysis_dir: Union[str, Path], path_to_summary: Union[str, Path], seed: Optional[int] = None, no_compression: bool = False) -> None:
     """
     Compress intermediate output into a single pandas DataFrame.
 
     Args:
         analysis_dir: Path to parent directory for intermediate output
         path_to_summary: Path to summary file
+        seed: Optional random seed for reproducibility
+        no_compression: If True, save as plain JSON without compression
     """
+    if seed is not None:
+        np.random.seed(seed)
+
     analysis_path = Path(analysis_dir)
 
     # Determine probe IDs
@@ -145,10 +155,15 @@ def compress_output(analysis_dir: Union[str, Path], path_to_summary: Union[str, 
         summary[probe]['count'] = data['count']
 
     # Calculate global PoD and add to dictionary
-    global_pod_dict = get_global_pod(summary)
+    global_pod_dict = get_global_pod(summary, seed)
     summary['global_pod_dict'] = global_pod_dict
 
-    summary.to_json(path_to_summary, orient='index', compression='zip')
+    if no_compression:
+        # Save as plain JSON without compression
+        summary.to_json(path_to_summary, orient='index')
+    else:
+        # Save with zip compression
+        summary.to_json(path_to_summary, orient='index', compression='zip')
 
 
 def main() -> None:
@@ -156,9 +171,11 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument('--fits-dir', type=str, help='list of probe .pkl files to process separated by spaces')
     parser.add_argument('--output', type=str, help='path to the output json')
+    parser.add_argument('--seed', type=int, help='optional random seed for reproducibility')
+    parser.add_argument('--no-compression', action='store_true', help='save output as plain JSON without compression')
     args = parser.parse_args()
 
-    compress_output(args.fits_dir, args.output)
+    compress_output(args.fits_dir, args.output, args.seed, args.no_compression)
 
 
 if __name__ == '__main__':
