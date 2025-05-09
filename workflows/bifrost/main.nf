@@ -18,8 +18,13 @@ include { COMPRESS_OUTPUT } from '../../modules/local/compress_output/main.nf'
 // Function to extract probe names from a JSON file
 def get_probes(String data_file) {
     try {
+        def file_obj = file(data_file)
+        if (!file_obj.exists()) {
+            throw new Exception("File does not exist: ${data_file}")
+        }
+
         json_slurper = new JsonSlurper()
-        def dataset = json_slurper.parse(file(data_file))
+        def dataset = json_slurper.parse(file_obj)
         if (!dataset.probes) {
             throw new Exception("No 'probes' field found in JSON file: ${data_file}")
         }
@@ -55,7 +60,7 @@ workflow BIFROST {
         .flatten()
         .multiMap{
             inputs: tuple([id: it.simpleName], it)
-            probes: tuple([id: it.simpleName], get_probes(it.toString()))
+            probes: tuple([id: it.simpleName], get_probes(it))
         }
 
     // Step 3: Split data for each input file
