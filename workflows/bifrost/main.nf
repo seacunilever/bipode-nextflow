@@ -42,22 +42,47 @@ workflow BIFROST {
     SPLIT_DATA(ch_named_prepared_inputs)
 
     // Step 4: Prepare probes channel for concentration response analysis
-    // - Transpose to group probes by file
-    // - Group into chunks based on number of cores
-    // - Count the number of chunks per file (for later use with groupKey)
-    // - Combine with split data output
-    ch_probes = ch_named_prepared_inputs                                    // [name, json file]
-        .splitJson(path: 'probes')                                          // [name, probe]
-        .groupTuple(size: n_cores.toInteger(), remainder: true, sort: true) // [name, [[batch of probes]]
-        .groupTuple()                                                       // [name, [[batch of probes], [batch of probes], ...]]
-        .map{meta, batches ->
-            [meta, batches.size(), batches, (1..batches.size())]            // [name, n_batches, [batches], [batch_numbers]]
+
+    if (params.batch_probes){
+        if(params.batch_mode == 'all'){
+            ch_probes = ch_named_prepared_inputs.splitJson(path: 'probes') // [name, probe]
+        } else{
+            ch_probes = SPLIT_DATA.out.individual_probe_files.transpose()         // [name, probe file]
         }
-        .transpose()                                                        // [name, n_batches, batch, batch_number]
-        .combine(SPLIT_DATA.out.all_probe_files, by: 0)                     // [name, n_batches, batch, batch_number, probe_file]
-        .map{ meta, n_batches, batch, batch_number, probe_file ->
-            [[id: meta.id + "_" + batch_number, name: meta.id, n_batches: n_batches, batch_number: batch_number], batch, probe_file]
+
+        // - Transpose to group probes by file
+        // - Group into chunks based on number of cores
+        // - Count the number of chunks per file (for later use with groupKey)
+        // - Combine with split data output
+        ch_probes = ch_probes                                                   // [name, probe]
+            .groupTuple(size: n_cores.toInteger(), remainder: true, sort: true) // [name, [[batch of probes]]
+            .groupTuple()                                                       // [name, [[batch of probes], [batch of probes], ...]]
+            .map{meta, batches ->
+                [meta, batches.size(), batches, (1..batches.size())]            // [name, n_batches, [batches], [batch_numbers]]
+            }
+            .transpose()                                                        // [name, n_batches, batch, batch_number]
+
+        if(params.batch_mode == 'all'){
+            ch_probes = ch_probes.combine(SPLIT_DATA.out.all_probe_files, by: 0)                     // [name, n_batches, batch, batch_number, probe_file]
+                .map{ meta, n_batches, batch, batch_number, probe_file ->
+                    [[id: meta.id + "_" + batch_number, name: meta.id, n_batches: n_batches, batch_number: batch_number], batch, probe_file]
+                }
+        } else {
+            ch_probes = ch_probes
+                .map{meta, n_batches, batch, batch_number ->
+                    names = batch.collect{it.simpleName}
+                    [[id: meta.id + "_" + batch_number, name: meta.id, n_batches: n_batches, batch_number: batch_number], names, batch]
+                }
         }
+
+    } else {
+
+        ch_probes = SPLIT_DATA.out.individual_probe_files
+            .map{ meta, probe_files -> [meta + [name: meta.id, n_batches: probe_files.size()], probe_files] }
+            .transpose()
+            .map{ meta, probe_file -> [[id: meta.id + "_" + probe_file.simpleName, name: meta.id], [probe_file.simpleName], probe_file] }
+
+    }
 
     // Step 5: Run concentration response analysis
     CONC_RESPONSE_ANALYSIS(

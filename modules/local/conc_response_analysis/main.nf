@@ -23,7 +23,21 @@ process CONC_RESPONSE_ANALYSIS {
     prefix = task.ext.prefix ?: "${meta.id}"
     """
     mkdir Data
-    tar -zxf $all_probe_file -C Data/ $probe_files
+
+    # Check if input is a tar file or one or more pickle files
+    if [[ "$all_probe_file" =~ \\.tar\\.gz\$ ]]; then
+        tar -zxf $all_probe_file -C Data/ $probe_files
+    else
+        # Handle multiple .pkl files
+        for file in $all_probe_file; do
+            if [[ \$file == *.pkl ]]; then
+                ln -s \$(pwd)/\$file \$(pwd)/Data/\$file
+            else
+                echo "Error: Input file \$file is not a .pkl file"
+                exit 1
+            fi
+        done
+    fi
 
     mkdir Samples
     mkdir Fits

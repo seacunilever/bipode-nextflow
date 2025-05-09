@@ -11,6 +11,7 @@ process SPLIT_DATA {
 
     output:
     tuple val(meta), path("${prefix}.tar.gz"), emit: all_probe_files
+    tuple val(meta), path("Data/*.pkl"), emit: individual_probe_files
 
     script:
     prefix = task.ext.prefix ?: "${meta.id}"
