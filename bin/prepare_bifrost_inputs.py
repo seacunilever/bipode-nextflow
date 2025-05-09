@@ -91,7 +91,8 @@ def write_bifrost_input(
     filter_dict: Dict[str, str],
     counts_table: pd.DataFrame,
     config_dict: Dict[str, Any],
-    output_directory: Union[str, Path]
+    output_directory: Union[str, Path],
+    extract_probes: bool = False
 ) -> None:
     """
     Apply filters to DataFrame and write BIFROST HTTr pipeline input.
@@ -102,6 +103,7 @@ def write_bifrost_input(
         counts_table: Counts data DataFrame
         config_dict: Configuration dictionary
         output_directory: Directory to write output files
+        extract_probes: Whether to write probes to a separate file
     """
     # Filter meta data
     test_substance_mask = meta['Test substance'] == filter_dict['Test substance']
@@ -158,15 +160,21 @@ def write_bifrost_input(
     for key in filter_dict:
         if key not in ['Test substance', 'N/A']:
             s += f'_{"".join(ch for ch in filter_dict[key] if ch.isalnum())}'
-    file_path = Path(output_directory) / f'BIFROST_input_{s}.json'
+    file_path = Path(output_directory) / f'BIFROST_input_{s}.all.json'
 
     bifrost_input.to_json(file_path, orient='index')
+
+    # Write probes to a separate file if requested
+    if extract_probes:
+        probes_file = Path(output_directory) / f'BIFROST_input_{s}.probes.json'
+        pd.Series({'probes': probes.tolist()}).to_json(probes_file, orient='index')
 
 def generate_bifrost_inputs(
     meta: pd.DataFrame,
     counts_table: pd.DataFrame,
     config_dict: Dict[str, Any],
-    output_directory: Union[str, Path]
+    output_directory: Union[str, Path],
+    extract_probes: bool = False
 ) -> None:
     """
     Generate BIFROST inputs from the provided meta DataFrame, counts DataFrame and config dict.
@@ -176,6 +184,7 @@ def generate_bifrost_inputs(
         counts_table: Counts data DataFrame
         config_dict: Configuration dictionary
         output_directory: Directory to write output files
+        extract_probes: Whether to write probes to a separate file
     """
     test_substances = config_dict['Test substances']
     cell_types = config_dict['Cell types']
@@ -184,14 +193,14 @@ def generate_bifrost_inputs(
         if config_dict['Additional divider'] == 'N/A':
             for cell_type in cell_types:
                 filter_dict = {'Test substance': test_substance, 'Cell type': cell_type}
-                write_bifrost_input(meta, filter_dict, counts_table, config_dict, output_directory)
+                write_bifrost_input(meta, filter_dict, counts_table, config_dict, output_directory, extract_probes)
         else:
             pairs = itertools.product(cell_types, meta[config_dict['Additional divider']].unique())
             for pair in pairs:
                 filter_dict = {'Test substance': test_substance,
                                'Cell type': pair[0],
                                config_dict['Additional divider']: pair[1]}
-                write_bifrost_input(meta, filter_dict, counts_table, config_dict, output_directory)
+                write_bifrost_input(meta, filter_dict, counts_table, config_dict, output_directory, extract_probes)
 
 def parse_args() -> argparse.Namespace:
     """
@@ -212,6 +221,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument('--output-dir', default='bifrost_inputs', help='Directory to store outputs')
     parser.add_argument('--test-probes', type=int, default=0,help='Number of probes to sample for testing (optional)')
     parser.add_argument('--random-seed', type=int, default=5, help='Random seed for reproducible probe selection')
+    parser.add_argument('--extract-probes', action='store_true', help='Extract probes to a separate JSON file')
     return parser.parse_args()
 
 def main() -> None:
@@ -247,7 +257,7 @@ def main() -> None:
     # Make directory for storing outputs
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
-    generate_bifrost_inputs(meta, counts, config_dict, output_dir)
+    generate_bifrost_inputs(meta, counts, config_dict, output_dir, args.extract_probes)
 
     # Reduce datasets to specified number of probes if test_probes is provided
     if args.test_probes > 0:

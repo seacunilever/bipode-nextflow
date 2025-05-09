@@ -15,26 +15,6 @@ include { SPLIT_DATA } from '../../modules/local/split_data/main.nf'
 include { CONC_RESPONSE_ANALYSIS } from '../../modules/local/conc_response_analysis/main.nf'
 include { COMPRESS_OUTPUT } from '../../modules/local/compress_output/main.nf'
 
-// Function to extract probe names from a JSON file
-def get_probes(String data_file) {
-    try {
-        def file_obj = file(data_file)
-        if (!file_obj.exists()) {
-            throw new Exception("File does not exist: ${data_file}")
-        }
-
-        json_slurper = new JsonSlurper()
-        def dataset = json_slurper.parse(file_obj)
-        if (!dataset.probes) {
-            throw new Exception("No 'probes' field found in JSON file: ${data_file}")
-        }
-        return dataset.probes
-    } catch (Exception e) {
-        log.error "Error parsing JSON file ${data_file}: ${e.message}"
-        throw e
-    }
-}
-
 workflow BIFROST {
     take:
     ch_input
@@ -53,28 +33,26 @@ workflow BIFROST {
         ch_substances_cell_types
     )
 
-    // Step 2: Process prepared inputs to create two channels:
-    // - inputs: tuples of (name, file) for SPLIT_DATA
-    // - probes: tuples of (name, probes) for later use
+    // Step 2: Process prepared inputs and probes
     ch_named_prepared_inputs = PREPARE_INPUTS.out.prepared_inputs
         .flatten()
-        .multiMap{
-            inputs: tuple([id: it.simpleName], it)
-            probes: tuple([id: it.simpleName], get_probes(it))
-        }
+        .map{ tuple([id: it.simpleName], it) }
 
     // Step 3: Split data for each input file
-    SPLIT_DATA(ch_named_prepared_inputs.inputs)
+    SPLIT_DATA(ch_named_prepared_inputs)
 
     // Step 4: Prepare probes channel for concentration response analysis
     // - Transpose to group probes by file
     // - Group into chunks based on number of cores
     // - Count the number of chunks per file (for later use with groupKey)
     // - Combine with split data output
-    ch_probes = ch_named_prepared_inputs.probes                             // [name, [all_probes]]
-        .transpose()                                                        // [name, probe]
-        .groupTuple(size: n_cores.toInteger(), remainder: true, sort: true) // [name, [batch of probes]]
-        .groupTuple()                                                       // [name, [[batch of probes], [batch of probes], ...]]
+    ch_probes = PREPARE_INPUTS.out.probes                                   // [name, JSON probes files]
+        .flatten()
+        .map{ tuple([id: it.simpleName], it) }
+        .splitJson(path: 'probes')                                          // [name, [probe]]
+        .map{ meta, probe -> tuple([id: meta.id], probe) }                  // [name, [batch of probes]]
+        .groupTuple(size: n_cores.toInteger(), remainder: true, sort: true) // [name, [[batch of probes], [batch of probes], ...]]
+        .groupTuple()
         .map{meta, batches ->
             [meta, batches.size(), batches, (1..batches.size())]            // [name, n_batches, [batches], [batch_numbers]]
         }
