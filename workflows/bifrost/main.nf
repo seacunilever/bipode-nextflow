@@ -44,39 +44,40 @@ workflow BIFROST {
     // Step 4: Prepare probes channel for concentration response analysis
 
     // Process probe files and targz files for concentration response analysis
-    // The input channel contains: meta, [manifests], [targzs] where:
-    // - manifests: List of manifest files (one per batch)
-    // - targzs: List of targz files (one per batch when batching is on, one per input file when off)
+    // The input channels contain:
+    // - SPLIT_DATA.out.manifest: meta, manifest (tab-separated file with tar_file and probes columns)
+    // - SPLIT_DATA.out.probe_files: meta, [probe_files] (list of targz files)
     // The transformations:
-    // 1. Convert single objects to lists if needed and sort batch files
-    // 2. Extract batch numbers from manifest names
-    // 3. Transpose to get per-batch processing
-    // 4. Split CSV to get individual probes
-    // 5. Group by meta to collect all probes for a batch
-    // Note: splitCsv and groupTuple operations ensure proper list handling
+    // 1. For manifests: Split CSV to get tar_file and probes, then create [meta_tar_name, meta, probes] tuples
+    // 2. For probe files: Transpose and extract batch numbers to create [meta_tar_name, batch_num, targz] tuples
+    // 3. Combine both channels by tar_name to match probes with their corresponding targz files
+    // 4. Group by meta to collect all batches and their files
+    // 5. Add batch count to meta and transpose for per-batch processing
+    // 6. Final output: [meta + batch_number, batch, batch_file] for each batch
+    // Note: The tar_name field is used as a key to match probes with their corresponding targz files
 
-    probes_by_tarname = SPLIT_DATA.out.manifest
-        .splitCsv(sep: '\t', header: true)
+    probes_by_tarname = SPLIT_DATA.out.manifest // meta, manifest
+        .splitCsv(sep: '\t', header: true) // meta, [tar_file, probes]
         .map{meta, row ->
             [meta + ['tar_name': row.tar_file], meta, row.probes.split(',')]
-        }
+        } // [meta_tar_name], meta, probes]
 
-    tars_by_tarname = SPLIT_DATA.out.probe_files
-        .transpose()
+    tars_by_tarname = SPLIT_DATA.out.probe_files //[ meta, [probe_files]]
+        .transpose() // [meta, probe_file]
         .map{meta, targz ->
             [meta + ['tar_name': targz.name], targz.simpleName.split('_batch')[1].toInteger(), targz]
-        }
+        } // [meta_tar_name, batch_num, targz]
 
     ch_probes = probes_by_tarname
-        .combine(tars_by_tarname, by: 0).map{it.tail()}
-        .groupTuple()
+        .combine(tars_by_tarname, by: 0).map{it.tail()} // [meta, probes, batch_num, targz]
+        .groupTuple() // [meta, [batch_nums], [batches], [batch_files]]
         .map{meta, batches, batch_nums, batch_files ->
              [meta + [n_batches: batch_nums.size()], batch_nums, batches, batch_files]
-        } // meta, batch_nums, batches, batch_file(s)
+        } // meta, [batch_nums], [batches], [batch_files]
         .transpose() // meta, batch_num, batch, batch_file
         .map{meta, batch_num, batch, batch_file ->
             [meta + [batch_number: batch_num], batch, batch_file]
-        } // meta, batch_num, batch, batch_file
+        } // meta, batch, batch_file
 
     // Step 5: Run concentration response analysis
     CONC_RESPONSE_ANALYSIS(
