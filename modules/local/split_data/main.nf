@@ -15,17 +15,12 @@ process SPLIT_DATA {
     script:
     prefix = task.ext.prefix ?: "${meta.id}"
     def args = task.ext.args ?: ''
-    def args2 = task.ext.args2 ?: ''
-
-    def batch_size = (args2 =~ /--batch-size\s+(\d+)/) ? (args2 =~ /--batch-size\s+(\d+)/)[0][1].toInteger() : 0
-    def batch_mode = (args2 =~ /--batch-mode\s+(batch|all)/) ? (args2 =~ /--batch-mode\s+(batch|all)/)[0][1] : 'all'
 
     """
     split_data.py \\
         --input-file $input_data \\
         --analysis-dir . \\
         --prefix $prefix \\
-        --batch-size $batch_size \\
-        --batch-mode $batch_mode
+        $args
     """
 }
