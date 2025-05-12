@@ -76,7 +76,7 @@ workflow BIFROST {
         } // meta, [batch_nums], [batches], [batch_files]
         .transpose() // meta, batch_num, batch, batch_file
         .map{meta, batch_num, batch, batch_file ->
-            [meta + [batch_number: batch_num], batch, batch_file]
+            [meta + [id: meta.id + '_' + batch_num, batch_number: batch_num], batch, batch_file]
         } // meta, batch, batch_file
 
     // Step 5: Run concentration response analysis
