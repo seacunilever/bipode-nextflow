@@ -43,9 +43,17 @@ workflow BIFROST {
 
     // Step 4: Prepare probes channel for concentration response analysis
 
-    // Derive targz file(s) to pass to concentration response analysis
-    // - With batching turned on, there will be one targz file per batch
-    // - With batching turned off, there will be one targz file per input file
+    // Process probe files and targz files for concentration response analysis
+    // The input channel contains: meta, [manifests], [targzs] where:
+    // - manifests: List of manifest files (one per batch)
+    // - targzs: List of targz files (one per batch when batching is on, one per input file when off)
+    // The transformations:
+    // 1. Convert single objects to lists if needed and sort batch files
+    // 2. Extract batch numbers from manifest names
+    // 3. Transpose to get per-batch processing
+    // 4. Split CSV to get individual probes
+    // 5. Group by meta to collect all probes for a batch
+    // Note: splitCsv and groupTuple operations ensure proper list handling
 
     ch_probes = SPLIT_DATA.out.probe_files  // meta, [manifests], [targzs]
         .map{meta, manifests, batch_files ->
@@ -54,14 +62,13 @@ workflow BIFROST {
             def batchList = batch_files instanceof List ? batch_files.sort{it.simpleName} : batch_files
             def batch_nums = manifestList.collect{it.simpleName.split('_batch')[1].toInteger()}
             [meta + [n_batches: manifestList.size()], batch_nums, manifestList.sort{it.simpleName}, batchList]
-        }
-        .transpose()
+        } // meta, batch_nums, manifests, batch_file(s)
+        .transpose() // meta, batch_num, manifest, batch_file
         .map{meta, batch_num, manifest, batch_file ->
             [meta + [batch_number: batch_num], manifest, batch_file]
-        }
-        .splitCsv(elem: 1).map{meta, probes, targzs -> [meta, probes[0], targzs]} // splitCSV always returns a list, and we know we have one probe per line
-        .groupTuple().map{meta, probes, targzs -> [meta, probes, targzs[0]]} // We know that there is only one targz per batch
-        .view()
+        } // meta, batch_num, manifest, batch_file
+        .splitCsv(elem: 1).map{meta, probes, targzs -> [meta, probes[0], targzs]} // meta, probe, targz
+        .groupTuple().map{meta, probes, targzs -> [meta, probes, targzs[0]]} // meta, [probe batch], targz
 
     // Step 5: Run concentration response analysis
     CONC_RESPONSE_ANALYSIS(
