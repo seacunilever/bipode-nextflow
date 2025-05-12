@@ -10,12 +10,20 @@ import pandas as pd
 import glob
 
 
-def create_manifest(batch_files: List[str], manifest_path: Path) -> None:
-    """Create a manifest file for a batch of files."""
-    with open(manifest_path, 'w') as f:
-        for file in batch_files:
-            # Remove .pkl extension as in original script
-            f.write(f"{Path(file).stem}\n")
+def create_manifest(batch_files: List[str], manifest_path: Path, tar_filename: str) -> None:
+    """Create a manifest file entry for a batch of files."""
+    # If file doesn't exist, create it with header
+    if not manifest_path.exists():
+        with open(manifest_path, 'w') as f:
+            f.write("tar_file\tprobes\n")
+
+    # Get all probe names for this batch
+    probe_names = [Path(file).stem for file in batch_files]
+    # Join them with commas
+    probes_str = ",".join(probe_names)
+
+    with open(manifest_path, 'a') as f:
+        f.write(f"{tar_filename}\t{probes_str}\n")
 
 
 def create_tar_archive(files: List[str], output_path: Path) -> None:
@@ -42,23 +50,29 @@ def process_batches(data_dir: Path, prefix: str, batch_size: int, batch_mode: st
     if not files:
         return
 
+    # Create single manifest file
+    manifest_path = Path(f"{prefix}.manifest.csv")
+    # Clear the manifest file if it exists
+    manifest_path.unlink(missing_ok=True)
+
     # Create single tar.gz if batch_mode is 'all'
     if batch_mode == 'all':
-        create_tar_archive(files, Path(f"{prefix}_batch0.tar.gz"))
+        tar_filename = f"{prefix}_batch0.tar.gz"
+        create_tar_archive(files, Path(tar_filename))
+        create_manifest(files, manifest_path, tar_filename)
+        return
 
     # Process files in batches
     batch_num = 1
     for i in range(0, total_files, batch_size):
         batch_files = files[i:i + batch_size]
         batch_prefix = f"{prefix}_batch{batch_num}"
+        tar_filename = f"{batch_prefix}.tar.gz"
 
-        # Create manifest file for this batch
-        manifest_path = Path(f"{batch_prefix}.manifest.csv")
-        create_manifest(batch_files, manifest_path)
-
-        # Create individual tar file if in batch mode
-        if batch_mode == 'batch':
-            create_tar_archive(batch_files, Path(f"{batch_prefix}.tar.gz"))
+        # Create individual tar file
+        create_tar_archive(batch_files, Path(tar_filename))
+        # Add entries to manifest
+        create_manifest(batch_files, manifest_path, tar_filename)
 
         batch_num += 1
 

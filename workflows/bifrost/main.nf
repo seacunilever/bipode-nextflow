@@ -55,20 +55,28 @@ workflow BIFROST {
     // 5. Group by meta to collect all probes for a batch
     // Note: splitCsv and groupTuple operations ensure proper list handling
 
-    ch_probes = SPLIT_DATA.out.probe_files  // meta, [manifests], [targzs]
-        .map{meta, manifests, batch_files ->
-            // Convert single objects to lists if needed
-            def manifestList = manifests instanceof List ? manifests : [manifests]
-            def batchList = batch_files instanceof List ? batch_files.sort{it.simpleName} : batch_files
-            def batch_nums = manifestList.collect{it.simpleName.split('_batch')[1].toInteger()}
-            [meta + [n_batches: manifestList.size()], batch_nums, manifestList.sort{it.simpleName}, batchList]
-        } // meta, batch_nums, manifests, batch_file(s)
-        .transpose() // meta, batch_num, manifest, batch_file
-        .map{meta, batch_num, manifest, batch_file ->
-            [meta + [batch_number: batch_num], manifest, batch_file]
-        } // meta, batch_num, manifest, batch_file
-        .splitCsv(elem: 1).map{meta, probes, targzs -> [meta, probes[0], targzs]} // meta, probe, targz
-        .groupTuple().map{meta, probes, targzs -> [meta, probes, targzs[0]]} // meta, [probe batch], targz
+    probes_by_tarname = SPLIT_DATA.out.manifest
+        .splitCsv(sep: '\t', header: true)
+        .map{meta, row ->
+            [meta + ['tar_name': row.tar_file], meta, row.probes.split(',')]
+        }
+
+    tars_by_tarname = SPLIT_DATA.out.probe_files
+        .transpose()
+        .map{meta, targz ->
+            [meta + ['tar_name': targz.name], targz.simpleName.split('_batch')[1].toInteger(), targz]
+        }
+
+    ch_probes = probes_by_tarname
+        .combine(tars_by_tarname, by: 0).map{it.tail()}
+        .groupTuple()
+        .map{meta, batches, batch_nums, batch_files ->
+             [meta + [n_batches: batch_nums.size()], batch_nums, batches, batch_files]
+        } // meta, batch_nums, batches, batch_file(s)
+        .transpose() // meta, batch_num, batch, batch_file
+        .map{meta, batch_num, batch, batch_file ->
+            [meta + [batch_number: batch_num], batch, batch_file]
+        } // meta, batch_num, batch, batch_file
 
     // Step 5: Run concentration response analysis
     CONC_RESPONSE_ANALYSIS(
