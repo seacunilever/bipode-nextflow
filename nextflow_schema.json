@@ -38,12 +38,6 @@
                     "description": "Path to YAML file containing test substances and cell types to analyze",
                     "fa_icon": "fas fa-file-code"
                 },
-                "batch_probes": {
-                    "type": "boolean",
-                    "description": "Whether to collect probes before passing for analysis or not",
-                    "default": true,
-                    "fa_icon": "fas fa-layer-group"
-                },
                 "batch_mode": {
                     "type": "string",
                     "description": "Way in which to collect probes before passing for analysis. 'all' will collect all probes in one tar file sent to all analysis processes. 'batch' will just group probe files for analysis in the same batch. ",

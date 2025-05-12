@@ -43,46 +43,25 @@ workflow BIFROST {
 
     // Step 4: Prepare probes channel for concentration response analysis
 
-    if (params.batch_probes){
-        if(params.batch_mode == 'all'){
-            ch_probes = ch_named_prepared_inputs.splitJson(path: 'probes') // [name, probe]
-        } else{
-            ch_probes = SPLIT_DATA.out.individual_probe_files.transpose()         // [name, probe file]
+    // Derive targz file(s) to pass to concentration response analysis
+    // - With batching turned on, there will be one targz file per batch
+    // - With batching turned off, there will be one targz file per input file
+
+    ch_probes = SPLIT_DATA.out.probe_files  // meta, [manifests], [targzs]
+        .map{meta, manifests, batch_files ->
+            // Convert single objects to lists if needed
+            def manifestList = manifests instanceof List ? manifests : [manifests]
+            def batchList = batch_files instanceof List ? batch_files.sort{it.simpleName} : batch_files
+            def batch_nums = manifestList.collect{it.simpleName.split('_batch')[1].toInteger()}
+            [meta + [n_batches: manifestList.size()], batch_nums, manifestList.sort{it.simpleName}, batchList]
         }
-
-        // - Transpose to group probes by file
-        // - Group into chunks based on number of cores
-        // - Count the number of chunks per file (for later use with groupKey)
-        // - Combine with split data output
-        ch_probes = ch_probes                                                   // [name, probe]
-            .groupTuple(size: n_cores.toInteger(), remainder: true, sort: true) // [name, [[batch of probes]]
-            .groupTuple()                                                       // [name, [[batch of probes], [batch of probes], ...]]
-            .map{meta, batches ->
-                [meta, batches.size(), batches, (1..batches.size())]            // [name, n_batches, [batches], [batch_numbers]]
-            }
-            .transpose()                                                        // [name, n_batches, batch, batch_number]
-
-        if(params.batch_mode == 'all'){
-            ch_probes = ch_probes.combine(SPLIT_DATA.out.all_probe_files, by: 0)                     // [name, n_batches, batch, batch_number, probe_file]
-                .map{ meta, n_batches, batch, batch_number, probe_file ->
-                    [[id: meta.id + "_" + batch_number, name: meta.id, n_batches: n_batches, batch_number: batch_number], batch, probe_file]
-                }
-        } else {
-            ch_probes = ch_probes
-                .map{meta, n_batches, batch, batch_number ->
-                    names = batch.collect{it.simpleName}
-                    [[id: meta.id + "_" + batch_number, name: meta.id, n_batches: n_batches, batch_number: batch_number], names, batch]
-                }
+        .transpose()
+        .map{meta, batch_num, manifest, batch_file ->
+            [meta + [batch_number: batch_num], manifest, batch_file]
         }
-
-    } else {
-
-        ch_probes = SPLIT_DATA.out.individual_probe_files
-            .map{ meta, probe_files -> [meta + [name: meta.id, n_batches: probe_files.size()], probe_files] }
-            .transpose()
-            .map{ meta, probe_file -> [[id: meta.id + "_" + probe_file.simpleName, name: meta.id], [probe_file.simpleName], probe_file] }
-
-    }
+        .splitCsv(elem: 1).map{meta, probes, targzs -> [meta, probes[0], targzs]} // splitCSV always returns a list, and we know we have one probe per line
+        .groupTuple().map{meta, probes, targzs -> [meta, probes, targzs[0]]} // We know that there is only one targz per batch
+        .view()
 
     // Step 5: Run concentration response analysis
     CONC_RESPONSE_ANALYSIS(

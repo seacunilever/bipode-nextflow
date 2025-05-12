@@ -18,7 +18,7 @@ process CONC_RESPONSE_ANALYSIS {
     def args = task.ext.args ?: ''
     def args2 = task.ext.args2 ?: ''
     def args3 = task.ext.args3 ?: ''
-    def probe_files = probes.collect { "./" + it + ".pkl" }.join(" ")
+    def probe_files = probes.collect { it + ".pkl" }.join(" ")
     def probe_files_extract = probes.collect { "Data/" + it + ".pkl" }.join(" ")
     prefix = task.ext.prefix ?: "${meta.id}"
     """
