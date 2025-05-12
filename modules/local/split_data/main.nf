@@ -21,38 +21,11 @@ process SPLIT_DATA {
     def batch_mode = (args2 =~ /--batch-mode\s+(batch|all)/) ? (args2 =~ /--batch-mode\s+(batch|all)/)[0][1] : 'all'
 
     """
-    split_data.py --input-file $input_data --analysis-dir .
-
-    sleep 5
-
-    cd Data/
-    # Get list of all files
-    files=(\$(ls *.pkl))
-    total_files=\${#files[@]}
-
-    # Create single tar.gz if batch_mode is 'all' or batch_size is 0
-    if [ "$batch_mode" = "all" ]; then
-        tar -czf "../${prefix}_batch0.tar.gz" \${files[@]}
-    fi
-
-    # Split files into batches for manifest creation
-    batch_num=1
-    for ((i=0; i<total_files; i+=$batch_size)); do
-        batch_files=(\${files[@]:i:$batch_size})
-        batch_prefix="../${prefix}_batch\${batch_num}"
-        manifest_file="\${batch_prefix}.manifest.csv"
-
-        # Create manifest file for this batch
-        for f in "\${batch_files[@]}"; do
-            echo "\${f%.pkl}" >> \$manifest_file
-        done
-
-        if [ "$batch_mode" = "batch" ]; then
-            # Create individual tar file for this batch
-            tar -czf "\${batch_prefix}.tar.gz" \${batch_files[@]}
-        fi
-
-        ((batch_num++))
-    done
+    split_data.py \\
+        --input-file $input_data \\
+        --analysis-dir . \\
+        --prefix $prefix \\
+        --batch-size $batch_size \\
+        --batch-mode $batch_mode
     """
 }
