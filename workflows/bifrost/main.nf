@@ -62,7 +62,7 @@ workflow BIFROST {
         } // [meta, [batch_nums], [batches], [batch_files]]
         .transpose() // meta, batch_num, batch, batch_file
         .map{meta, batch_num, batch, batch_file ->
-            [meta + [id: meta.id + '_' + batch_num, batch_number: batch_num], batch, batch_file]
+            [meta + [id: meta.id + '_' + batch_num, name:meta.id, batch_number: batch_num], batch, batch_file]
         } // meta, batch, batch_file
 
 
