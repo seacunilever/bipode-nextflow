@@ -161,8 +161,7 @@ class BetaLogistic:
 
 def compile_stan_model(path_to_stan_file: Union[str, Path]) -> str:
     """
-    Compile the Stan model using the conda-installed cmdstan, with temporary directory
-    for compilation artifacts.
+    Compile the Stan model using cmdstanpy's built-in compilation features.
 
     Args:
         path_to_stan_file: Path to Stan code defining the model
@@ -173,41 +172,59 @@ def compile_stan_model(path_to_stan_file: Union[str, Path]) -> str:
     Raises:
         RuntimeError: If compilation fails
     """
-    # Create a temporary directory for compilation artifacts
-    with tempfile.TemporaryDirectory() as tmpdir:
-        try:
-            # Set up logging
-            logging.basicConfig(level=logging.INFO)
-            logger = logging.getLogger(__name__)
-            logger.info(f"Compiling Stan model from {path_to_stan_file}")
+    try:
+        # Set up logging
+        logging.basicConfig(level=logging.INFO)
+        logger = logging.getLogger(__name__)
+        logger.info(f"Compiling Stan model from {path_to_stan_file}")
 
-            # Set TMPDIR for compilation artifacts
-            os.environ['TMPDIR'] = str(tmpdir)
+        # Convert to Path object for easier handling
+        stan_file = Path(path_to_stan_file)
 
-            # Use conda-installed cmdstan with temporary directory for artifacts
+        # Create a temporary directory for compilation artifacts
+        with tempfile.TemporaryDirectory() as tmpdir:
+            # Set environment variables for compilation
+            os.environ['CMDSTAN_CACHE_DIR'] = tmpdir
+
+            # Configure model compilation
             model = cmdstanpy.CmdStanModel(
-                stan_file=str(path_to_stan_file),
-                force_compile=True,
+                stan_file=str(stan_file),
+                compile=True,  # Force compilation
                 cpp_options={
                     'STAN_THREADS': 'true',
-                    'TMPDIR': str(tmpdir)
+                    'STAN_MPI': 'false',
+                    'STAN_OPENCL': 'false'
+                },
+                stanc_options={
+                    'include_paths': [str(stan_file.parent)],
+                    'warn-pedantic': True,
+                    'warn-uninitialized': True
                 }
             )
 
-            # Copy the compiled executable to the original directory
-            final_exe = Path(path_to_stan_file).parent / Path(path_to_stan_file).stem
-            shutil.copy2(model.exe_file, final_exe)
+            # Get the compiled executable path
+            exe_path = Path(model.exe_file)
 
-            logger.info(f"Successfully compiled model to {final_exe}")
+            # Copy to final location if needed
+            final_exe = stan_file.parent / stan_file.stem
+            if exe_path != final_exe:
+                shutil.copy2(exe_path, final_exe)
+                logger.info(f"Copied compiled model to {final_exe}")
+            else:
+                logger.info(f"Using compiled model at {final_exe}")
+
             return str(final_exe)
 
-        except Exception as e:
-            logger.error(f"Failed to compile Stan model: {str(e)}")
-            raise RuntimeError(f"Stan model compilation failed: {str(e)}") from e
-        finally:
-            # Clean up environment variables
-            if 'TMPDIR' in os.environ:
-                del os.environ['TMPDIR']
+    except cmdstanpy.CmdStanCompileError as e:
+        logger.error(f"Stan model compilation failed: {str(e)}")
+        raise RuntimeError(f"Stan model compilation failed: {str(e)}") from e
+    except Exception as e:
+        logger.error(f"Unexpected error during Stan model compilation: {str(e)}")
+        raise RuntimeError(f"Unexpected error during Stan model compilation: {str(e)}") from e
+    finally:
+        # Clean up environment variables
+        if 'CMDSTAN_CACHE_DIR' in os.environ:
+            del os.environ['CMDSTAN_CACHE_DIR']
 
 
 def get_inits(data: Dict[str, Any]) -> Dict[str, Any]:
