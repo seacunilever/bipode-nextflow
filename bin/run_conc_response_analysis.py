@@ -175,20 +175,31 @@ def compile_stan_model(path_to_stan_file: Union[str, Path]) -> str:
     # Create a temporary directory for compilation
     with tempfile.TemporaryDirectory() as tmpdir:
         try:
-            # Copy the Stan file to the temporary directory
-            tmp_stan_file = Path(tmpdir) / Path(path_to_stan_file).name
-            shutil.copy2(path_to_stan_file, tmp_stan_file)
-
             # Set up logging
             logging.basicConfig(level=logging.INFO)
             logger = logging.getLogger(__name__)
             logger.info(f"Compiling Stan model from {path_to_stan_file}")
 
+            # Create a temporary cmdstan directory structure
+            tmp_cmdstan = Path(tmpdir) / "cmdstan"
+            tmp_cmdstan.mkdir(exist_ok=True)
+
+            # Copy the Stan file to the temporary directory
+            tmp_stan_file = tmp_cmdstan / Path(path_to_stan_file).name
+            shutil.copy2(path_to_stan_file, tmp_stan_file)
+
+            # Set environment variables to use temporary directory
+            os.environ['CMDSTAN'] = str(tmp_cmdstan)
+            os.environ['TMPDIR'] = str(tmpdir)
+
             # Compile in the temporary directory
             model = cmdstanpy.CmdStanModel(
                 stan_file=str(tmp_stan_file),
-                compile=True,
-                cpp_options={'STAN_THREADS': 'true'}
+                force_compile=True,  # Updated from compile=True
+                cpp_options={
+                    'STAN_THREADS': 'true',
+                    'TMPDIR': str(tmpdir)
+                }
             )
 
             # Copy the compiled executable to the original directory
@@ -201,6 +212,12 @@ def compile_stan_model(path_to_stan_file: Union[str, Path]) -> str:
         except Exception as e:
             logger.error(f"Failed to compile Stan model: {str(e)}")
             raise RuntimeError(f"Stan model compilation failed: {str(e)}") from e
+        finally:
+            # Clean up environment variables
+            if 'CMDSTAN' in os.environ:
+                del os.environ['CMDSTAN']
+            if 'TMPDIR' in os.environ:
+                del os.environ['TMPDIR']
 
 
 def get_inits(data: Dict[str, Any]) -> Dict[str, Any]:
