@@ -219,7 +219,8 @@ def fit_model(
                        save_warmup=False,
                        max_treedepth=15,
                        adapt_delta=0.95,
-                       seed=seed)
+                       seed=seed,
+                       show_console=True)
 
     # Extract diagnostics
     diagnostics = fit.diagnose()
@@ -237,7 +238,8 @@ def fit_model(
                            save_warmup=False,
                            max_treedepth=15,
                            adapt_delta=0.95,
-                           seed=seed)
+                           seed=seed,
+                           show_console=True)
 
         diagnostics = fit.diagnose()
 
