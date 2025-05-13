@@ -20,10 +20,6 @@ from scipy.stats import gmean, beta as beta_dist
 from scipy.special import logit, expit, betainc, digamma, polygamma, beta
 from scipy.optimize import brentq
 
-import tempfile
-import shutil
-import logging
-
 
 @contextmanager
 def suppress_stdout_stderr() -> None:
@@ -157,76 +153,6 @@ class BetaLogistic:
         logpdf = (- self.a * np.logaddexp(0, -y) - self.b * np.logaddexp(0, y)
                   - np.log(beta(self.a, self.b)) + np.log(self.s) - np.log(self.sigma))
         return logpdf
-
-
-def compile_stan_model(path_to_stan_file: Union[str, Path]) -> str:
-    """
-    Compile the Stan model using cmdstanpy's built-in compilation features.
-
-    Args:
-        path_to_stan_file: Path to Stan code defining the model
-
-    Returns:
-        Path to compiled executable
-
-    Raises:
-        RuntimeError: If compilation fails
-    """
-    try:
-        # Set up logging
-        logging.basicConfig(level=logging.INFO)
-        logger = logging.getLogger(__name__)
-        logger.info(f"Compiling Stan model from {path_to_stan_file}")
-
-        # Convert to Path object for easier handling
-        stan_file = Path(path_to_stan_file)
-
-        # Create a temporary directory for compilation artifacts
-        with tempfile.TemporaryDirectory() as tmpdir:
-            # Set environment variables for compilation
-            os.environ['CMDSTAN_CACHE_DIR'] = tmpdir
-            os.environ['TMPDIR'] = tmpdir  # For C++ compiler temporary files
-
-            # Configure model compilation
-            model = cmdstanpy.CmdStanModel(
-                stan_file=str(stan_file),
-                force_compile=True,  # Use force_compile instead of compile
-                cpp_options={
-                    'STAN_THREADS': 'true',
-                    'TMPDIR': tmpdir  # Tell C++ compiler where to put temp files
-                },
-                stanc_options={
-                    'include-paths': [str(stan_file.parent)],  # Updated from include_paths
-                    'warn-pedantic': True,
-                    'warn-uninitialized': True
-                },
-                compile='main'  # Use the basic compilation target without MPI/OpenCL
-            )
-
-            # Get the compiled executable path
-            exe_path = Path(model.exe_file)
-
-            # Copy to final location if needed
-            final_exe = stan_file.parent / stan_file.stem
-            if exe_path != final_exe:
-                shutil.copy2(exe_path, final_exe)
-                logger.info(f"Copied compiled model to {final_exe}")
-            else:
-                logger.info(f"Using compiled model at {final_exe}")
-
-            return str(final_exe)
-
-    except cmdstanpy.CmdStanCompileError as e:
-        logger.error(f"Stan model compilation failed: {str(e)}")
-        raise RuntimeError(f"Stan model compilation failed: {str(e)}") from e
-    except Exception as e:
-        logger.error(f"Unexpected error during Stan model compilation: {str(e)}")
-        raise RuntimeError(f"Unexpected error during Stan model compilation: {str(e)}") from e
-    finally:
-        # Clean up environment variables
-        for var in ['CMDSTAN_CACHE_DIR', 'TMPDIR']:
-            if var in os.environ:
-                del os.environ[var]
 
 
 def get_inits(data: Dict[str, Any]) -> Dict[str, Any]:
@@ -426,7 +352,7 @@ def get_bifrost_covariance(
 
 def run_concentration_response_analysis(
     files_to_process: List[Union[str, Path]],
-    model_name: Union[str, Path],
+    model_executable: Union[str, Path],
     number_of_cores: int,
     fit_dir: Optional[Union[str, Path]] = None,
     seed: Optional[int] = None
@@ -436,7 +362,7 @@ def run_concentration_response_analysis(
 
     Args:
         files_to_process: List of probe .pkl files to process
-        model_name: Path to the Stan model file
+        model_executable: Path to the compiled Stan model executable
         number_of_cores: Number of cores to use
         fit_dir: Optional directory to contain model fits
         seed: Optional random seed for reproducibility
@@ -461,11 +387,8 @@ def run_concentration_response_analysis(
         if not Path(f).is_file():
             raise FileNotFoundError(f"Data file '{f}' does not exist")
 
-    # Compile model
-    path_to_model = compile_stan_model(model_name)
-
     # Create list of arguments to pass to standard_analysis function
-    fitting_args = [(path_to_model,
+    fitting_args = [(str(model_executable),
                      i,
                      path_to_fits / f"{Path(i).stem}.pkl",
                      number_of_cores,
@@ -624,13 +547,13 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument('--data-files', nargs='+', type=str,
                         help='list of probe .pkl files to process separated by spaces')
-    parser.add_argument('--model-name', type=str, help='model name')
+    parser.add_argument('--model-executable', type=str, help='path to compiled Stan model executable')
     parser.add_argument('--n-cores', type=int, help='number of cores to use in multiprocessing')
     parser.add_argument('--seed', type=int, help='optional random seed for reproducibility')
     args = parser.parse_args()
 
     run_concentration_response_analysis(args.data_files,
-                                        args.model_name,
+                                        args.model_executable,
                                         args.n_cores,
                                         seed=args.seed)
 

@@ -43,7 +43,7 @@ process CONC_RESPONSE_ANALYSIS {
     mkdir Fits
     run_conc_response_analysis.py \
         --data-files $probe_files_extract \
-        --model-name $model \
+        --model-executable $model \
         --n-cores $task.cpus \
         $args
 

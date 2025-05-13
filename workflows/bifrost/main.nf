@@ -12,6 +12,7 @@ include { methodsDescriptionText } from '../../subworkflows/local/utils_nfcore_b
 // Include process modules
 include { PREPARE_INPUTS } from '../../modules/local/prepare_inputs/main.nf'
 include { SPLIT_DATA } from '../../modules/local/split_data/main.nf'
+include { COMPILE_STAN_MODEL } from '../../modules/local/compile_stan_model/main.nf'
 include { CONC_RESPONSE_ANALYSIS } from '../../modules/local/conc_response_analysis/main.nf'
 include { COMPRESS_OUTPUT } from '../../modules/local/compress_output/main.nf'
 
@@ -41,7 +42,10 @@ workflow BIFROST {
     // Step 3: Split data for each input file
     SPLIT_DATA(ch_named_prepared_inputs)
 
-    // Step 4: Prepare probes channel for concentration response analysis
+    // Step 4: Compile Stan model once
+    COMPILE_STAN_MODEL(ch_model)
+
+    // Step 5: Run concentration response analysis using pre-compiled model
 
     // SPLIT_DATA can package probes into targ.gz files in different ways. It
     // produces a manifest to describe which probes are in which tar.gz. To
@@ -61,9 +65,9 @@ workflow BIFROST {
             [meta + [id: meta.id + '_' + batch_num, batch_number: batch_num], batch, batch_file]
         } // meta, batch, batch_file
 
-    // Step 5: Run concentration response analysis
+
     CONC_RESPONSE_ANALYSIS(
-        ch_model,
+        COMPILE_STAN_MODEL.out.compiled_model,
         ch_probes
     )
 
