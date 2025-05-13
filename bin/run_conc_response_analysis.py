@@ -20,6 +20,10 @@ from scipy.stats import gmean, beta as beta_dist
 from scipy.special import logit, expit, betainc, digamma, polygamma, beta
 from scipy.optimize import brentq
 
+import tempfile
+import shutil
+import logging
+
 
 @contextmanager
 def suppress_stdout_stderr() -> None:
@@ -164,9 +168,39 @@ def compile_stan_model(path_to_stan_file: Union[str, Path]) -> str:
 
     Returns:
         Path to compiled executable
+
+    Raises:
+        RuntimeError: If compilation fails
     """
-    model = cmdstanpy.CmdStanModel(stan_file=path_to_stan_file)
-    return model.exe_file
+    # Create a temporary directory for compilation
+    with tempfile.TemporaryDirectory() as tmpdir:
+        try:
+            # Copy the Stan file to the temporary directory
+            tmp_stan_file = Path(tmpdir) / Path(path_to_stan_file).name
+            shutil.copy2(path_to_stan_file, tmp_stan_file)
+
+            # Set up logging
+            logging.basicConfig(level=logging.INFO)
+            logger = logging.getLogger(__name__)
+            logger.info(f"Compiling Stan model from {path_to_stan_file}")
+
+            # Compile in the temporary directory
+            model = cmdstanpy.CmdStanModel(
+                stan_file=str(tmp_stan_file),
+                compile=True,
+                cpp_options={'STAN_THREADS': 'true'}
+            )
+
+            # Copy the compiled executable to the original directory
+            final_exe = Path(path_to_stan_file).parent / Path(path_to_stan_file).stem
+            shutil.copy2(model.exe_file, final_exe)
+
+            logger.info(f"Successfully compiled model to {final_exe}")
+            return str(final_exe)
+
+        except Exception as e:
+            logger.error(f"Failed to compile Stan model: {str(e)}")
+            raise RuntimeError(f"Stan model compilation failed: {str(e)}") from e
 
 
 def get_inits(data: Dict[str, Any]) -> Dict[str, Any]:
