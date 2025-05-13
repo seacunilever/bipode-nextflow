@@ -43,37 +43,19 @@ workflow BIFROST {
 
     // Step 4: Prepare probes channel for concentration response analysis
 
-    // Process probe files and targz files for concentration response analysis
-    // The input channels contain:
-    // - SPLIT_DATA.out.manifest: meta, manifest (tab-separated file with tar_file and probes columns)
-    // - SPLIT_DATA.out.probe_files: meta, [probe_files] (list of targz files)
-    // The transformations:
-    // 1. For manifests: Split CSV to get tar_file and probes, then create [meta_tar_name, meta, probes] tuples
-    // 2. For probe files: Transpose and extract batch numbers to create [meta_tar_name, batch_num, targz] tuples
-    // 3. Combine both channels by tar_name to match probes with their corresponding targz files
-    // 4. Group by meta to collect all batches and their files
-    // 5. Add batch count to meta and transpose for per-batch processing
-    // 6. Final output: [meta + batch_number, batch, batch_file] for each batch
-    // Note: The tar_name field is used as a key to match probes with their corresponding targz files
+    // SPLIT_DATA can package probes into targ.gz files in different ways. It
+    // produces a manifest to describe which probes are in which tar.gz. To
+    // prepare an input channel for the concentration response analysis, we
+    // just need to parse out the probes from the manifest, and count the
+    // number of batches per file for the later benefit of groupKey.
 
-    probes_by_tarname = SPLIT_DATA.out.manifest // meta, manifest
-        .splitCsv(sep: '\t', header: true) // meta, [tar_file, probes]
-        .map{meta, row ->
-            [meta + ['tar_name': row.tar_file], meta, row.probes.split(',')]
-        } // [meta_tar_name], meta, probes]
-
-    tars_by_tarname = SPLIT_DATA.out.probe_files //[ meta, [probe_files]]
-        .transpose() // [meta, probe_file]
-        .map{meta, targz ->
-            [meta + ['tar_name': targz.name], targz.simpleName.split('_batch')[1].toInteger(), targz]
-        } // [meta_tar_name, batch_num, targz]
-
-    ch_probes = probes_by_tarname
-        .combine(tars_by_tarname, by: 0).map{it.tail()} // [meta, probes, batch_num, targz]
-        .groupTuple() // [meta, [batch_nums], [batches], [batch_files]]
-        .map{meta, batches, batch_nums, batch_files ->
-             [meta + [n_batches: batch_nums.size()], batch_nums, batches, batch_files]
-        } // meta, [batch_nums], [batches], [batch_files]
+    ch_probes = SPLIT_DATA.out.probe_files //[ meta, manifest,[probe_files]]
+        .splitCsv(sep: '\t', header: true, elem: 1)
+        .groupTuple() // meta, [tar_file, probes]
+        .map{meta, rows, targzs ->
+            def tar_to_gz = targzs.flatten().collectEntries { [it.name, it] }
+            [meta + [n_batches: rows.size()], rows*.batch, rows*.probes*.split(','), rows*.tar_file.collect { tar_to_gz[it] }]
+        } // [meta, [batch_nums], [batches], [batch_files]]
         .transpose() // meta, batch_num, batch, batch_file
         .map{meta, batch_num, batch, batch_file ->
             [meta + [id: meta.id + '_' + batch_num, batch_number: batch_num], batch, batch_file]

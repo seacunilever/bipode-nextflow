@@ -10,12 +10,12 @@ import pandas as pd
 import glob
 
 
-def create_manifest(batch_files: List[str], manifest_path: Path, tar_filename: str) -> None:
+def create_manifest(batch_files: List[str], manifest_path: Path, tar_filename: str, batch_num: int) -> None:
     """Create a manifest file entry for a batch of files."""
     # If file doesn't exist, create it with header
     if not manifest_path.exists():
         with open(manifest_path, 'w') as f:
-            f.write("tar_file\tprobes\n")
+            f.write("batch\ttar_file\tprobes\n")
 
     # Get all probe names for this batch
     probe_names = [Path(file).stem for file in batch_files]
@@ -23,7 +23,7 @@ def create_manifest(batch_files: List[str], manifest_path: Path, tar_filename: s
     probes_str = ",".join(probe_names)
 
     with open(manifest_path, 'a') as f:
-        f.write(f"{tar_filename}\t{probes_str}\n")
+        f.write(f"{batch_num}\t{tar_filename}\t{probes_str}\n")
 
 
 def create_tar_archive(files: List[str], output_path: Path) -> None:
@@ -59,7 +59,13 @@ def process_batches(data_dir: Path, prefix: str, batch_size: int, batch_mode: st
     if batch_mode == 'all':
         tar_filename = f"{prefix}_batch0.tar.gz"
         create_tar_archive(files, Path(tar_filename))
-        create_manifest(files, manifest_path, tar_filename)
+
+        # Process files in batches for manifest, even though we're using a single archive
+        batch_num = 1
+        for i in range(0, total_files, batch_size):
+            batch_files = files[i:i + batch_size]
+            create_manifest(batch_files, manifest_path, tar_filename, batch_num)
+            batch_num += 1
         return
 
     # Process files in batches
@@ -72,7 +78,7 @@ def process_batches(data_dir: Path, prefix: str, batch_size: int, batch_mode: st
         # Create individual tar file
         create_tar_archive(batch_files, Path(tar_filename))
         # Add entries to manifest
-        create_manifest(batch_files, manifest_path, tar_filename)
+        create_manifest(batch_files, manifest_path, tar_filename, batch_num)
 
         batch_num += 1
 

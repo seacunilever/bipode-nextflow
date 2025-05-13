@@ -10,8 +10,7 @@ process SPLIT_DATA {
     tuple val(meta), path(input_data)
 
     output:
-    tuple val(meta), path("${prefix}_batch*.tar.gz"), emit: probe_files
-    tuple val(meta), path("${prefix}.manifest.csv"), emit: manifest
+    tuple val(meta), path("${prefix}.manifest.csv"), path("${prefix}_batch*.tar.gz"), emit: probe_files
 
     script:
     prefix = task.ext.prefix ?: "${meta.id}"
