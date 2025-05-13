@@ -161,7 +161,8 @@ class BetaLogistic:
 
 def compile_stan_model(path_to_stan_file: Union[str, Path]) -> str:
     """
-    Compile the Stan model.
+    Compile the Stan model using the conda-installed cmdstan, with temporary directory
+    for compilation artifacts.
 
     Args:
         path_to_stan_file: Path to Stan code defining the model
@@ -172,7 +173,7 @@ def compile_stan_model(path_to_stan_file: Union[str, Path]) -> str:
     Raises:
         RuntimeError: If compilation fails
     """
-    # Create a temporary directory for compilation
+    # Create a temporary directory for compilation artifacts
     with tempfile.TemporaryDirectory() as tmpdir:
         try:
             # Set up logging
@@ -180,22 +181,13 @@ def compile_stan_model(path_to_stan_file: Union[str, Path]) -> str:
             logger = logging.getLogger(__name__)
             logger.info(f"Compiling Stan model from {path_to_stan_file}")
 
-            # Create a temporary cmdstan directory structure
-            tmp_cmdstan = Path(tmpdir) / "cmdstan"
-            tmp_cmdstan.mkdir(exist_ok=True)
-
-            # Copy the Stan file to the temporary directory
-            tmp_stan_file = tmp_cmdstan / Path(path_to_stan_file).name
-            shutil.copy2(path_to_stan_file, tmp_stan_file)
-
-            # Set environment variables to use temporary directory
-            os.environ['CMDSTAN'] = str(tmp_cmdstan)
+            # Set TMPDIR for compilation artifacts
             os.environ['TMPDIR'] = str(tmpdir)
 
-            # Compile in the temporary directory
+            # Use conda-installed cmdstan with temporary directory for artifacts
             model = cmdstanpy.CmdStanModel(
-                stan_file=str(tmp_stan_file),
-                force_compile=True,  # Updated from compile=True
+                stan_file=str(path_to_stan_file),
+                force_compile=True,
                 cpp_options={
                     'STAN_THREADS': 'true',
                     'TMPDIR': str(tmpdir)
@@ -214,8 +206,6 @@ def compile_stan_model(path_to_stan_file: Union[str, Path]) -> str:
             raise RuntimeError(f"Stan model compilation failed: {str(e)}") from e
         finally:
             # Clean up environment variables
-            if 'CMDSTAN' in os.environ:
-                del os.environ['CMDSTAN']
             if 'TMPDIR' in os.environ:
                 del os.environ['TMPDIR']
 
