@@ -185,21 +185,22 @@ def compile_stan_model(path_to_stan_file: Union[str, Path]) -> str:
         with tempfile.TemporaryDirectory() as tmpdir:
             # Set environment variables for compilation
             os.environ['CMDSTAN_CACHE_DIR'] = tmpdir
+            os.environ['TMPDIR'] = tmpdir  # For C++ compiler temporary files
 
             # Configure model compilation
             model = cmdstanpy.CmdStanModel(
                 stan_file=str(stan_file),
-                compile=True,  # Force compilation
+                force_compile=True,  # Use force_compile instead of compile
                 cpp_options={
                     'STAN_THREADS': 'true',
-                    'STAN_MPI': 'false',
-                    'STAN_OPENCL': 'false'
+                    'TMPDIR': tmpdir  # Tell C++ compiler where to put temp files
                 },
                 stanc_options={
-                    'include_paths': [str(stan_file.parent)],
+                    'include-paths': [str(stan_file.parent)],  # Updated from include_paths
                     'warn-pedantic': True,
                     'warn-uninitialized': True
-                }
+                },
+                compile='main'  # Use the basic compilation target without MPI/OpenCL
             )
 
             # Get the compiled executable path
@@ -223,8 +224,9 @@ def compile_stan_model(path_to_stan_file: Union[str, Path]) -> str:
         raise RuntimeError(f"Unexpected error during Stan model compilation: {str(e)}") from e
     finally:
         # Clean up environment variables
-        if 'CMDSTAN_CACHE_DIR' in os.environ:
-            del os.environ['CMDSTAN_CACHE_DIR']
+        for var in ['CMDSTAN_CACHE_DIR', 'TMPDIR']:
+            if var in os.environ:
+                del os.environ[var]
 
 
 def get_inits(data: Dict[str, Any]) -> Dict[str, Any]:
