@@ -58,6 +58,11 @@
             "fa_icon": "fas fa-cogs",
             "description": "Parameters specific to the Bifrost pipeline",
             "properties": {
+                "seed": {
+                    "type": ["integer", "null"],
+                    "description": "Random seed for reproducible results. If not set, results will not be reproducible between runs.",
+                    "fa_icon": "fas fa-dice"
+                },
                 "model_file": {
                     "type": "string",
                     "description": "Path to the Stan model file (without .stan extension)",
