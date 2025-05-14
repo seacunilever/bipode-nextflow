@@ -178,9 +178,7 @@ def get_inits(data: Dict[str, Any]) -> Dict[str, Any]:
 def fit_model(
     path_to_executable: Union[str, Path],
     data: Dict[str, Any],
-    n_cores: int,  # kept for compatibility but not used
-    seed: Optional[int] = None,
-    output_dir: Optional[Union[str, Path]] = None
+    seed: Optional[int] = None
 ) -> Dict[str, Any]:
     """
     Fit the BIFROST model using PyStan.
@@ -188,26 +186,16 @@ def fit_model(
     Args:
         path_to_executable: Path to compiled Stan model
         data: Data object to be passed to the model
-        n_cores: Number of cores to use (ignored, kept for compatibility)
         seed: Optional random seed for reproducibility
-        output_dir: Directory for Stan output files. If None, uses current directory.
 
     Returns:
         Dictionary containing the posterior samples and diagnostics
     """
-    # Create output directory if it doesn't exist
-    if output_dir is not None:
-        output_dir = Path(output_dir)
-        output_dir.mkdir(parents=True, exist_ok=True)
-    else:
-        output_dir = '.'
-
     # Attempt using standard settings
     model = cmdstanpy.CmdStanModel(exe_file=path_to_executable)
-    print("\nStarting initial sampling run...")
     fit = model.sample(data=data,
-                       chains=1,
-                       parallel_chains=1,  # Disable parallel chains for clearer output
+                       chains=4,
+                       parallel_chains=1,
                        iter_warmup=500,
                        iter_sampling=250,
                        thin=1,
@@ -216,21 +204,17 @@ def fit_model(
                        max_treedepth=15,
                        adapt_delta=0.95,
                        seed=seed,
-                       show_console=True,
-                       refresh=1,  # Force immediate output flushing
-                       output_dir=str(output_dir))  # Use specified output directory
+                       show_console=True)
 
     # Extract diagnostics
-    print("\nRunning diagnostics...")
     diagnostics = fit.diagnose()
 
     # Check for multimodality and refit with more chains if detected
     s = 'Split R-hat values satisfactory all parameters.'
     if s not in diagnostics:
-        print("\nMultimodality detected, running additional chains...")
         fit = model.sample(data=data,
                            chains=40,
-                           parallel_chains=1,  # Disable parallel chains for clearer output
+                           parallel_chains=4,  # Use all available cores for a single model fit
                            iter_warmup=500,
                            iter_sampling=250,
                            thin=10,
@@ -239,15 +223,11 @@ def fit_model(
                            max_treedepth=15,
                            adapt_delta=0.95,
                            seed=seed,
-                           show_console=True,
-                           refresh=1,  # Force immediate output flushing
-                           output_dir=str(output_dir))  # Use specified output directory
+                           show_console=True)
 
-        print("\nRunning diagnostics on additional chains...")
         diagnostics = fit.diagnose()
 
     # Extract samples
-    print("\nExtracting samples...")
     samples = pd.Series(fit.stan_variables())
     pars = fit.draws_pd()
     for i in ['chain__', 'iter__', 'draw__', 'lp__', 'accept_stat__', 'stepsize__',
@@ -373,8 +353,7 @@ def run_concentration_response_analysis(
     model_executable: Union[str, Path],
     number_of_cores: int,
     fit_dir: Optional[Union[str, Path]] = None,
-    seed: Optional[int] = None,
-    output_dir: Optional[Union[str, Path]] = None
+    seed: Optional[int] = None
 ) -> None:
     """
     Fit Pystan model for dataset specified by chemical and cell type.
@@ -382,10 +361,13 @@ def run_concentration_response_analysis(
     Args:
         files_to_process: List of probe .pkl files to process
         model_executable: Path to the compiled Stan model executable
-        number_of_cores: Number of cores to use (ignored in sequential mode)
+        number_of_cores: Number of cores to use
         fit_dir: Optional directory to contain model fits
         seed: Optional random seed for reproducibility
-        output_dir: Optional directory for Stan output files
+
+    Raises:
+        ValueError: If fit_dir is not a string
+        FileNotFoundError: If any input file does not exist
     """
     # Define path to directory to contain model fits
     if fit_dir is None:
@@ -403,17 +385,16 @@ def run_concentration_response_analysis(
         if not Path(f).is_file():
             raise FileNotFoundError(f"Data file '{f}' does not exist")
 
-    # Process files sequentially
-    for data_file in files_to_process:
-        print(f"\nProcessing file: {data_file}")
-        standard_analysis((
-            str(model_executable),
-            data_file,
-            path_to_fits / f"{Path(data_file).stem}.pkl",
-            number_of_cores,  # Still pass this for compatibility
-            seed,
-            output_dir
-        ))
+    # Create list of arguments to pass to standard_analysis function
+    fitting_args = [(str(model_executable),
+                     i,
+                     path_to_fits / f"{Path(i).stem}.pkl",
+                     number_of_cores,
+                     seed)
+                    for i in files_to_process]
+
+    with Pool(number_of_cores) as p:
+        p.map(standard_analysis, fitting_args)
 
 
 def standard_analysis(paths: Tuple[Union[str, Path], ...]) -> None:
@@ -425,27 +406,23 @@ def standard_analysis(paths: Tuple[Union[str, Path], ...]) -> None:
             - model executable
             - data file
             - fit file
-            - number of cores
+            - number of cores (unused)
             - optional seed for reproducibility
-            - optional output directory for Stan logs
     """
-    path_to_executable, path_to_data, path_to_fit, n_cores, seed, output_dir = paths
+    path_to_executable, path_to_data, path_to_fit, _, seed = paths
 
     with open(path_to_data, 'rb') as f:
         data = pickle.load(f)
 
-    # Generate posterior samples - let output show for debugging
-    try:
-        fit_dict = fit_model(path_to_executable, data, n_cores, seed, output_dir)
-    except Exception as e:
-        print(f"Error during model fitting: {str(e)}")
-        raise
+    # Generate posterior samples
+    with suppress_stdout_stderr():
+        fit_dict = fit_model(path_to_executable, data, seed)
 
-    # Generate model fits
-    gen_plotting_data(data,
-                      fit_dict['samples'],
-                      path_to_fit,
-                      fit_dict['diagnostics'])
+        # Generate model fits
+        gen_plotting_data(data,
+                          fit_dict['samples'],
+                          path_to_fit,
+                          fit_dict['diagnostics'])
 
 
 def get_response_window(samples: Dict[str, Any]) -> Dict[str, Any]:
@@ -571,14 +548,12 @@ def main() -> None:
     parser.add_argument('--model-executable', type=str, help='path to compiled Stan model executable')
     parser.add_argument('--n-cores', type=int, help='number of cores to use in multiprocessing')
     parser.add_argument('--seed', type=int, help='optional random seed for reproducibility')
-    parser.add_argument('--output-dir', type=str, help='directory for Stan output files')
     args = parser.parse_args()
 
     run_concentration_response_analysis(args.data_files,
                                         args.model_executable,
                                         args.n_cores,
-                                        seed=args.seed,
-                                        output_dir=args.output_dir)
+                                        seed=args.seed)
 
 
 if __name__ == '__main__':
