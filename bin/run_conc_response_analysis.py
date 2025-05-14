@@ -206,7 +206,8 @@ def fit_model(
                        max_treedepth=15,
                        adapt_delta=0.95,
                        seed=seed,
-                       show_console=True)
+                       show_console=True,
+                       output_dir='.')  # Use current working directory
 
     # Extract diagnostics
     diagnostics = fit.diagnose()
@@ -225,7 +226,8 @@ def fit_model(
                            max_treedepth=15,
                            adapt_delta=0.95,
                            seed=seed,
-                           show_console=True)
+                           show_console=True,
+                           output_dir='.')  # Use current working directory
 
         diagnostics = fit.diagnose()
 
