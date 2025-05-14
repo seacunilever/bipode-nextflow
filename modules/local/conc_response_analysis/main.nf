@@ -13,6 +13,7 @@ process CONC_RESPONSE_ANALYSIS {
 
     output:
     tuple val(meta), path("${prefix}.tar.gz"), emit: compressed_fits_files
+    tuple val(meta), path("logs"), emit: fit_logs
 
     script:
     def args = task.ext.args ?: ''
@@ -45,6 +46,7 @@ process CONC_RESPONSE_ANALYSIS {
         --data-files $probe_files_extract \
         --model-executable $model \
         --n-cores $task.cpus \
+        --output-dir logs \
         $args
 
     sleep 5

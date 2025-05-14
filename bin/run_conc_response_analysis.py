@@ -179,7 +179,8 @@ def fit_model(
     path_to_executable: Union[str, Path],
     data: Dict[str, Any],
     n_cores: int,  # kept for compatibility but not used
-    seed: Optional[int] = None
+    seed: Optional[int] = None,
+    output_dir: Optional[Union[str, Path]] = None
 ) -> Dict[str, Any]:
     """
     Fit the BIFROST model using PyStan.
@@ -189,10 +190,18 @@ def fit_model(
         data: Data object to be passed to the model
         n_cores: Number of cores to use (ignored, kept for compatibility)
         seed: Optional random seed for reproducibility
+        output_dir: Directory for Stan output files. If None, uses current directory.
 
     Returns:
         Dictionary containing the posterior samples and diagnostics
     """
+    # Create output directory if it doesn't exist
+    if output_dir is not None:
+        output_dir = Path(output_dir)
+        output_dir.mkdir(parents=True, exist_ok=True)
+    else:
+        output_dir = '.'
+
     # Attempt using standard settings
     model = cmdstanpy.CmdStanModel(exe_file=path_to_executable)
     fit = model.sample(data=data,
@@ -207,7 +216,7 @@ def fit_model(
                        adapt_delta=0.95,
                        seed=seed,
                        show_console=True,
-                       output_dir='.')  # Use current working directory
+                       output_dir=str(output_dir))  # Use specified output directory
 
     # Extract diagnostics
     diagnostics = fit.diagnose()
@@ -227,7 +236,7 @@ def fit_model(
                            adapt_delta=0.95,
                            seed=seed,
                            show_console=True,
-                           output_dir='.')  # Use current working directory
+                           output_dir=str(output_dir))  # Use specified output directory
 
         diagnostics = fit.diagnose()
 
@@ -357,7 +366,8 @@ def run_concentration_response_analysis(
     model_executable: Union[str, Path],
     number_of_cores: int,
     fit_dir: Optional[Union[str, Path]] = None,
-    seed: Optional[int] = None
+    seed: Optional[int] = None,
+    output_dir: Optional[Union[str, Path]] = None
 ) -> None:
     """
     Fit Pystan model for dataset specified by chemical and cell type.
@@ -368,10 +378,7 @@ def run_concentration_response_analysis(
         number_of_cores: Number of cores to use (ignored in sequential mode)
         fit_dir: Optional directory to contain model fits
         seed: Optional random seed for reproducibility
-
-    Raises:
-        ValueError: If fit_dir is not a string
-        FileNotFoundError: If any input file does not exist
+        output_dir: Optional directory for Stan output files
     """
     # Define path to directory to contain model fits
     if fit_dir is None:
@@ -397,7 +404,8 @@ def run_concentration_response_analysis(
             data_file,
             path_to_fits / f"{Path(data_file).stem}.pkl",
             number_of_cores,  # Still pass this for compatibility
-            seed
+            seed,
+            output_dir
         ))
 
 
@@ -412,15 +420,16 @@ def standard_analysis(paths: Tuple[Union[str, Path], ...]) -> None:
             - fit file
             - number of cores
             - optional seed for reproducibility
+            - optional output directory for Stan logs
     """
-    path_to_executable, path_to_data, path_to_fit, n_cores, seed = paths
+    path_to_executable, path_to_data, path_to_fit, n_cores, seed, output_dir = paths
 
     with open(path_to_data, 'rb') as f:
         data = pickle.load(f)
 
     # Generate posterior samples - let output show for debugging
     try:
-        fit_dict = fit_model(path_to_executable, data, n_cores, seed)
+        fit_dict = fit_model(path_to_executable, data, n_cores, seed, output_dir)
     except Exception as e:
         print(f"Error during model fitting: {str(e)}")
         raise
@@ -555,12 +564,14 @@ def main() -> None:
     parser.add_argument('--model-executable', type=str, help='path to compiled Stan model executable')
     parser.add_argument('--n-cores', type=int, help='number of cores to use in multiprocessing')
     parser.add_argument('--seed', type=int, help='optional random seed for reproducibility')
+    parser.add_argument('--output-dir', type=str, help='directory for Stan output files')
     args = parser.parse_args()
 
     run_concentration_response_analysis(args.data_files,
                                         args.model_executable,
                                         args.n_cores,
-                                        seed=args.seed)
+                                        seed=args.seed,
+                                        output_dir=args.output_dir)
 
 
 if __name__ == '__main__':
