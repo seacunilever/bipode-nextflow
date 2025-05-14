@@ -205,7 +205,7 @@ def fit_model(
     # Attempt using standard settings
     model = cmdstanpy.CmdStanModel(exe_file=path_to_executable)
     fit = model.sample(data=data,
-                       chains=4,
+                       chains=1,
                        parallel_chains=1,  # Disable parallel chains for clearer output
                        iter_warmup=500,
                        iter_sampling=250,
