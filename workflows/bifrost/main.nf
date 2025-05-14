@@ -67,7 +67,7 @@ workflow BIFROST {
 
 
     CONC_RESPONSE_ANALYSIS(
-        ch_model,
+        COMPILE_STAN_MODEL.out.compiled_model,
         ch_probes
     )
 
