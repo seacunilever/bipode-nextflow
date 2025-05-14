@@ -178,7 +178,7 @@ def get_inits(data: Dict[str, Any]) -> Dict[str, Any]:
 def fit_model(
     path_to_executable: Union[str, Path],
     data: Dict[str, Any],
-    n_cores: int,
+    n_cores: int,  # kept for compatibility but not used
     seed: Optional[int] = None
 ) -> Dict[str, Any]:
     """
@@ -187,7 +187,7 @@ def fit_model(
     Args:
         path_to_executable: Path to compiled Stan model
         data: Data object to be passed to the model
-        n_cores: Number of cores to use for parallel chains
+        n_cores: Number of cores to use (ignored, kept for compatibility)
         seed: Optional random seed for reproducibility
 
     Returns:
@@ -197,7 +197,7 @@ def fit_model(
     model = cmdstanpy.CmdStanModel(exe_file=path_to_executable)
     fit = model.sample(data=data,
                        chains=4,
-                       parallel_chains=n_cores,
+                       parallel_chains=1,  # Disable parallel chains for clearer output
                        iter_warmup=500,
                        iter_sampling=250,
                        thin=1,
@@ -216,7 +216,7 @@ def fit_model(
     if s not in diagnostics:
         fit = model.sample(data=data,
                            chains=40,
-                           parallel_chains=n_cores,
+                           parallel_chains=1,  # Disable parallel chains for clearer output
                            iter_warmup=500,
                            iter_sampling=250,
                            thin=10,
