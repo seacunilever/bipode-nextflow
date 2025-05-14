@@ -42,7 +42,8 @@
                     "type": "string",
                     "description": "Way in which to collect probes before passing for analysis. 'all' will collect all probes in one tar file sent to all analysis processes. 'batch' will just group probe files for analysis in the same batch. ",
                     "default": "all",
-                    "fa_icon": "fas fa-subscript"
+                    "fa_icon": "fas fa-subscript",
+                    "enum": ["all", "batch"]
                 },
                 "outdir": {
                     "type": "string",
