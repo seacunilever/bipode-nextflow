@@ -416,15 +416,18 @@ def standard_analysis(paths: Tuple[Union[str, Path], ...]) -> None:
     with open(path_to_data, 'rb') as f:
         data = pickle.load(f)
 
-    # Generate posterior samples
-    with suppress_stdout_stderr():
+    # Generate posterior samples - let output show for debugging
+    try:
         fit_dict = fit_model(path_to_executable, data, n_cores, seed)
+    except Exception as e:
+        print(f"Error during model fitting: {str(e)}")
+        raise
 
-        # Generate model fits
-        gen_plotting_data(data,
-                          fit_dict['samples'],
-                          path_to_fit,
-                          fit_dict['diagnostics'])
+    # Generate model fits
+    gen_plotting_data(data,
+                      fit_dict['samples'],
+                      path_to_fit,
+                      fit_dict['diagnostics'])
 
 
 def get_response_window(samples: Dict[str, Any]) -> Dict[str, Any]:
