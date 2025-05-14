@@ -363,7 +363,7 @@ def run_concentration_response_analysis(
     Args:
         files_to_process: List of probe .pkl files to process
         model_executable: Path to the compiled Stan model executable
-        number_of_cores: Number of cores to use
+        number_of_cores: Number of cores to use (ignored in sequential mode)
         fit_dir: Optional directory to contain model fits
         seed: Optional random seed for reproducibility
 
@@ -387,16 +387,16 @@ def run_concentration_response_analysis(
         if not Path(f).is_file():
             raise FileNotFoundError(f"Data file '{f}' does not exist")
 
-    # Create list of arguments to pass to standard_analysis function
-    fitting_args = [(str(model_executable),
-                     i,
-                     path_to_fits / f"{Path(i).stem}.pkl",
-                     number_of_cores,
-                     seed)
-                    for i in files_to_process]
-
-    with Pool(number_of_cores) as p:
-        p.map(standard_analysis, fitting_args)
+    # Process files sequentially
+    for data_file in files_to_process:
+        print(f"\nProcessing file: {data_file}")
+        standard_analysis((
+            str(model_executable),
+            data_file,
+            path_to_fits / f"{Path(data_file).stem}.pkl",
+            number_of_cores,  # Still pass this for compatibility
+            seed
+        ))
 
 
 def standard_analysis(paths: Tuple[Union[str, Path], ...]) -> None:
