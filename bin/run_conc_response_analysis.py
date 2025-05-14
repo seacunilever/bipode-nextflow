@@ -204,6 +204,7 @@ def fit_model(
 
     # Attempt using standard settings
     model = cmdstanpy.CmdStanModel(exe_file=path_to_executable)
+    print("\nStarting initial sampling run...")
     fit = model.sample(data=data,
                        chains=1,
                        parallel_chains=1,  # Disable parallel chains for clearer output
@@ -216,14 +217,17 @@ def fit_model(
                        adapt_delta=0.95,
                        seed=seed,
                        show_console=True,
+                       refresh=0,  # Force immediate output flushing
                        output_dir=str(output_dir))  # Use specified output directory
 
     # Extract diagnostics
+    print("\nRunning diagnostics...")
     diagnostics = fit.diagnose()
 
     # Check for multimodality and refit with more chains if detected
     s = 'Split R-hat values satisfactory all parameters.'
     if s not in diagnostics:
+        print("\nMultimodality detected, running additional chains...")
         fit = model.sample(data=data,
                            chains=40,
                            parallel_chains=1,  # Disable parallel chains for clearer output
@@ -236,11 +240,14 @@ def fit_model(
                            adapt_delta=0.95,
                            seed=seed,
                            show_console=True,
+                           refresh=0,  # Force immediate output flushing
                            output_dir=str(output_dir))  # Use specified output directory
 
+        print("\nRunning diagnostics on additional chains...")
         diagnostics = fit.diagnose()
 
     # Extract samples
+    print("\nExtracting samples...")
     samples = pd.Series(fit.stan_variables())
     pars = fit.draws_pd()
     for i in ['chain__', 'iter__', 'draw__', 'lp__', 'accept_stat__', 'stepsize__',
