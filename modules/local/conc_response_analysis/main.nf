@@ -23,6 +23,8 @@ process CONC_RESPONSE_ANALYSIS {
     def probe_files_extract = probes.collect { "Data/" + it + ".pkl" }.join(" ")
     prefix = task.ext.prefix ?: "${meta.id}"
     """
+    compile_stan_model.py ${model}
+
     mkdir Data
 
     # Check if input is a tar file or one or more pickle files
@@ -44,7 +46,7 @@ process CONC_RESPONSE_ANALYSIS {
     mkdir Fits
     run_conc_response_analysis.py \
         --data-files $probe_files_extract \
-        --model-executable $model \
+        --model-executable ${model.baseName} \
         --n-cores $task.cpus \
         --output-dir logs \
         $args
