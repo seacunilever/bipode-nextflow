@@ -115,6 +115,11 @@
                     "description": "Number of probes to sample for testing (optional)",
                     "minimum": 0,
                     "fa_icon": "fas fa-vial"
+                },
+                "precompile_model": {
+                    "type": "boolean",
+                    "description": "Whether to pre-compile the Nextflow script before execution",
+                    "fa_icon": "fas fa-code"
                 }
             }
         },

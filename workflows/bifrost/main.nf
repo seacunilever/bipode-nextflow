@@ -42,8 +42,13 @@ workflow BIFROST {
     // Step 3: Split data for each input file
     SPLIT_DATA(ch_named_prepared_inputs)
 
-    // Step 4: Compile Stan model once
-    COMPILE_STAN_MODEL(ch_model)
+    // Step 4: Compile Stan model once (if precompile_model is true)
+    if (params.precompile_model) {
+        COMPILE_STAN_MODEL(ch_model)
+        ch_model_for_analysis = COMPILE_STAN_MODEL.out.compiled_model
+    } else {
+        ch_model_for_analysis = ch_model
+    }
 
     // Step 5: Run concentration response analysis using pre-compiled model
 
@@ -67,7 +72,7 @@ workflow BIFROST {
 
 
     CONC_RESPONSE_ANALYSIS(
-        COMPILE_STAN_MODEL.out.compiled_model,
+        ch_model_for_analysis,
         ch_probes
     )
 
