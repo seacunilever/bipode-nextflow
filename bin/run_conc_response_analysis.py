@@ -217,7 +217,7 @@ def fit_model(
                        adapt_delta=0.95,
                        seed=seed,
                        show_console=True,
-                       refresh=0,  # Force immediate output flushing
+                       refresh=1,  # Force immediate output flushing
                        output_dir=str(output_dir))  # Use specified output directory
 
     # Extract diagnostics
@@ -240,7 +240,7 @@ def fit_model(
                            adapt_delta=0.95,
                            seed=seed,
                            show_console=True,
-                           refresh=0,  # Force immediate output flushing
+                           refresh=1,  # Force immediate output flushing
                            output_dir=str(output_dir))  # Use specified output directory
 
         print("\nRunning diagnostics on additional chains...")
