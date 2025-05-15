@@ -148,6 +148,8 @@ The pipeline provides two modes for handling probe data batching through the `--
 - `all` (default): Collects all probes into a single tar file that is sent to all analysis processes. This reduces the number of file operations but requires more disk space when not using a shared file system.
 - `batch`: Groups probe files for analysis in smaller batches. This produces more intermediate files but uses less disk space overall when not using a shared file system.
 
+Use `batch` unless you have good reason to believe file operations are a limiting factor in your infrastructure.
+
 ### Model Pre-compilation
 
 The pipeline offers a pre-compilation option for the Stan model through the `--precompile-model` parameter. This addresses CmdStanPy's behavior of writing compiled models to the same path as the input model.
