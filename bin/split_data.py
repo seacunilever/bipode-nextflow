@@ -81,7 +81,7 @@ def process_batches(data_dir: Path, prefix: str, batch_size: int, batch_mode: st
         create_manifest(batch_files, manifest_path, tar_filename, batch_num)
 
         batch_num += 1
-        
+
     return manifest_path
 
 

@@ -64,17 +64,17 @@ workflow BIFROST {
         .map{meta, rows, targzs ->
             def tar_to_gz = targzs.flatten().collectEntries { [it.name, it] }
             [
-                meta + [n_batches: rows.size()], 
-                rows*.batch, 
-                rows*.probes*.split(','), 
+                meta + [n_batches: rows.size()],
+                rows*.batch,
+                rows*.probes*.split(','),
                 rows*.tar_file.collect { tar_to_gz[it] }
             ]
         } // [meta, [batch_nums], [batches], [batch_files]]
         .transpose() // meta, batch_num, batch, batch_file
         .map{meta, batch_num, batch, batch_file ->
             [
-                meta + [id: meta.id + '_' + batch_num, name:meta.id, batch_number: batch_num], 
-                batch, 
+                meta + [id: meta.id + '_' + batch_num, name:meta.id, batch_number: batch_num],
+                batch,
                 batch_file
             ]
         } // meta, batch, batch_file
