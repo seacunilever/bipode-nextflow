@@ -81,6 +81,8 @@ def process_batches(data_dir: Path, prefix: str, batch_size: int, batch_mode: st
         create_manifest(batch_files, manifest_path, tar_filename, batch_num)
 
         batch_num += 1
+        
+    return manifest_path
 
 
 def process_data(input_file_path: Union[str, Path], path_to_output: Union[str, Path], testing_mode: bool = False) -> None:
@@ -183,7 +185,7 @@ def main() -> None:
 
     # Process the pickle files into batches
     data_dir = Path(args.analysis_dir) / "Data"
-    process_batches(data_dir, args.prefix, args.batch_size, args.batch_mode)
+    manifest_file = process_batches(data_dir, args.prefix, args.batch_size, args.batch_mode)
 
 
 if __name__ == '__main__':

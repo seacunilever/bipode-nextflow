@@ -40,7 +40,7 @@
                 },
                 "batch_mode": {
                     "type": "string",
-                    "description": "Way in which to collect probes before passing for analysis. 'all' will collect all probes in one tar file sent to all analysis processes. 'batch' will just group probe files for analysis in the same batch. ",
+                    "description": "Way in which to collect probes before passing for analysis. 'all' will collect all probes in one tar file sent to all analysis processes. 'batch' will just group probe files for analysis in the same batch. 'all' will limit the number of files being moved around, but at the cost (without a shared file system) of a large tar.gz being repeatedly copied to individual processes. 'batch' will limit the size of files sent to processes, the cost of potentially large numbers of file operations.",
                     "default": "all",
                     "fa_icon": "fas fa-subscript",
                     "enum": ["all", "batch"]
