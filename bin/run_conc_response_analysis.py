@@ -214,7 +214,7 @@ def fit_model(
     if s not in diagnostics:
         fit = model.sample(data=data,
                            chains=40,
-                           parallel_chains=4,  # Use all available cores for a single model fit
+                           parallel_chains=1,  # Use a single core since we're parallelising across input files
                            iter_warmup=500,
                            iter_sampling=250,
                            thin=10,
