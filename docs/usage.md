@@ -141,6 +141,31 @@ The Nextflow `-bg` flag launches Nextflow in the background, detached from your 
 Alternatively, you can use `screen` / `tmux` or similar tool to create a detached session which you can log back into at a later time.
 Some HPC setups also allow you to run nextflow within a cluster job submitted your job scheduler (from where it submits more jobs).
 
+### Batching Controls
+
+The pipeline provides two modes for handling probe data batching through the `--batch-mode` parameter:
+
+- `all` (default): Collects all probes into a single tar file that is sent to all analysis processes. This reduces the number of file operations but requires more disk space when not using a shared file system.
+- `batch`: Groups probe files for analysis in smaller batches. This produces more intermediate files but uses less disk space overall when not using a shared file system.
+
+### Model Pre-compilation
+
+The pipeline offers a pre-compilation option for the Stan model through the `--precompile-model` parameter. This addresses CmdStanPy's behavior of writing compiled models to the same path as the input model.
+
+Recommended settings:
+- Use `--precompile-model` when running on shared file systems (e.g., HPC clusters, Cloud with shared FS like Fusion)
+  - Required: Must have a shared file system accessible to all processes
+  - Benefits:
+    - Single compilation shared across all processes
+    - Prevents race conditions during compilation
+    - Efficient use of shared storage
+  - Note: Will fail without a shared file system due to CmdStanPy limitations
+
+- Do not use `--precompile-model` when running on non-shared systems (e.g., Azure Batch)
+  - Each process compiles its own copy of the model
+  - Works with process-specific local disks
+  - Note: The pipeline will still work on shared file systems without this flag (using `stageInMode=copy`), but this negates the benefits of shared storage by forcing local copies of all inputs
+
 ### Resuming
 
 Add `-resume` when restarting a pipeline. Nextflow will use cached results from any pipeline steps where the inputs are the same, continuing from where it got to previously.
