@@ -155,7 +155,9 @@ Use `batch` unless you have good reason to believe file operations are a limitin
 The pipeline offers a pre-compilation option for the Stan model through the `--precompile-model` parameter. This addresses CmdStanPy's behavior of writing compiled models to the same path as the input model.
 
 Recommended settings:
+
 - Use `--precompile-model` when running on shared file systems (e.g., HPC clusters, Cloud with shared FS like Fusion)
+
   - Required: Must have a shared file system accessible to all processes
   - Benefits:
     - Single compilation shared across all processes
