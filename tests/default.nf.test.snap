@@ -8,13 +8,13 @@
                 "pipeline_info"
             ],
             [
-                "BIFROST_input_Nitrofurantoin_HepG2_results.json:md5,eeb8b1cd43667a732b792319ce737aaa"
+                "BIFROST_input_Nitrofurantoin_HepG2_results.json:md5,cffdb61c127c9dc3d278e93cbb5643b8"
             ]
         ],
         "meta": {
             "nf-test": "0.9.2",
             "nextflow": "24.10.2"
         },
-        "timestamp": "2025-04-28T18:25:42.86614"
+        "timestamp": "2025-05-15T14:52:17.844949"
     }
 }
