@@ -164,7 +164,8 @@ Recommended settings:
 - Do not use `--precompile-model` when running on non-shared systems (e.g., Azure Batch)
   - Each process compiles its own copy of the model
   - Works with process-specific local disks
-  - Note: The pipeline will still work on shared file systems without this flag (using `stageInMode=copy`), but this negates the benefits of shared storage by forcing local copies of all inputs
+
+Note: The pipeline will still work on shared file systems without this flag (using `stageInMode=copy`), but this negates the benefits of shared storage by forcing local copies of all inputs
 
 ### Resuming
 
