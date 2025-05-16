@@ -1,6 +1,5 @@
 process CONC_RESPONSE_ANALYSIS {
     tag "${meta.id}"
-    cpus params.n_cores
 
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
@@ -18,18 +17,26 @@ process CONC_RESPONSE_ANALYSIS {
     def args = task.ext.args ?: ''
     def args2 = task.ext.args2 ?: ''
     def args3 = task.ext.args3 ?: ''
-    def probe_files = probes.collect { "./" + it + ".pkl" }.join(" ")
+    def probe_files = probes.collect { it + ".pkl" }.join(" ")
     def probe_files_extract = probes.collect { "Data/" + it + ".pkl" }.join(" ")
     prefix = task.ext.prefix ?: "${meta.id}"
     """
-    mkdir Data
+    mkdir Data Samples Fits
+
     tar -zxf $all_probe_file -C Data/ $probe_files
 
-    mkdir Samples
-    mkdir Fits
+    # Compile Stan model if .stan file is provided
+    if [[ "$model" == *.stan ]]; then
+        echo "Compiling Stan model..."
+        model_executable="${model.baseName}"
+        compile_stan_model.py "$model"
+    else
+        model_executable="$model"
+    fi
+
     run_conc_response_analysis.py \
         --data-files $probe_files_extract \
-        --model-name $model \
+        --model-executable \$model_executable \
         --n-cores $task.cpus \
         $args
 

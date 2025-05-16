@@ -155,20 +155,6 @@ class BetaLogistic:
         return logpdf
 
 
-def compile_stan_model(path_to_stan_file: Union[str, Path]) -> str:
-    """
-    Compile the Stan model.
-
-    Args:
-        path_to_stan_file: Path to Stan code defining the model
-
-    Returns:
-        Path to compiled executable
-    """
-    model = cmdstanpy.CmdStanModel(stan_file=path_to_stan_file)
-    return model.exe_file
-
-
 def get_inits(data: Dict[str, Any]) -> Dict[str, Any]:
     """
     Calculate initial values for the model parameters.
@@ -192,7 +178,6 @@ def get_inits(data: Dict[str, Any]) -> Dict[str, Any]:
 def fit_model(
     path_to_executable: Union[str, Path],
     data: Dict[str, Any],
-    n_cores: int,
     seed: Optional[int] = None
 ) -> Dict[str, Any]:
     """
@@ -201,7 +186,6 @@ def fit_model(
     Args:
         path_to_executable: Path to compiled Stan model
         data: Data object to be passed to the model
-        n_cores: Number of cores to use for parallel chains
         seed: Optional random seed for reproducibility
 
     Returns:
@@ -211,7 +195,7 @@ def fit_model(
     model = cmdstanpy.CmdStanModel(exe_file=path_to_executable)
     fit = model.sample(data=data,
                        chains=4,
-                       parallel_chains=n_cores,
+                       parallel_chains=1,
                        iter_warmup=500,
                        iter_sampling=250,
                        thin=1,
@@ -219,7 +203,8 @@ def fit_model(
                        save_warmup=False,
                        max_treedepth=15,
                        adapt_delta=0.95,
-                       seed=seed)
+                       seed=seed,
+                       show_console=True)
 
     # Extract diagnostics
     diagnostics = fit.diagnose()
@@ -229,7 +214,7 @@ def fit_model(
     if s not in diagnostics:
         fit = model.sample(data=data,
                            chains=40,
-                           parallel_chains=n_cores,
+                           parallel_chains=1,  # Use a single core since we're parallelising across input files
                            iter_warmup=500,
                            iter_sampling=250,
                            thin=10,
@@ -237,7 +222,8 @@ def fit_model(
                            save_warmup=False,
                            max_treedepth=15,
                            adapt_delta=0.95,
-                           seed=seed)
+                           seed=seed,
+                           show_console=True)
 
         diagnostics = fit.diagnose()
 
@@ -364,7 +350,7 @@ def get_bifrost_covariance(
 
 def run_concentration_response_analysis(
     files_to_process: List[Union[str, Path]],
-    model_name: Union[str, Path],
+    model_executable: Union[str, Path],
     number_of_cores: int,
     fit_dir: Optional[Union[str, Path]] = None,
     seed: Optional[int] = None
@@ -374,7 +360,7 @@ def run_concentration_response_analysis(
 
     Args:
         files_to_process: List of probe .pkl files to process
-        model_name: Path to the Stan model file
+        model_executable: Path to the compiled Stan model executable
         number_of_cores: Number of cores to use
         fit_dir: Optional directory to contain model fits
         seed: Optional random seed for reproducibility
@@ -399,11 +385,8 @@ def run_concentration_response_analysis(
         if not Path(f).is_file():
             raise FileNotFoundError(f"Data file '{f}' does not exist")
 
-    # Compile model
-    path_to_model = compile_stan_model(model_name)
-
     # Create list of arguments to pass to standard_analysis function
-    fitting_args = [(path_to_model,
+    fitting_args = [(str(model_executable),
                      i,
                      path_to_fits / f"{Path(i).stem}.pkl",
                      number_of_cores,
@@ -423,17 +406,17 @@ def standard_analysis(paths: Tuple[Union[str, Path], ...]) -> None:
             - model executable
             - data file
             - fit file
-            - number of cores
+            - number of cores (unused)
             - optional seed for reproducibility
     """
-    path_to_executable, path_to_data, path_to_fit, n_cores, seed = paths
+    path_to_executable, path_to_data, path_to_fit, _, seed = paths
 
     with open(path_to_data, 'rb') as f:
         data = pickle.load(f)
 
     # Generate posterior samples
     with suppress_stdout_stderr():
-        fit_dict = fit_model(path_to_executable, data, n_cores, seed)
+        fit_dict = fit_model(path_to_executable, data, seed)
 
         # Generate model fits
         gen_plotting_data(data,
@@ -562,13 +545,13 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument('--data-files', nargs='+', type=str,
                         help='list of probe .pkl files to process separated by spaces')
-    parser.add_argument('--model-name', type=str, help='model name')
+    parser.add_argument('--model-executable', type=str, help='path to compiled Stan model executable')
     parser.add_argument('--n-cores', type=int, help='number of cores to use in multiprocessing')
     parser.add_argument('--seed', type=int, help='optional random seed for reproducibility')
     args = parser.parse_args()
 
     run_concentration_response_analysis(args.data_files,
-                                        args.model_name,
+                                        args.model_executable,
                                         args.n_cores,
                                         seed=args.seed)
 

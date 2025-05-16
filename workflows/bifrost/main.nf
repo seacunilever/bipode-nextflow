@@ -12,6 +12,7 @@ include { methodsDescriptionText } from '../../subworkflows/local/utils_nfcore_b
 // Include process modules
 include { PREPARE_INPUTS } from '../../modules/local/prepare_inputs/main.nf'
 include { SPLIT_DATA } from '../../modules/local/split_data/main.nf'
+include { COMPILE_STAN_MODEL } from '../../modules/local/compile_stan_model/main.nf'
 include { CONC_RESPONSE_ANALYSIS } from '../../modules/local/conc_response_analysis/main.nf'
 include { COMPRESS_OUTPUT } from '../../modules/local/compress_output/main.nf'
 
@@ -41,27 +42,46 @@ workflow BIFROST {
     // Step 3: Split data for each input file
     SPLIT_DATA(ch_named_prepared_inputs)
 
-    // Step 4: Prepare probes channel for concentration response analysis
-    // - Transpose to group probes by file
-    // - Group into chunks based on number of cores
-    // - Count the number of chunks per file (for later use with groupKey)
-    // - Combine with split data output
-    ch_probes = ch_named_prepared_inputs                                    // [name, json file]
-        .splitJson(path: 'probes')                                          // [name, probe]
-        .groupTuple(size: n_cores.toInteger(), remainder: true, sort: true) // [name, [[batch of probes]]
-        .groupTuple()                                                       // [name, [[batch of probes], [batch of probes], ...]]
-        .map{meta, batches ->
-            [meta, batches.size(), batches, (1..batches.size())]            // [name, n_batches, [batches], [batch_numbers]]
-        }
-        .transpose()                                                        // [name, n_batches, batch, batch_number]
-        .combine(SPLIT_DATA.out.all_probe_files, by: 0)                     // [name, n_batches, batch, batch_number, probe_file]
-        .map{ meta, n_batches, batch, batch_number, probe_file ->
-            [[id: meta.id + "_" + batch_number, name: meta.id, n_batches: n_batches, batch_number: batch_number], batch, probe_file]
-        }
+    // Step 4: Compile Stan model once (if precompile_model is true)
+    if (params.precompile_model) {
+        COMPILE_STAN_MODEL(ch_model)
+        ch_model_for_analysis = COMPILE_STAN_MODEL.out.compiled_model
+    } else {
+        ch_model_for_analysis = ch_model
+    }
 
-    // Step 5: Run concentration response analysis
+    // Step 5: Run concentration response analysis using pre-compiled model
+
+    // SPLIT_DATA can package probes into targ.gz files in different ways. It
+    // produces a manifest to describe which probes are in which tar.gz. To
+    // prepare an input channel for the concentration response analysis, we
+    // just need to parse out the probes from the manifest, and count the
+    // number of batches per file for the later benefit of groupKey.
+
+    ch_probes = SPLIT_DATA.out.probe_files //[ meta, manifest,[probe_files]]
+        .splitCsv(sep: '\t', header: true, elem: 1)
+        .groupTuple() // meta, [tar_file, probes]
+        .map{meta, rows, targzs ->
+            def tar_to_gz = targzs.flatten().collectEntries { [it.name, it] }
+            [
+                meta + [n_batches: rows.size()],
+                rows*.batch,
+                rows*.probes*.split(','),
+                rows*.tar_file.collect { tar_to_gz[it] }
+            ]
+        } // [meta, [batch_nums], [batches], [batch_files]]
+        .transpose() // meta, batch_num, batch, batch_file
+        .map{meta, batch_num, batch, batch_file ->
+            [
+                meta + [id: meta.id + '_' + batch_num, name:meta.id, batch_number: batch_num],
+                batch,
+                batch_file
+            ]
+        } // meta, batch, batch_file
+
+
     CONC_RESPONSE_ANALYSIS(
-        ch_model,
+        ch_model_for_analysis,
         ch_probes
     )
 

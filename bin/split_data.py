@@ -2,10 +2,93 @@
 import argparse
 import pickle
 import os
+import tarfile
 from pathlib import Path
 from typing import Dict, Any, Union, List, Optional
 import numpy as np
 import pandas as pd
+import glob
+
+
+def create_manifest(batch_files: List[str], manifest_path: Path, tar_filename: str, batch_num: int) -> None:
+    """Create a manifest file entry for a batch of files."""
+    # If file doesn't exist, create it with header
+    if not manifest_path.exists():
+        with open(manifest_path, 'w') as f:
+            f.write("batch\ttar_file\tprobes\n")
+
+    # Get all probe names for this batch
+    probe_names = [Path(file).stem for file in batch_files]
+    # Join them with commas
+    probes_str = ",".join(probe_names)
+
+    with open(manifest_path, 'a') as f:
+        f.write(f"{batch_num}\t{tar_filename}\t{probes_str}\n")
+
+
+def create_tar_archive(files: List[str], output_path: Path) -> None:
+    """Create a tar.gz archive from a list of files."""
+    with tarfile.open(output_path, 'w:gz') as tar:
+        for file in files:
+            tar.add(file, arcname=Path(file).name)
+
+
+def process_batches(data_dir: Path, prefix: str, batch_size: int, batch_mode: str) -> Path:
+    """
+    Process the pickle files into batches and create manifests and archives.
+
+    Args:
+        data_dir: Directory containing the pickle files
+        prefix: Prefix for output files
+        batch_size: Number of files per batch
+        batch_mode: Either 'batch' or 'all' to control archiving behavior
+
+    Returns:
+        Path: Path to the created manifest file
+
+    Raises:
+        FileNotFoundError: If no pickle files are found in the data directory
+    """
+    # Get list of all pickle files
+    files = sorted(glob.glob(str(data_dir / "*.pkl")))
+    total_files = len(files)
+
+    if not files:
+        raise FileNotFoundError(f"No pickle files found in {data_dir}")
+
+    # Create single manifest file
+    manifest_path = Path(f"{prefix}.manifest.csv")
+    # Clear the manifest file if it exists
+    manifest_path.unlink(missing_ok=True)
+
+    # Create single tar.gz if batch_mode is 'all'
+    if batch_mode == 'all':
+        tar_filename = f"{prefix}_batch0.tar.gz"
+        create_tar_archive(files, Path(tar_filename))
+
+        # Process files in batches for manifest, even though we're using a single archive
+        batch_num = 1
+        for i in range(0, total_files, batch_size):
+            batch_files = files[i:i + batch_size]
+            create_manifest(batch_files, manifest_path, tar_filename, batch_num)
+            batch_num += 1
+        return manifest_path
+
+    # Process files in batches
+    batch_num = 1
+    for i in range(0, total_files, batch_size):
+        batch_files = files[i:i + batch_size]
+        batch_prefix = f"{prefix}_batch{batch_num}"
+        tar_filename = f"{batch_prefix}.tar.gz"
+
+        # Create individual tar file
+        create_tar_archive(batch_files, Path(tar_filename))
+        # Add entries to manifest
+        create_manifest(batch_files, manifest_path, tar_filename, batch_num)
+
+        batch_num += 1
+
+    return manifest_path
 
 
 def process_data(input_file_path: Union[str, Path], path_to_output: Union[str, Path], testing_mode: bool = False) -> None:
@@ -97,9 +180,18 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument('--input-file', type=str, help='path to input data json')
     parser.add_argument('--analysis-dir', type=str, help='path to analysis directory')
+    parser.add_argument('--batch-size', type=int, default=0, help='number of files per batch')
+    parser.add_argument('--batch-mode', type=str, choices=['batch', 'all'], default='all',
+                      help='batch mode: "batch" for individual archives, "all" for single archive')
+    parser.add_argument('--prefix', type=str, help='prefix for output files')
     args = parser.parse_args()
 
+    # Process the data into pickle files
     process_data(args.input_file, args.analysis_dir)
+
+    # Process the pickle files into batches
+    data_dir = Path(args.analysis_dir) / "Data"
+    manifest_file = process_batches(data_dir, args.prefix, args.batch_size, args.batch_mode)
 
 
 if __name__ == '__main__':

@@ -38,6 +38,13 @@
                     "description": "Path to YAML file containing test substances and cell types to analyze",
                     "fa_icon": "fas fa-file-code"
                 },
+                "batch_mode": {
+                    "type": "string",
+                    "description": "Way in which to collect probes before passing for analysis. 'all' will collect all probes in one tar file sent to all analysis processes. 'batch' will just group probe files for analysis in the same batch. 'all' will limit the number of files being moved around, but at the cost (without a shared file system) of a large tar.gz being repeatedly copied to individual processes. 'batch' will limit the size of files sent to processes, the cost of potentially large numbers of file operations.",
+                    "default": "batch",
+                    "fa_icon": "fas fa-subscript",
+                    "enum": ["all", "batch"]
+                },
                 "outdir": {
                     "type": "string",
                     "format": "directory-path",
@@ -52,6 +59,11 @@
             "fa_icon": "fas fa-cogs",
             "description": "Parameters specific to the Bifrost pipeline",
             "properties": {
+                "seed": {
+                    "type": ["integer", "null"],
+                    "description": "Random seed for reproducible results. If not set, results will not be reproducible between runs.",
+                    "fa_icon": "fas fa-dice"
+                },
                 "model_file": {
                     "type": "string",
                     "description": "Path to the Stan model file (without .stan extension)",
@@ -104,6 +116,12 @@
                     "description": "Number of probes to sample for testing (optional)",
                     "minimum": 0,
                     "fa_icon": "fas fa-vial"
+                },
+                "precompile_model": {
+                    "type": "boolean",
+                    "description": "Whether to pre-compile the Nextflow script before execution",
+                    "help_text": "Set to 'true' on shared file systems to compile the model once and share it across instances. Set to 'false' when no shared file system is available, requiring each instance to compile separately. On shared systems, not enabling this forces 'stageInMode' to prevent simultaneous model compilation.",
+                    "fa_icon": "fas fa-code"
                 }
             }
         },
