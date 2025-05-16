@@ -42,13 +42,19 @@ def process_batches(data_dir: Path, prefix: str, batch_size: int, batch_mode: st
         prefix: Prefix for output files
         batch_size: Number of files per batch
         batch_mode: Either 'batch' or 'all' to control archiving behavior
+
+    Returns:
+        Path: Path to the created manifest file
+
+    Raises:
+        FileNotFoundError: If no pickle files are found in the data directory
     """
     # Get list of all pickle files
     files = sorted(glob.glob(str(data_dir / "*.pkl")))
     total_files = len(files)
 
     if not files:
-        return
+        raise FileNotFoundError(f"No pickle files found in {data_dir}")
 
     # Create single manifest file
     manifest_path = Path(f"{prefix}.manifest.csv")
