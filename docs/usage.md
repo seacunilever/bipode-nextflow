@@ -150,9 +150,9 @@ The pipeline provides two modes for handling probe data batching through the `--
 
 Use `batch` unless you have good reason to believe file operations are a limiting factor in your infrastructure.
 
-### Model Pre-compilation
+### Model Pre-compilation (shared file systems only)
 
-The pipeline offers a pre-compilation option for the Stan model through the `--precompile-model` parameter. This addresses CmdStanPy's behavior of writing compiled models to the same path as the input model.
+For shared file systems, the pipeline offers a pre-compilation option for the Stan model through the `--precompile-model` parameter, allowing the model to be compiled once and used by all fitting processes. This has modest performance gains, but importantly prevents concurrent writes to the compiled model path in shared file systems (see below).
 
 Recommended settings:
 
