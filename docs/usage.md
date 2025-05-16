@@ -145,8 +145,8 @@ Some HPC setups also allow you to run nextflow within a cluster job submitted yo
 
 The pipeline provides two modes for handling probe data batching through the `--batch-mode` parameter:
 
+- `batch` (default): Groups probe files for analysis in smaller batches. This produces more intermediate files but uses less disk space overall when not using a shared file system.
 - `all` (default): Collects all probes into a single tar file that is sent to all analysis processes. This reduces the number of file operations but requires more disk space when not using a shared file system.
-- `batch`: Groups probe files for analysis in smaller batches. This produces more intermediate files but uses less disk space overall when not using a shared file system.
 
 Use `batch` unless you have good reason to believe file operations are a limiting factor in your infrastructure.
 
@@ -156,7 +156,7 @@ The pipeline offers a pre-compilation option for the Stan model through the `--p
 
 Recommended settings:
 
-- Use `--precompile-model` when running on shared file systems (e.g., HPC clusters, Cloud with shared FS like Fusion)
+- Use `--precompile-model` when running on shared file systems (e.g., HPC clusters, Cloud with shared filesystem like Fusion)
 
   - Required: Must have a shared file system accessible to all processes
   - Benefits:
@@ -165,7 +165,7 @@ Recommended settings:
     - Efficient use of shared storage
   - Note: Will fail without a shared file system due to CmdStanPy limitations
 
-- Do not use `--precompile-model` when running on non-shared systems (e.g., Azure Batch)
+- Do not use `--precompile-model` when running on non-shared systems (e.g., cloud executors)
   - Each process compiles its own copy of the model
   - Works with process-specific local disks
 

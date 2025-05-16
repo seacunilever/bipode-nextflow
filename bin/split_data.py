@@ -33,7 +33,7 @@ def create_tar_archive(files: List[str], output_path: Path) -> None:
             tar.add(file, arcname=Path(file).name)
 
 
-def process_batches(data_dir: Path, prefix: str, batch_size: int, batch_mode: str) -> None:
+def process_batches(data_dir: Path, prefix: str, batch_size: int, batch_mode: str) -> Path:
     """
     Process the pickle files into batches and create manifests and archives.
 
@@ -66,7 +66,7 @@ def process_batches(data_dir: Path, prefix: str, batch_size: int, batch_mode: st
             batch_files = files[i:i + batch_size]
             create_manifest(batch_files, manifest_path, tar_filename, batch_num)
             batch_num += 1
-        return
+        return manifest_path
 
     # Process files in batches
     batch_num = 1
