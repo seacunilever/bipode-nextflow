@@ -186,5 +186,20 @@
         {
             "$ref": "#/$defs/generic_options"
         }
-    ]
+    ],
+    "properties": {
+        "timepoint": {
+            "type": "string",
+            "default": "24 hours",
+            "description": "Exposure duration within experiment",
+            "fa_icon": "far fa-clock"
+        },
+        "conc_units": {
+            "type": "string",
+            "default": "uM",
+            "description": "Concentration units for test substance",
+            "enum": ["uM", "ugml-1", "mgml-1"],
+            "fa_icon": "fas fa-flask"
+        }
+    }
 }

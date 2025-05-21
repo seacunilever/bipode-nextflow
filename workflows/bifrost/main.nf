@@ -15,6 +15,7 @@ include { SPLIT_DATA } from '../../modules/local/split_data/main.nf'
 include { COMPILE_STAN_MODEL } from '../../modules/local/compile_stan_model/main.nf'
 include { CONC_RESPONSE_ANALYSIS } from '../../modules/local/conc_response_analysis/main.nf'
 include { COMPRESS_OUTPUT } from '../../modules/local/compress_output/main.nf'
+include { CREATE_REPORTS } from '../../modules/local/create_reports/main.nf'
 
 workflow BIFROST {
     take:
@@ -37,7 +38,17 @@ workflow BIFROST {
     // Step 2: Process prepared inputs and probes
     ch_named_prepared_inputs = PREPARE_INPUTS.out.prepared_inputs
         .flatten()
-        .map{ tuple([id: it.simpleName], it) }
+        .map{
+            def json = new groovy.json.JsonSlurper().parseText(it.text)
+            [
+                [
+                    id: it.simpleName,
+                    test_substance: json.test_substance,
+                    cell_type: json.cell_type
+                ],
+                it
+            ]
+        }
 
     // Step 3: Split data for each input file
     SPLIT_DATA(ch_named_prepared_inputs)
@@ -89,10 +100,23 @@ workflow BIFROST {
 
     ch_results_for_compression = CONC_RESPONSE_ANALYSIS.out.compressed_fits_files
             .map { meta, fits ->
-                tuple(groupKey([id: meta.name], meta.n_batches), fits) // Use groupKey to release results as soon as all batches for a file have been processed
+                tuple(groupKey(meta.findAll { k,v -> k != 'batch_number' } + [id: meta.name], meta.n_batches), fits) // Use groupKey to release results as soon as all batches for a file have been processed
             }
             .groupTuple()
 
     COMPRESS_OUTPUT(ch_results_for_compression)
+
+    // Step 7: Create reports
+
+    ch_compressed_output = COMPRESS_OUTPUT.out.map{meta, fits ->
+        [
+            meta,
+            fits,
+            meta.cell_type,
+            meta.test_substance
+        ]
+    }
+
+    CREATE_REPORTS(ch_compressed_output)
 
 }
