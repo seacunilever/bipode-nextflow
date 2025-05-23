@@ -1,20 +1,22 @@
 {
     "Params: default": {
         "content": [
-            5,
+            7,
             [
                 "compressed_results",
                 "compressed_results/BIFROST_input_Nitrofurantoin_HepG2_results.json",
-                "pipeline_info"
+                "pipeline_info",
+                "reports"
             ],
             [
-                "BIFROST_input_Nitrofurantoin_HepG2_results.json:md5,fed9372964849e8fa5dc21045b7d02ce"
+                "BIFROST_input_Nitrofurantoin_HepG2_results.json:md5,51684d86cf7516ae6fb70e5915f0391b",
+                "BIFROST_input_Nitrofurantoin_HepG2.html:md5,793e3da80955785c9589dd8781c3955b"
             ]
         ],
         "meta": {
             "nf-test": "0.9.2",
             "nextflow": "24.10.2"
         },
-        "timestamp": "2025-05-15T14:52:17.844949"
+        "timestamp": "2025-05-23T16:53:55.423236"
     }
 }

@@ -611,11 +611,12 @@ def create_multiqc_report(summary_file, test_substance, cell_type, timepoint, co
 
     # Load and process data
     logger.info(f"Loading summary data from {summary_file}")
+    compression = 'zip' if summary_file.endswith('.zip') else None
     df = pd.read_json(
         summary_file,
         typ='series',
         orient='index',
-        compression='zip',
+        compression=compression,
         dtype_backend='numpy_nullable'
     )
 
