@@ -196,13 +196,13 @@
                 },
                 "report_interactive_plots": {
                     "type": "boolean",
-                    "default": false,
+                    "default": true,
                     "description": "Force interactive plots (may be faster for large datasets)",
                     "fa_icon": "fas fa-chart-line"
                 },
                 "report_n_fold_change_probes": {
                     "type": "integer",
-                    "default": 5,
+                    "default": 2,
                     "description": "Number of most up/down regulated probes to show",
                     "minimum": 1,
                     "fa_icon": "fas fa-sort-amount-down"
