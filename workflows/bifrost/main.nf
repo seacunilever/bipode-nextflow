@@ -15,7 +15,6 @@ include { SPLIT_DATA } from '../../modules/local/split_data/main.nf'
 include { COMPILE_STAN_MODEL } from '../../modules/local/compile_stan_model/main.nf'
 include { CONC_RESPONSE_ANALYSIS } from '../../modules/local/conc_response_analysis/main.nf'
 include { COMPRESS_OUTPUT } from '../../modules/local/compress_output/main.nf'
-include { CREATE_REPORTS } from '../../modules/local/create_reports/main.nf'
 include { CREATE_MULTIQC_REPORT } from '../../modules/local/create_multiqc_report/main.nf'
 
 workflow BIFROST {
