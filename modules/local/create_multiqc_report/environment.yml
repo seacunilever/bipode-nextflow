@@ -1,0 +1,9 @@
+name: bifrost-multiqc
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - python>=3.8
+  - pandas
+  - numpy
+  - multiqc>=1.14
