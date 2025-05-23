@@ -37,4 +37,50 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 
 </details>
 
+### MultiQC Report
+
+<details markdown="1">
+<summary>Output files</summary>
+
+- `reports/`
+  - `multiqc_report.html` - Interactive HTML report containing:
+    - **General Overview**
+      - Introduction to the analysis
+      - Summary statistics including global PoD, number of hits, and key metrics
+      - PoD vs Fold Change scatter plot showing the relationship between sensitivity and response magnitude
+    - **Probes with Non-zero Global PoD Weight**
+      - Concentration-response plots for probes contributing to the global PoD calculation
+      - Summary statistics table for these probes
+    - **Probes with Largest Fold Changes**
+      - Separate sections for most upregulated and downregulated probes
+      - Concentration-response plots and summary statistics for each category
+    - **Lowest Mean PoDs (CDS > 0.5)**
+      - Concentration-response plots for the most sensitive probes
+      - Summary statistics for probes with strong concentration-dependent responses
+    - **Probe-level PoD Statistics**
+      - Detailed statistics table for probes with CDS > 0.5
+      - Includes PoD distribution percentiles and other metrics
+    - **Diagnostic Summary**
+      - Model convergence checks and quality metrics
+      - Biological relevance indicators
+      - Regularization recommendations
+
+The report is highly interactive, allowing you to:
+- Sort tables by clicking column headers
+- Hover over data points for detailed information
+- Zoom and pan in plots
+- Download plot data
+- Filter and search through results
+
+The report can be customized using various parameters:
+- `--report_timepoint` - Exposure duration (default: "24 hours")
+- `--report_conc_units` - Concentration units (default: "uM")
+- `--report_interactive_plots` - Enable interactive plot mode
+- `--report_n_fold_change_probes` - Number of most up/down regulated probes to show
+- `--report_cds_threshold` - CDS threshold for filtering probes
+- `--report_n_lowest_means` - Number of lowest mean PoD probes to show
+- And more (see usage documentation for full list)
+
+</details>
+
 [Nextflow](https://www.nextflow.io/docs/latest/tracing.html) provides excellent functionality for generating various reports relevant to the running and execution of the pipeline. This will allow you to troubleshoot errors with the running of the pipeline, and also provide you with other information such as launch commands, run times and resource usage.
