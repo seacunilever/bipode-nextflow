@@ -1,9 +1,9 @@
 name: bifrost-multiqc
 channels:
-- conda-forge
-- bioconda
+  - conda-forge
+  - bioconda
 dependencies:
-- bioconda::multiqc=1.28
-- conda-forge::numpy=2.2.6
-- conda-forge::pandas=2.2.3
-- conda-forge::python=3.13.3
+  - bioconda::multiqc=1.28
+  - conda-forge::numpy=2.2.6
+  - conda-forge::pandas=2.2.3
+  - conda-forge::python=3.13.3

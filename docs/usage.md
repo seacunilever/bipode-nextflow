@@ -185,36 +185,36 @@ The pipeline generates an interactive MultiQC report that can be customized usin
 
 ### Basic Report Settings
 
-| Parameter | Description | Default |
-|-----------|-------------|---------|
-| `--report_timepoint` | Exposure duration in the experiment | "24 hours" |
-| `--report_conc_units` | Units for concentration values | "uM" |
-| `--report_interactive_plots` | Enable interactive plot mode (may be faster for large datasets) | false |
+| Parameter                    | Description                                                     | Default    |
+| ---------------------------- | --------------------------------------------------------------- | ---------- |
+| `--report_timepoint`         | Exposure duration in the experiment                             | "24 hours" |
+| `--report_conc_units`        | Units for concentration values                                  | "uM"       |
+| `--report_interactive_plots` | Enable interactive plot mode (may be faster for large datasets) | false      |
 
 ### Probe Selection and Filtering
 
-| Parameter | Description | Default |
-|-----------|-------------|---------|
-| `--report_cds_threshold` | Minimum Concentration-Dependency Score (CDS) for filtering probes | 0.5 |
-| `--report_n_fold_change_probes` | Number of most up/down regulated probes to show | 5 |
-| `--report_n_lowest_means` | Number of lowest mean PoD probes to show | 10 |
-| `--report_n_pod_stats` | Number of probes to include in PoD statistics table | 100 |
+| Parameter                       | Description                                                       | Default |
+| ------------------------------- | ----------------------------------------------------------------- | ------- |
+| `--report_cds_threshold`        | Minimum Concentration-Dependency Score (CDS) for filtering probes | 0.5     |
+| `--report_n_fold_change_probes` | Number of most up/down regulated probes to show                   | 5       |
+| `--report_n_lowest_means`       | Number of lowest mean PoD probes to show                          | 10      |
+| `--report_n_pod_stats`          | Number of probes to include in PoD statistics table               | 100     |
 
 ### Plot Configuration
 
-| Parameter | Description | Default |
-|-----------|-------------|---------|
-| `--report_plot_height` | Height of concentration-response plots in pixels | 400 |
-| `--report_pod_vs_fc_height` | Height of PoD vs Fold Change plot in pixels | 600 |
-| `--report_control_line_tolerance` | Tolerance for filtering similar control lines | 0.02 |
-| `--report_min_control_lines` | Minimum number of control lines to show | 2 |
+| Parameter                         | Description                                      | Default |
+| --------------------------------- | ------------------------------------------------ | ------- |
+| `--report_plot_height`            | Height of concentration-response plots in pixels | 400     |
+| `--report_pod_vs_fc_height`       | Height of PoD vs Fold Change plot in pixels      | 600     |
+| `--report_control_line_tolerance` | Tolerance for filtering similar control lines    | 0.02    |
+| `--report_min_control_lines`      | Minimum number of control lines to show          | 2       |
 
 ### Performance Settings
 
-| Parameter | Description | Default |
-|-----------|-------------|---------|
-| `--report_timeout` | Timeout in seconds for report generation | 300 |
-| `--report_plots_force_flat_numseries` | Maximum number of series for flat plots | 10000 |
+| Parameter                             | Description                              | Default |
+| ------------------------------------- | ---------------------------------------- | ------- |
+| `--report_timeout`                    | Timeout in seconds for report generation | 300     |
+| `--report_plots_force_flat_numseries` | Maximum number of series for flat plots  | 10000   |
 
 ### Example Usage
 

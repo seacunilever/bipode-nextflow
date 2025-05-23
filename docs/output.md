@@ -66,6 +66,7 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
       - Regularization recommendations
 
 The report is highly interactive, allowing you to:
+
 - Sort tables by clicking column headers
 - Hover over data points for detailed information
 - Zoom and pan in plots
@@ -73,6 +74,7 @@ The report is highly interactive, allowing you to:
 - Filter and search through results
 
 The report can be customized using various parameters:
+
 - `--report_timepoint` - Exposure duration (default: "24 hours")
 - `--report_conc_units` - Concentration units (default: "uM")
 - `--report_interactive_plots` - Enable interactive plot mode
