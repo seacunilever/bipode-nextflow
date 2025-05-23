@@ -988,22 +988,6 @@ def create_multiqc_report(summary_file, test_substance, cell_type, timepoint, co
         '''
     )
 
-    # Add section for most downregulated probes
-    fc_module.add_section(
-        name='Most Downregulated Probes',
-        anchor='bifrost_fc_down',
-        description=f'''
-        <p>Concentration-response plots for the {n_fold_change_probes} probes with the largest negative fold changes (decreased expression).</p>
-
-        <p><strong>Selection Details:</strong></p>
-        <ul>
-            <li>These probes show the strongest decrease in expression across the concentration range.</li>
-            <li>Selected based on the maximum negative log2 fold change relative to control.</li>
-            <li>Sorted by fold change magnitude in ascending order (most negative first).</li>
-        </ul>
-        '''
-    )
-
     # Add plots for most upregulated probes
     if len(stats['l2fc']) > 0:
         # Sort by absolute fold change magnitude
@@ -1053,6 +1037,22 @@ def create_multiqc_report(summary_file, test_substance, cell_type, timepoint, co
                 description=f'CDS = {df[probe]["cds"]:.3f}, Mean PoD = {10**np.mean(df[probe]["pod"]):.2g} {conc_units}, Log2 Fold Change = {stats["l2fc"][stats["probe"] == probe][0]:.2f}'
             )
         logger.info(f"Completed all concentration-response plots for most upregulated probes in {time.time() - start_time:.2f} seconds")
+
+    # Add section for most downregulated probes
+    fc_module.add_section(
+        name='Most Downregulated Probes',
+        anchor='bifrost_fc_down',
+        description=f'''
+        <p>Concentration-response plots for the {n_fold_change_probes} probes with the largest negative fold changes (decreased expression).</p>
+
+        <p><strong>Selection Details:</strong></p>
+        <ul>
+            <li>These probes show the strongest decrease in expression across the concentration range.</li>
+            <li>Selected based on the maximum negative log2 fold change relative to control.</li>
+            <li>Sorted by fold change magnitude in ascending order (most negative first).</li>
+        </ul>
+        '''
+    )
 
     # Add plots for most downregulated probes
     if len(stats['l2fc']) > 0:
