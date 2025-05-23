@@ -6,7 +6,8 @@
                 "compressed_results",
                 "compressed_results/BIFROST_input_Nitrofurantoin_HepG2_results.json",
                 "pipeline_info",
-                "reports"
+                "reports",
+                "reports/BIFROST_input_Nitrofurantoin_HepG2.html"
             ],
             [
                 "BIFROST_input_Nitrofurantoin_HepG2_results.json:md5,33ca0e3e4cd3c6510598413e5eedcb05"
