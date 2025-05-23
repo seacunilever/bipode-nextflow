@@ -118,8 +118,6 @@ workflow BIFROST {
         ]
     }
 
-    //CREATE_REPORTS(ch_compressed_output)
-
     CREATE_MULTIQC_REPORT(ch_compressed_output)
 
 }
