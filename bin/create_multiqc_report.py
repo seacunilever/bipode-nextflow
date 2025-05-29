@@ -713,17 +713,17 @@ def create_multiqc_report(summary_file, test_substance, cell_type, timepoint, co
             'y': float(y),  # Convert numpy float to Python float
             'text': str(text),  # Convert numpy string to Python string
             'name': str(text)  # Add name for hover text
-        } for x, y, text in zip(10**stats['pod'], stats['l2fc'], stats['probe'])]
+        } for x, y, text in zip(10**stats_filtered['pod'], stats_filtered['l2fc'], stats_filtered['probe'])]
     }
 
     # Calculate y-axis limits
-    if len(stats['l2fc']) > 0:
-        ymin, ymax = min(stats['l2fc'].min(), -2) - 1, max(stats['l2fc'].max(), 2) + 1
+    if len(stats_filtered['l2fc']) > 0:
+        ymin, ymax = min(stats_filtered['l2fc'].min(), -2) - 1, max(stats_filtered['l2fc'].max(), 2) + 1
     else:
         ymin, ymax = -2, 2
 
     # Calculate x-axis maximum
-    xmax = 10**np.array(stats['conc']).max() * 2  # Double the max concentration for padding
+    xmax = 10**np.array(stats_filtered['conc']).max() * 2  # Double the max concentration for padding
 
     # Create scatter plot using MultiQC's scatter plot type
     pod_vs_fc_plot = scatter.plot(
@@ -762,7 +762,7 @@ def create_multiqc_report(summary_file, test_substance, cell_type, timepoint, co
                     'width': 1,
                     'dash': 'dash'
                 }
-                for conc in 10**np.array(stats['conc'])
+                for conc in 10**np.array(stats_filtered['conc'])
             ],
             'y_lines': [  # Add horizontal line at y=0
                 {
