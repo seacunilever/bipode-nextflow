@@ -678,14 +678,10 @@ class BifrostMultiQCReport:
         # Configure MultiQC for interactive plots if requested
         if self.interactive_plots:
             os.environ["MULTIQC_PLOTS_FORCE_INTERACTIVE"] = "true"
-            os.environ["MULTIQC_PLOTS_FLAT_NUMSERIES"] = str(self.plots_force_flat_numseries)
 
         # Initialize MultiQC
         multiqc.reset()
         multiqc.config.plots_force_flat = not self.interactive_plots
-        multiqc.config.plots_flat_numseries = (
-            self.plots_force_flat_numseries if self.interactive_plots else 1000
-        )
         multiqc.config.skip_generalstats = True
         multiqc.config.skip_plots = False
         multiqc.config.skip_cleanup = True
@@ -693,7 +689,6 @@ class BifrostMultiQCReport:
         # Verify interactive plots configuration after initialization
         if self.interactive_plots:
             multiqc.config.plots_force_interactive = True
-            multiqc.config.plots_flat_numseries = self.plots_force_flat_numseries
 
         # Create summary table
         logger.info("Creating summary table...")
@@ -1657,18 +1652,6 @@ def parse_args():
         help="Number of probes to include in PoD statistics table (default: 100)",
     )
     parser.add_argument(
-        "--control-line-tolerance",
-        type=float,
-        default=0.02,
-        help="Tolerance for filtering similar control lines (default: 0.02)",
-    )
-    parser.add_argument(
-        "--min-control-lines",
-        type=int,
-        default=2,
-        help="Minimum number of control lines to show (default: 2)",
-    )
-    parser.add_argument(
         "--plot-height",
         type=int,
         default=400,
@@ -1679,12 +1662,6 @@ def parse_args():
         type=int,
         default=600,
         help="Height of PoD vs Fold Change plot in pixels (default: 600)",
-    )
-    parser.add_argument(
-        "--plots-force-flat-numseries",
-        type=int,
-        default=10000,
-        help="Maximum number of series for flat plots (default: 10000)",
     )
     parser.add_argument(
         "--no-cds-threshold",
@@ -1710,11 +1687,8 @@ def main():
         cds_threshold=args.cds_threshold,
         n_lowest_means=args.n_lowest_means,
         n_pod_stats=args.n_pod_stats,
-        control_line_tolerance=args.control_line_tolerance,
-        min_control_lines=args.min_control_lines,
         plot_height=args.plot_height,
         pod_vs_fc_height=args.pod_vs_fc_height,
-        plots_force_flat_numseries=args.plots_force_flat_numseries,
         no_cds_threshold=args.no_cds_threshold,
     )
     report.create_report()

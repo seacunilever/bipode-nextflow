@@ -229,21 +229,6 @@
                     "minimum": 1,
                     "fa_icon": "fas fa-table"
                 },
-                "report_control_line_tolerance": {
-                    "type": "number",
-                    "default": 0.02,
-                    "description": "Tolerance for filtering similar control lines",
-                    "minimum": 0,
-                    "maximum": 1,
-                    "fa_icon": "fas fa-sliders-h"
-                },
-                "report_min_control_lines": {
-                    "type": "integer",
-                    "default": 2,
-                    "description": "Minimum number of control lines to show",
-                    "minimum": 1,
-                    "fa_icon": "fas fa-grip-lines"
-                },
                 "report_plot_height": {
                     "type": "integer",
                     "default": 400,
@@ -258,19 +243,11 @@
                     "minimum": 100,
                     "fa_icon": "fas fa-arrows-alt-v"
                 },
-                "report_timeout": {
-                    "type": "integer",
-                    "default": 300,
-                    "description": "Timeout in seconds for report generation",
-                    "minimum": 60,
-                    "fa_icon": "fas fa-hourglass-half"
-                },
-                "report_plots_force_flat_numseries": {
-                    "type": "integer",
-                    "default": 10000,
-                    "description": "Maximum number of series for flat plots",
-                    "minimum": 1000,
-                    "fa_icon": "fas fa-chart-bar"
+
+                "report_no_cds_threshold": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Do not filter probes by CDS threshold in summary tables and lowest mean PoDs section"
                 }
             }
         }
