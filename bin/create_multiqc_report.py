@@ -1651,29 +1651,25 @@ def main():
     """Main entry point for report generation script."""
     args = parse_args()
 
-    try:
-        create_multiqc_report(
-            args.summary_file,
-            args.test_substance,
-            args.cell_type,
-            args.timepoint,
-            args.conc_units,
-            args.output_name,
-            args.interactive_plots,
-            args.n_fold_change_probes,
-            args.cds_threshold,
-            args.n_lowest_means,
-            args.n_pod_stats,
-            args.control_line_tolerance,
-            args.min_control_lines,
-            args.plot_height,
-            args.pod_vs_fc_height,
-            args.plots_force_flat_numseries,
-            args.no_cds_threshold
-        )
-    except Exception as e:
-        logger.error(f"Report generation failed: {e}")
-        raise
+    create_multiqc_report(
+        args.summary_file,
+        args.test_substance,
+        args.cell_type,
+        args.timepoint,
+        args.conc_units,
+        args.output_name,
+        args.interactive_plots,
+        args.n_fold_change_probes,
+        args.cds_threshold,
+        args.n_lowest_means,
+        args.n_pod_stats,
+        args.control_line_tolerance,
+        args.min_control_lines,
+        args.plot_height,
+        args.pod_vs_fc_height,
+        args.plots_force_flat_numseries,
+        args.no_cds_threshold
+    )
 
 if __name__ == '__main__':
     main()
