@@ -280,6 +280,40 @@ def filter_similar_control_lines(control_y: np.ndarray, tolerance: float = 0.02,
 
     return np.array(filtered)
 
+def fit_pod_histogram(pod_samples: np.ndarray, n_samp: int) -> Tuple[Optional[np.ndarray], Optional[np.ndarray]]:
+    """Creates histogram approximation of PoD distribution.
+
+    Args:
+        pod_samples: Array of samples from the PoD distribution.
+        n_samp: Maximum number of possible samples.
+
+    Returns:
+        Tuple containing:
+            - weights: Array of histogram weights (or None if no valid samples)
+            - bin_edges: Array of histogram bin edges (or None if no valid samples)
+
+    Note:
+        If pod_samples contains infinite values, n_samp is set to the length of pod_samples.
+    """
+    if np.isinf(pod_samples).any():
+        n_samp = len(pod_samples)
+    pod_samples = pod_samples[~np.isinf(pod_samples)]
+    n_pod_samples = len(pod_samples)
+
+    if n_pod_samples == 0:
+        return None, None
+
+    # Use fewer bins for better performance
+    n_bins = min(int(np.sqrt(n_pod_samples)), 50)  # Cap at 50 bins
+    prob_response = n_pod_samples / n_samp
+    counts, bin_edges = np.histogram(pod_samples, bins=n_bins)
+    bin_size = bin_edges[1:] - bin_edges[:-1]
+    bin_weights = counts * bin_size
+    total_weight = np.sum(bin_weights)
+    weights = counts / total_weight * prob_response
+
+    return weights, bin_edges
+
 class ProbeData:
     """Helper class to manage probe data and calculations."""
     def __init__(self, df: pd.Series, probe: str, conc_units: str):
@@ -287,51 +321,57 @@ class ProbeData:
         self.probe = probe
         self.conc_units = conc_units
         self._cache = {}
+        # Pre-calculate commonly used values
+        self._cache['cds'] = float(df[probe]['cds'])
+        if self._cache['cds'] > 0:
+            self._cache['mean_pod'] = np.mean(df[probe]['pod'])
+            self._cache['pod_percentiles'] = self._calculate_pod_percentiles()
+
+    def _calculate_pod_percentiles(self) -> Optional[Tuple[np.ndarray, List[int], List[float], List[str]]]:
+        """Calculate PoD percentiles and related data if CDS > 0."""
+        if self._cache['cds'] <= 0:
+            return None
+        percentiles = [1, 5, 10, 25, 75, 90, 95, 99]
+        pod_percentiles = np.percentile(self.df[self.probe]['pod'], percentiles)
+        pod_widths = [1, 1.5, 2, 2.5, 2.5, 2, 1.5, 1]
+        pod_percentile_labels = [f'PoD {p}th percentile' for p in percentiles]
+        return (pod_percentiles, percentiles, pod_widths, pod_percentile_labels)
 
     @property
     def cds(self) -> float:
         """Get CDS value for the probe."""
-        return float(self.df[self.probe]['cds'])
+        return self._cache['cds']
 
     @property
     def mean_pod(self) -> Optional[float]:
         """Calculate mean PoD if CDS > 0."""
-        if self.cds <= 0:
-            return None
-        if 'mean_pod' not in self._cache:
-            self._cache['mean_pod'] = np.mean(self.df[self.probe]['pod'])
-        return self._cache['mean_pod']
+        return self._cache.get('mean_pod')
 
     @property
     def pod_percentiles(self) -> Optional[Tuple[np.ndarray, List[int], List[float], List[str]]]:
         """Calculate PoD percentiles and related data if CDS > 0."""
-        if self.cds <= 0:
-            return None
-        if 'pod_percentiles' not in self._cache:
-            percentiles = [1, 5, 10, 25, 75, 90, 95, 99]
-            pod_percentiles = np.percentile(self.df[self.probe]['pod'], percentiles)
-            pod_widths = [1, 1.5, 2, 2.5, 2.5, 2, 1.5, 1]
-            pod_percentile_labels = [f'PoD {p}th percentile' for p in percentiles]
-            self._cache['pod_percentiles'] = (pod_percentiles, percentiles, pod_widths, pod_percentile_labels)
-        return self._cache['pod_percentiles']
+        return self._cache.get('pod_percentiles')
 
     def get_response_data(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         """Get response data for plotting."""
         if 'response_data' not in self._cache:
-            conc = np.array(self.df['conc'])
+            # Pre-calculate arrays to avoid repeated calculations
+            conc = 10**np.array(self.df['conc'])  # Convert log10 concentrations to actual values
             conc_index = np.array(self.df['conc_index'])
             count = np.array(self.df[self.probe]['count'])
             total_count = np.array(self.df['total_count'])
             median_total_count = np.median(total_count)
 
+            # Use boolean masks for faster indexing
             treatment_mask = conc_index > 0
             control_mask = conc_index == 0
 
+            # Calculate all values at once
             treatment_x = conc[conc_index[treatment_mask] - 1]
             treatment_y = (count[treatment_mask] / total_count[treatment_mask]) * median_total_count
             control_y = (count[control_mask] / total_count[control_mask]) * median_total_count
-            control_y = filter_similar_control_lines(control_y, tolerance=0.02, min_lines=2)
-            response_x = np.array(self.df[self.probe]['x'])
+            control_y = filter_similar_control_lines(control_y, tolerance=1e-10, min_lines=1000)  # Effectively disable filtering
+            response_x = 10**np.array(self.df[self.probe]['x'])  # Convert log10 x values to actual values
             response = np.array(self.df[self.probe]['response'])
 
             self._cache['response_data'] = (treatment_x, treatment_y, control_y, response_x, response)
@@ -399,129 +439,244 @@ def create_table_plot(data: Dict[str, Dict[str, str]], headers: Dict[str, Dict[s
 
     return table.plot(data=data, headers=headers, pconfig=pconfig)
 
-def create_probe_plot(df: pd.Series, probe: str, conc_units: str) -> linegraph.plot:
-    """Creates a concentration-response plot for a specific probe."""
+def fit_pod_histogram(pod_samples: np.ndarray, n_samp: int) -> Tuple[Optional[np.ndarray], Optional[np.ndarray]]:
+    """Creates histogram approximation of PoD distribution.
+
+    Args:
+        pod_samples: Array of samples from the PoD distribution.
+        n_samp: Maximum number of possible samples.
+
+    Returns:
+        Tuple containing:
+            - weights: Array of histogram weights (or None if no valid samples)
+            - bin_edges: Array of histogram bin edges (or None if no valid samples)
+
+    Note:
+        If pod_samples contains infinite values, n_samp is set to the length of pod_samples.
+    """
+    if np.isinf(pod_samples).any():
+        n_samp = len(pod_samples)
+    pod_samples = pod_samples[~np.isinf(pod_samples)]
+    n_pod_samples = len(pod_samples)
+
+    if n_pod_samples == 0:
+        return None, None
+
+    prob_response = n_pod_samples / n_samp
+    counts, bin_edges = np.histogram(pod_samples, bins=int(np.sqrt(n_pod_samples)))
+    bin_size = bin_edges[1:] - bin_edges[:-1]
+    bin_weights = counts * bin_size
+    total_weight = np.sum(bin_weights)
+    weights = counts / total_weight * prob_response
+
+    return weights, bin_edges
+
+def create_probe_plot(df: pd.Series, probe: str, conc_units: str) -> str:
+    """Creates a concentration-response plot for a specific probe using Plotly."""
     logger.info(f"Creating concentration-response plot for probe {probe}")
     start_time = time.time()
 
-    # Use ProbeData helper class
     probe_data = ProbeData(df, probe, conc_units)
     treatment_x, treatment_y, control_y, response_x, response = probe_data.get_response_data()
 
-    # Calculate ymax
     ymax = float(max(np.max(treatment_y), np.max(control_y), np.max(response[2])) * 1.1)
 
-    # Create plot data
-    plot_data = {}
-    extra_series = []
+    fig = go.Figure()
 
-    # Add control lines
-    extra_series.extend([
-        {
-            'name': 'Solvent control' if i == 0 else None,
-            'pairs': [(float(10**(df['conc'][0] - 1)), float(y)), (float(10**(df['conc'][-1] + 1)), float(y))],
-            'color': '#CCCCCC',
-            'width': 1,
-            'dash': 'dash',
-            'showlegend': True if i == 0 else False
-        }
-        for i, y in enumerate(control_y)
-    ])
+    if df[probe]['cds'] > 0:
+        mean_pod = probe_data.mean_pod
+        weights, bin_edges = fit_pod_histogram(np.array(df[probe]['pod']), df['n_samp'])
+        if weights is not None and bin_edges is not None:
+            bin_edges = 10**bin_edges
+            weights = weights / np.max(weights) * 0.5 * df[probe]['cds']
 
-    # Add PoD distribution lines if available
-    pod_data = probe_data.pod_percentiles
-    if pod_data is not None:
-        pod_percentiles, _, pod_widths, pod_percentile_labels = pod_data
-        extra_series.extend([
-            {
-                'name': pod_percentile_labels[i],
-                'pairs': [(float(10**p), 0), (float(10**p), ymax)],
-                'color': '#B19CD9',
-                'width': pod_widths[i],
-                'dash': 'solid',
-                'showlegend': False
+            shapes = []
+            for i, weight in enumerate(weights):
+                shapes.append(dict(
+                    type='rect',
+                    line=dict(color='rgba(102, 51, 153, 0)'),
+                    fillcolor=f'rgba(102, 51, 153, {weight})',
+                    layer='below',
+                    x0=bin_edges[i],
+                    x1=bin_edges[i + 1],
+                    xref='x',
+                    y0=0,
+                    y1=1,
+                    yref='paper'
+                ))
+            fig.update_layout(shapes=shapes)
+
+    for i, y in enumerate(control_y):
+        fig.add_hline(
+            y=y,
+            line=dict(
+                color='#CCCCCC',
+                width=0.6,
+                dash='dash'
+            ),
+            name='Solvent control' if i == 0 else None,
+            showlegend=True if i == 0 else False,
+            layer='below'
+        )
+
+    if df[probe]['cds'] > 0:
+        fig.add_vline(
+            x=float(10**mean_pod),
+            line=dict(
+                color='#663399',
+                width=1.5,
+                dash='solid'
+            ),
+            name='Mean PoD | Response',
+            showlegend=True
+        )
+
+    fig.add_trace(go.Scatter(
+        x=response_x,
+        y=response[0],
+        mode='lines',
+        line=dict(
+            color='#FF8080',
+            width=1.5,
+            dash='dash'
+        ),
+        name='90% credible interval',
+        showlegend=True
+    ))
+
+    fig.add_trace(go.Scatter(
+        x=response_x,
+        y=response[2],
+        mode='lines',
+        line=dict(
+            color='#FF8080',
+            width=1.5,
+            dash='dash'
+        ),
+        fill='tonexty',
+        fillcolor='rgba(255, 128, 128, 0.1)',
+        name=None,
+        showlegend=False
+    ))
+
+    fig.add_trace(go.Scatter(
+        x=response_x,
+        y=response[1],
+        mode='lines',
+        line=dict(
+            color='#FF0000',
+            width=1.5
+        ),
+        name='Median response',
+        showlegend=True
+    ))
+
+    fig.add_trace(go.Scatter(
+        x=treatment_x,
+        y=treatment_y,
+        mode='markers',
+        marker=dict(
+            symbol='x',
+            size=7,
+            color='#000000',
+            line=dict(width=0.3)
+        ),
+        name='Treatment data',
+        showlegend=True,
+        hovertemplate=(
+            f'Concentration: %{{x:.2g}} {conc_units}<br>' +
+            'Normalized count: %{y:.2f}<br>' +
+            '<extra></extra>'
+        )
+    ))
+
+    fig.update_layout(
+        xaxis=dict(
+            title=dict(
+                text=f'Concentration ({conc_units})',
+                font=dict(size=12)
+            ),
+            type='log',
+            showgrid=True,
+            gridcolor='#E5E5E5',
+            gridwidth=1,
+            showline=True,
+            linewidth=1,
+            linecolor='#000000',
+            range=[np.log10(float(10**(df['conc'][0] - 1))), np.log10(float(10**(df['conc'][-1] + 1)))]
+        ),
+        yaxis=dict(
+            title=dict(
+                text='Normalised count',
+                font=dict(size=12)
+            ),
+            showgrid=True,
+            gridcolor='#E5E5E5',
+            gridwidth=1,
+            showline=True,
+            linewidth=1,
+            linecolor='#000000',
+            range=[0, ymax]
+        ),
+        showlegend=True,
+        legend=dict(
+            yanchor="bottom",
+            y=-0.3,
+            xanchor="center",
+            x=0.5,
+            font=dict(size=11),
+            bgcolor='rgba(255, 255, 255, 0.8)',
+            orientation='h'
+        ),
+        margin=dict(l=60, r=20, t=40, b=80),
+        height=400,
+        plot_bgcolor='white',
+        paper_bgcolor='white',
+        font=dict(
+            family='Arial, sans-serif',
+            size=11
+        ),
+        uirevision=True,
+        hovermode='closest',
+        hoverdistance=10,
+        spikedistance=10
+    )
+
+    plot_html = fig.to_html(
+        full_html=False,
+        include_plotlyjs='cdn',
+        config={
+            'responsive': True,
+            'displayModeBar': True,
+            'staticPlot': False,
+            'showTips': True,
+            'showLink': False,
+            'displaylogo': False,
+            'modeBarButtonsToRemove': ['lasso2d', 'select2d'],
+            'toImageButtonOptions': {
+                'format': 'png',
+                'filename': f'bifrost_plot_{probe}',
+                'height': 400,
+                'width': None,
+                'scale': 2
             }
-            for i, p in enumerate(pod_percentiles)
-        ])
-
-    # Add response data
-    extra_series.extend([
-        {
-            'name': '90% credible interval',
-            'pairs': [(float(10**x), float(y)) for x, y in zip(response_x, response[0])],
-            'color': '#FF8080',
-            'width': 2,
-            'dash': 'dash',
-            'showlegend': True
-        },
-        {
-            'name': None,
-            'pairs': [(float(10**x), float(y)) for x, y in zip(response_x, response[2])],
-            'color': '#FF8080',
-            'width': 2,
-            'dash': 'dash',
-            'showlegend': False
-        },
-        {
-            'name': 'Median response',
-            'pairs': [(float(10**x), float(y)) for x, y in zip(response_x, response[1])],
-            'color': '#FF0000',
-            'width': 2,
-            'showlegend': True
-        },
-        {
-            'name': 'Treatment data',
-            'pairs': [(float(10**x), float(y)) for x, y in zip(treatment_x, treatment_y)],
-            'color': '#000000',
-            'width': 0,
-            'marker': 'x',
-            'showlegend': True
-        }
-    ])
-
-    # Add PoD mean line if available
-    mean_pod = probe_data.mean_pod
-    if mean_pod is not None:
-        extra_series.append({
-            'name': 'Mean PoD | Response',
-            'pairs': [(float(10**mean_pod), 0), (float(10**mean_pod), ymax)],
-            'color': '#663399',
-            'width': 2,
-            'dash': 'solid',
-            'showlegend': True
-        })
-
-    # Create plot
-    plot = linegraph.plot(
-        plot_data,
-        pconfig={
-            'id': f'conc_response_{probe}',
-            'title': f'{probe}',
-            'xlab': f'Concentration ({conc_units})',
-            'ylab': 'Normalised count',
-            'xlog': True,
-            'xmin': float(10**(df['conc'][0] - 1)),
-            'ymin': 0,
-            'ymax': ymax,
-            'style': 'lines',
-            'height': 400,
-            'showlegend': True,
-            'x_decimals': 2,
-            'y_decimals': 0,
-            'extra_series': extra_series
         }
     )
 
     elapsed_time = time.time() - start_time
     logger.info(f"Completed concentration-response plot for {probe} in {elapsed_time:.2f} seconds")
-    return plot
+    return plot_html
 
-def create_diagnostic_table_data(df: pd.Series, conc_units: str) -> Dict[str, Dict[str, Any]]:
+def create_diagnostic_table_data(df: pd.Series, conc_units: str, cds_threshold: float, apply_cds_threshold: bool = True) -> Dict[str, Dict[str, Any]]:
     """Create diagnostic table data for all probes."""
     diagnostic_data = {}
     for probe in df['probes']:
         diag_text = df[probe]['diagnostics']
         probe_data = ProbeData(df, probe, conc_units)
+
+        # Skip probes that don't meet CDS threshold if filtering is enabled
+        if apply_cds_threshold and probe_data.cds <= cds_threshold:
+            continue
 
         # Parse individual checks
         checks = {
@@ -529,14 +684,14 @@ def create_diagnostic_table_data(df: pd.Series, conc_units: str) -> Dict[str, Di
             'Divergences': '✓' if 'No divergent transitions' in diag_text else '✗',
             'E-BFMI': '✓' if 'E-BFMI satisfactory' in diag_text else '✗',
             'ESS': '✓' if 'effective sample size satisfactory' in diag_text else '✗',
-            'R-hat': '✓' if 'R-hat greater than 1.01' not in diag_text else '✗'
+            'R-hat': '✓' if 'Rank-normalized split R-hat values satisfactory for all parameters' in diag_text else '✗'
         }
 
         # Calculate biological relevance score
         cds = probe_data.cds
         mean_pod = probe_data.mean_pod if probe_data.mean_pod is not None else float('inf')
 
-        bio_score = 1 if cds > 0.5 else 0
+        bio_score = 1 if cds > cds_threshold else 0
         if not np.isinf(mean_pod):
             bio_score += (df['max_conc'] - mean_pod) / df['max_conc']
 
@@ -600,9 +755,12 @@ def create_multiqc_report(summary_file, test_substance, cell_type, timepoint, co
                          interactive_plots=False, n_fold_change_probes=5, cds_threshold=0.5,
                          n_lowest_means=10, n_pod_stats=100, control_line_tolerance=0.02,
                          min_control_lines=2, plot_height=400, pod_vs_fc_height=600,
-                         report_timeout=300, plots_force_flat_numseries=10000):
+                         report_timeout=300, plots_force_flat_numseries=10000, no_cds_threshold=False):
     """Create a MultiQC report from BIFROST data."""
     logger.info(f"Starting report generation for {test_substance} on {cell_type}")
+
+    # Convert no_cds_threshold to apply_cds_threshold (inverted logic)
+    apply_cds_threshold = not no_cds_threshold
 
     # Configure MultiQC for interactive plots if requested
     if interactive_plots:
@@ -656,8 +814,8 @@ def create_multiqc_report(summary_file, test_substance, cell_type, timepoint, co
         'Number of hits': {
             'Value': str(int(global_pod['num_hits']))
         },
-        'Number of CDS>0.5': {
-            'Value': str(int(np.sum(stats['cds'] > 0.5)))
+        'Number of CDS>{cds_threshold} / CDS=1.0': {
+            'Value': str(int(np.sum(stats['cds'] > cds_threshold)))
         },
         'Number of CDS=1.0': {
             'Value': str(int(np.sum(stats['cds'] == 1.0)))
@@ -730,7 +888,7 @@ def create_multiqc_report(summary_file, test_substance, cell_type, timepoint, co
         pod_vs_fc_data,
         pconfig={
             'id': 'pod_vs_fc',
-            'title': 'PoD vs Fold Change',
+            'title': f'PoD vs Fold Change{" (CDS > " + str(cds_threshold) + ")" if apply_cds_threshold else ""}',
             'xlab': f'Mean PoD | Response ({conc_units})',
             'ylab': 'Max./min. log2 fold-change',
             'xlog': True,
@@ -824,7 +982,7 @@ def create_multiqc_report(summary_file, test_substance, cell_type, timepoint, co
         name='Summary Statistics',
         anchor='bifrost_summary',
         plot=summary_table,
-        description='''
+        description=f'''
         <p>Summary statistics from BIFROST analysis.</p>
 
         <p><strong>How to interpret:</strong></p>
@@ -833,7 +991,7 @@ def create_multiqc_report(summary_file, test_substance, cell_type, timepoint, co
             <li><strong>Maximum tested concentration</strong>: The highest concentration tested in the experiment.</li>
             <li><strong>Number of probes analyzed</strong>: Total number of probes included in the analysis.</li>
             <li><strong>Number of hits</strong>: Expected number of probes with a significant response.</li>
-            <li><strong>Number of CDS>0.5 / CDS=1.0</strong>: Probes with strong concentration-dependent responses (CDS > 0.5) or maximal response (CDS = 1.0).</li>
+            <li><strong>Number of CDS>{cds_threshold} / CDS=1.0</strong>: Probes with strong concentration-dependent responses (CDS > {cds_threshold}) or maximal response (CDS = 1.0).</li>
             <li><strong>Minimum responding probe</strong>: The probe with the highest weight in the global PoD calculation, indicating the most sensitive response.</li>
             <li><strong>Largest fold increase/decrease</strong>: Probes with the largest positive or negative changes in expression.</li>
         </ul>
@@ -845,27 +1003,42 @@ def create_multiqc_report(summary_file, test_substance, cell_type, timepoint, co
         name='PoD vs Fold Change',
         anchor='bifrost_pod_vs_fc',
         plot=pod_vs_fc_plot,
-        description='''
+        description=f'''
         <p>Maximum fold-change in expression over the tested concentration-range plotted against the
-        probe-level PoD (mean given response). The red vertical line indicates the global PoD.
+        probe-level PoD (mean given response){" for probes with CDS > " + str(cds_threshold) if apply_cds_threshold else ""}. The red vertical line indicates the global PoD.
         Vertical grey lines are placed at the experimental test substance concentrations.</p>
 
         <p><strong>How to interpret:</strong></p>
         <ul>
-            <li>Each point represents a probe.</li>
+            <li>Each point represents a probe{" that meets the CDS threshold" if apply_cds_threshold else ""}.</li>
             <li><strong>X-axis (Mean PoD | Response)</strong>: Lower values indicate probes that respond at lower concentrations (more sensitive).</li>
             <li><strong>Y-axis (Max./min. log2 fold-change)</strong>: Higher absolute values indicate larger changes in expression.</li>
             <li>Probes in the lower-left region are most sensitive and show strong responses at low concentrations.</li>
             <li>The red vertical line (Global PoD) helps identify probes responding below the overall effect threshold.</li>
+            {"<li>Only probes with CDS > " + str(cds_threshold) + " are shown, ensuring reliable concentration-dependent responses.</li>" if apply_cds_threshold else ""}
         </ul>
         '''
     )
 
-    # Create module for probes with non-zero global PoD weight
+    # Create module for weighted plots
     weighted_module = multiqc.BaseMultiqcModule(
-        name='Probes with Non-zero Global PoD Weight',
+        name=f'Probes with Non-zero Global PoD Weight{" (CDS > " + str(cds_threshold) + ")" if apply_cds_threshold else ""}',
         anchor='bifrost_weighted',
-        info='Concentration-response plots for probes contributing to global PoD'
+        info=f'Concentration-response plots for probes contributing to global PoD{" (filtered by CDS > " + str(cds_threshold) + ")" if apply_cds_threshold else ""}'
+    )
+
+    # Create module for fold change plots
+    fc_module = multiqc.BaseMultiqcModule(
+        name=f'Fold Change Plots{" (CDS > " + str(cds_threshold) + ")" if apply_cds_threshold else ""}',
+        anchor='bifrost_fc_plots',
+        info=f'PoD vs Fold Change plots{" for probes with CDS > " + str(cds_threshold) if apply_cds_threshold else ""}'
+    )
+
+    # Create module for lowest means plots
+    lowest_means_module = multiqc.BaseMultiqcModule(
+        name=f'Lowest Mean PoD Plots{" (CDS > " + str(cds_threshold) + ")" if apply_cds_threshold else ""}',
+        anchor='bifrost_lowest_means_plots',
+        info=f'Concentration-response plots for probes with lowest mean PoD{" (filtered by CDS > " + str(cds_threshold) + ")" if apply_cds_threshold else ""}'
     )
 
     # Add description section to weighted module
@@ -875,19 +1048,23 @@ def create_multiqc_report(summary_file, test_substance, cell_type, timepoint, co
         description='''
         <p>Concentration-response plots for probes that contribute to the global PoD calculation.</p>
 
+        <p><strong>Plot Elements:</strong></p>
+        <ul>
+            <li><strong>Black X markers</strong>: Normalised count for treated samples</li>
+            <li><strong>Horizontal grey dashed lines</strong>: Normalised count for solvent control samples</li>
+            <li><strong>Red bands</strong>: 90% credible interval for expected counts (light red fill)</li>
+            <li><strong>Red line</strong>: Median of the expected count distribution</li>
+            <li><strong>Purple bands</strong>: Histogram-like representation of PoD distribution (intensity indicates bin height)</li>
+            <li><strong>Purple vertical line</strong>: Mean PoD estimate, conditional on there being a response</li>
+            <li><strong>CDS</strong>: Concentration-dependency-score (probability of response below max concentration)</li>
+        </ul>
+
         <p><strong>Probe Selection:</strong></p>
         <ul>
             <li>These probes were selected based on their contribution to the global PoD calculation.</li>
             <li>Each probe's weight in the global PoD calculation is determined by its CDS (Concentration-Dependency Score) and its position in the PoD distribution.</li>
             <li>Probes are sorted by their weight in descending order, showing the most influential probes first.</li>
             <li>Only probes with non-zero weights are included, as these are the ones that meaningfully contribute to the global PoD estimate.</li>
-        </ul>
-
-        <p><strong>How to interpret:</strong></p>
-        <ul>
-            <li>These probes have the highest influence on the global PoD estimate.</li>
-            <li>Their response curves and PoD distributions are most relevant for understanding the overall system sensitivity.</li>
-            <li>The weight of each probe indicates its relative importance in determining the global PoD.</li>
         </ul>
         '''
     )
@@ -933,42 +1110,41 @@ def create_multiqc_report(summary_file, test_substance, cell_type, timepoint, co
             weighted_module.add_section(
                 name=probe,
                 anchor=f'bifrost_weighted_{probe}',
-                plot=conc_response_plot,
+                content=conc_response_plot,
                 description=f'CDS = {df[probe]["cds"]:.3f}, Mean PoD = {10**np.mean(df[probe]["pod"]):.2g} {conc_units}'
             )
         logger.info(f"Completed all concentration-response plots for non-zero global PoD weight probes in {time.time() - start_time:.2f} seconds")
 
     # Create module for probes with largest fold changes
-    fc_module = multiqc.BaseMultiqcModule(
-        name='Probes with Largest Fold Changes',
-        anchor='bifrost_fc',
-        info='Concentration-response plots for probes with extreme expression changes'
-    )
-
-    # Add description section to fc module
     fc_module.add_section(
         name='Overview',
         anchor='bifrost_fc_overview',
         description=f'''
-        <p>Concentration-response plots for probes with the most extreme expression changes, separated into upregulated and downregulated genes.</p>
+        <p>Concentration-response plots for probes with extreme expression changes{" that meet the CDS threshold" if apply_cds_threshold else ""}.</p>
+
+        <p><strong>Plot Elements:</strong></p>
+        <ul>
+            <li><strong>Black X markers</strong>: Normalised count for treated samples</li>
+            <li><strong>Horizontal grey dashed lines</strong>: Normalised count for solvent control samples</li>
+            <li><strong>Red bands</strong>: 90% credible interval for expected counts (light red fill)</li>
+            <li><strong>Red line</strong>: Median of the expected count distribution</li>
+            <li><strong>Purple bands</strong>: Histogram-like representation of PoD distribution (intensity indicates bin height)</li>
+            <li><strong>Purple vertical line</strong>: Mean PoD estimate, conditional on there being a response</li>
+            <li><strong>CDS</strong>: Concentration-dependency-score (probability of response below max concentration){" with threshold = " + str(cds_threshold) if apply_cds_threshold else ""}</li>
+        </ul>
 
         <p><strong>Probe Selection:</strong></p>
         <ul>
-            <li>This module shows the probes with the most extreme fold changes in expression, divided into two categories:
-                <ul>
-                    <li><strong>Most Upregulated</strong>: The {n_fold_change_probes} probes with the largest positive fold changes (increased expression)</li>
-                    <li><strong>Most Downregulated</strong>: The {n_fold_change_probes} probes with the largest negative fold changes (decreased expression)</li>
-                </ul>
+            <li>This section displays the {n_fold_change_probes} probes with the most extreme fold changes{" that meet two criteria:" if apply_cds_threshold else ":"}
+                {"<ul>" if apply_cds_threshold else ""}
+                {"<li>CDS > " + str(cds_threshold) + " (strong evidence for a concentration-dependent response)</li>" if apply_cds_threshold else ""}
+                {"<li>Valid PoD estimate (mean PoD less than maximum tested concentration)</li>" if apply_cds_threshold else ""}
+                {"</ul>" if apply_cds_threshold else ""}
+                {"<li>Valid PoD estimate (mean PoD less than maximum tested concentration)</li>" if not apply_cds_threshold else ""}
             </li>
-            <li>Fold changes are calculated as log2 ratios of expression at the maximum response concentration compared to the control.</li>
-            <li>Probes are selected regardless of their CDS or PoD values, focusing solely on the magnitude of expression change.</li>
-        </ul>
-
-        <p><strong>How to interpret:</strong></p>
-        <ul>
-            <li>These probes show the most extreme changes in expression, regardless of sensitivity.</li>
-            <li>Useful for identifying outliers or highly dynamic responses.</li>
-            <li>Note that large fold changes don't necessarily indicate biological relevance - check the CDS and PoD values for context.</li>
+            {"<li>Probes are first filtered to include only those with CDS > " + str(cds_threshold) + ", ensuring reliable concentration-dependent responses.</li>" if apply_cds_threshold else ""}
+            <li>Among {"these filtered probes" if apply_cds_threshold else "all probes"}, the {n_fold_change_probes} with the most extreme fold changes are selected.</li>
+            <li>If fewer than {n_fold_change_probes} probes meet these criteria, all qualifying probes are shown.</li>
         </ul>
         '''
     )
@@ -1034,7 +1210,7 @@ def create_multiqc_report(summary_file, test_substance, cell_type, timepoint, co
             fc_module.add_section(
                 name=probe,
                 anchor=f'bifrost_fc_up_{probe}',
-                plot=conc_response_plot,
+                content=conc_response_plot,
                 description=f'CDS = {df[probe]["cds"]:.3f}, Mean PoD = {10**np.mean(df[probe]["pod"]):.2g} {conc_units}, Log2 Fold Change = {stats["l2fc"][stats["probe"] == probe][0]:.2f}'
             )
         logger.info(f"Completed all concentration-response plots for most upregulated probes in {time.time() - start_time:.2f} seconds")
@@ -1100,51 +1276,19 @@ def create_multiqc_report(summary_file, test_substance, cell_type, timepoint, co
             fc_module.add_section(
                 name=probe,
                 anchor=f'bifrost_fc_down_{probe}',
-                plot=conc_response_plot,
+                content=conc_response_plot,
                 description=f'CDS = {df[probe]["cds"]:.3f}, Mean PoD = {10**np.mean(df[probe]["pod"]):.2g} {conc_units}, Log2 Fold Change = {stats["l2fc"][stats["probe"] == probe][0]:.2f}'
             )
         logger.info(f"Completed all concentration-response plots for most downregulated probes in {time.time() - start_time:.2f} seconds")
 
-    # Create module for lowest means with CDS > 0.5
-    lowest_means_module = multiqc.BaseMultiqcModule(
-        name='Lowest Mean PoDs (CDS > 0.5)',
-        anchor='bifrost_lowest_means',
-        info='Concentration-response plots for most sensitive probes'
-    )
-
-    # Add description section to lowest means module
-    lowest_means_module.add_section(
-        name='Overview',
-        anchor='bifrost_lowest_means_overview',
-        description=f'''
-        <p>Concentration-response plots for the most sensitive probes with strong evidence of response.</p>
-
-        <p><strong>Probe Selection:</strong></p>
-        <ul>
-            <li>This section displays the {n_lowest_means} probes with the lowest mean PoDs (most sensitive) that meet two criteria:
-                <ul>
-                    <li>CDS > {cds_threshold} (strong evidence for a concentration-dependent response)</li>
-                    <li>Valid PoD estimate (mean PoD less than maximum tested concentration)</li>
-                </ul>
-            </li>
-            <li>Probes are first filtered to include only those with CDS > {cds_threshold}, ensuring reliable concentration-dependent responses.</li>
-            <li>Among these filtered probes, the {n_lowest_means} with the lowest mean PoDs are selected.</li>
-            <li>If fewer than {n_lowest_means} probes meet these criteria, all qualifying probes are shown.</li>
-        </ul>
-
-        <p><strong>How to interpret:</strong></p>
-        <ul>
-            <li>These are the most sensitive probes (lowest mean PoD) with strong evidence for a response (CDS > {cds_threshold}).</li>
-            <li>Useful for identifying the earliest responding genes.</li>
-            <li>The combination of low PoD and high CDS suggests these are reliable early indicators of biological response.</li>
-        </ul>
-        '''
-    )
-
     # Add plots for lowest means to lowest means module
     n_probe = len(stats['probe'])
-    probes_to_plot = stats['probe'][np.argsort(stats['pod'])][:min(n_probe, n_lowest_means)]
-    logger.info(f"Found {len(probes_to_plot)} probes with lowest means and CDS > 0.5 to plot")
+    if apply_cds_threshold:
+        mask = stats['cds'] > cds_threshold
+        probes_to_plot = stats['probe'][mask][np.argsort(stats['pod'][mask])][:min(np.sum(mask), n_lowest_means)]
+    else:
+        probes_to_plot = stats['probe'][np.argsort(stats['pod'])][:min(n_probe, n_lowest_means)]
+    logger.info(f"Found {len(probes_to_plot)} probes with lowest means{" and CDS > " + str(cds_threshold) if apply_cds_threshold else ""} to plot")
 
     if len(probes_to_plot) > 0:
         # Create summary table for lowest means probes
@@ -1182,29 +1326,40 @@ def create_multiqc_report(summary_file, test_substance, cell_type, timepoint, co
             lowest_means_module.add_section(
                 name=probe,
                 anchor=f'bifrost_lowest_means_{probe}',
-                plot=conc_response_plot,
+                content=conc_response_plot,
                 description=f'CDS = {df[probe]["cds"]:.3f}, Mean PoD = {10**np.mean(df[probe]["pod"]):.2g} {conc_units}'
             )
         logger.info(f"Completed all concentration-response plots for lowest means probes in {time.time() - start_time:.2f} seconds")
 
     # Create module for PoD statistics
     stats_module = multiqc.BaseMultiqcModule(
-        name='Probe-level PoD Statistics',
+        name=f'Probe-level PoD Statistics{" (CDS > " + str(cds_threshold) + ")" if apply_cds_threshold else ""}',
         anchor='bifrost_stats',
-        info=f'Detailed statistics for probes with CDS > {cds_threshold}'
+        info=f'Detailed statistics for probes{" with CDS > " + str(cds_threshold) if apply_cds_threshold else ""}'
     )
 
     # Add PoD statistics table to stats module
     if n_probe > 0:
-        # Get probes with CDS > 0.5 and sort by PoD
-        cds_mask = stats['cds'] > cds_threshold
-        probes = stats['probe'][cds_mask][np.argsort(stats['pod'][cds_mask])][:n_pod_stats]
-        logger.info(f"Found {len(probes)} probes with CDS > 0.5 to include in PoD statistics table (limited to top {n_pod_stats})")
-        cds = stats['cds'][cds_mask][np.argsort(stats['pod'][cds_mask])][:n_pod_stats]
+        # Get probes and sort by PoD
+        logger.info(f"Total number of probes before filtering: {len(stats['probe'])}")
+        if apply_cds_threshold:
+            cds_mask = stats['cds'] > cds_threshold
+            logger.info(f"Number of probes with CDS > {cds_threshold}: {np.sum(cds_mask)}")
+            logger.info(f"CDS values for all probes: {stats['cds']}")
+            probes = stats['probe'][cds_mask][np.argsort(stats['pod'][cds_mask])][:n_pod_stats]
+            cds = stats['cds'][cds_mask][np.argsort(stats['pod'][cds_mask])][:n_pod_stats]
+            logger.info(f"Selected probes after filtering and sorting: {probes}")
+            logger.info(f"Corresponding CDS values: {cds}")
+        else:
+            probes = stats['probe'][np.argsort(stats['pod'])][:n_pod_stats]
+            cds = stats['cds'][np.argsort(stats['pod'])][:n_pod_stats]
+        logger.info(f"Found {len(probes)} probes{" with CDS > " + str(cds_threshold) if apply_cds_threshold else ""} to include in PoD statistics table (limited to top {n_pod_stats})")
 
         # Create table data
         table_data = {}
+        logger.info("Creating table data...")
         for i, (probe, cds_val) in enumerate(zip(probes, cds)):
+            logger.info(f"Processing probe {i+1}: {probe} with CDS {cds_val}")
             n_pod_samples = len(df[probe]['pod'])
             extended_pod_samples = np.concatenate((df[probe]['pod'],
                                 [df['max_conc'] for _ in range(df['n_samp'] - n_pod_samples)]))
@@ -1228,12 +1383,15 @@ def create_multiqc_report(summary_file, test_substance, cell_type, timepoint, co
                 '75th percentile': pod_values[3],
                 '95th percentile': pod_values[4]
             }
+            logger.info(f"Added row for probe {probe} to table data")
+
+        logger.info(f"Final table data contains {len(table_data)} rows: {list(table_data.keys())}")
 
         # Create table plot
         pod_stats_table = table.plot(
             data=table_data,
             headers={
-                'CDS': {'title': 'CDS', 'format': '{:.3f}', 'description': 'Concentration-Dependency Score'},
+                'CDS': {'title': 'CDS', 'format': '{:.3f}', 'description': f'Concentration-Dependency Score{" (threshold = " + str(cds_threshold) + ")" if apply_cds_threshold else ""}'},
                 '5th percentile': {'title': f'5th percentile ({conc_units})', 'description': '5th percentile of PoD distribution'},
                 '25th percentile': {'title': f'25th percentile ({conc_units})', 'description': '25th percentile of PoD distribution'},
                 '50th percentile': {'title': f'50th percentile ({conc_units})', 'description': 'Median of PoD distribution'},
@@ -1242,7 +1400,7 @@ def create_multiqc_report(summary_file, test_substance, cell_type, timepoint, co
             },
             pconfig={
                 'id': 'bifrost_stats_table',
-                'title': 'Probe-level PoD Statistics (CDS > 0.5)',
+                'title': f'Probe-level PoD Statistics{" (CDS > " + str(cds_threshold) + ")" if apply_cds_threshold else ""}',
                 'namespace': 'BIFROST',
                 'no_violin': True,
                 'scale': False,  # Disable automatic scaling and coloring
@@ -1256,15 +1414,15 @@ def create_multiqc_report(summary_file, test_substance, cell_type, timepoint, co
             name='PoD Statistics Table',
             anchor='bifrost_stats_table',
             plot=pod_stats_table,
-            description="""
-            <p>Summary statistics for probes with CDS > 0.5, showing the distribution of PoD (Point of Departure) values.</p>
+            description=f"""
+            <p>Summary statistics for probes{" with CDS > " + str(cds_threshold) if apply_cds_threshold else ""}, showing the distribution of PoD (Point of Departure) values.</p>
             <p>The table includes:</p>
             <ul>
-                <li><strong>CDS</strong>: Concentration-Dependency Score (probability of response below max concentration)</li>
+                <li><strong>CDS</strong>: Concentration-Dependency Score (probability of response below max concentration){" with threshold = " + str(cds_threshold) if apply_cds_threshold else ""}</li>
                 <li><strong>PoD percentiles</strong>: Different quantiles of the PoD distribution</li>
                 <li>Values are shown in {conc_units}</li>
                 <li>Probes are sorted by median PoD (50th percentile)</li>
-                <li>Only shows the top {n_pod_stats} probes with CDS > 0.5</li>
+                <li>Only shows the top {n_pod_stats} probes{" with CDS > " + str(cds_threshold) if apply_cds_threshold else ""}</li>
             </ul>
 
             <p>Hover over column headers for more detailed descriptions.</p>
@@ -1272,7 +1430,7 @@ def create_multiqc_report(summary_file, test_substance, cell_type, timepoint, co
         )
 
     # Create diagnostic table data with parsed checks
-    diagnostic_data = create_diagnostic_table_data(df, conc_units)
+    diagnostic_data = create_diagnostic_table_data(df, conc_units, cds_threshold, apply_cds_threshold)
 
     # Create diagnostic table
     diagnostic_table = create_table_plot(
@@ -1377,20 +1535,21 @@ def create_multiqc_report(summary_file, test_substance, cell_type, timepoint, co
             <li><strong>Divergences</strong>: Checks for divergent transitions in the sampler</li>
             <li><strong>E-BFMI</strong>: Checks Hamiltonian Monte Carlo potential energy</li>
             <li><strong>ESS</strong>: Checks effective sample size for all parameters</li>
-            <li><strong>R-hat</strong>: Checks Gelman-Rubin convergence diagnostic (should be < 1.01)</li>
+            <li><strong>R-hat</strong>: Checks if all parameters have satisfactory rank-normalized split R-hat values</li>
         </ul>
 
         <p><strong>Additional Information:</strong></p>
         <ul>
-            <li><strong>High R-hat Parameters</strong>: Lists parameters with R-hat > 1.01 that may need attention</li>
+            <li><strong>High R-hat Parameters</strong>: Number of parameters with R-hat > 1.01 that may indicate incomplete mixing</li>
             <li><strong>CDS</strong>: Concentration-Dependency Score (probability of response below max concentration)</li>
             <li><strong>Mean PoD</strong>: Mean point of departure (effect concentration)</li>
             <li><strong>Response Range</strong>: Range of response thresholds</li>
-            <li><strong>Regularization</strong>: ⚠️ indicates model may need regularization</li>
+            <li><strong>Regularization</strong>: ⚠️ indicates model may need regularization with additional prior information or more effective parameterization</li>
         </ul>
 
         <p>Probes with "No response" in the Mean PoD column did not show a significant response in the tested range.
-        Failed diagnostic checks (red ✗) indicate potential model issues for that probe.</p>
+        Failed diagnostic checks (red ✗) indicate potential model issues for that probe. High R-hat values (>1.01) suggest
+        that the model may need additional regularization or reparameterization to improve mixing.</p>
         '''
     )
 
@@ -1520,6 +1679,9 @@ def parse_args():
                       type=int,
                       default=10000,
                       help='Maximum number of series for flat plots (default: 10000)')
+    parser.add_argument('--no-cds-threshold',
+                      action='store_true',
+                      help='Do not filter probes by CDS threshold in summary tables and lowest mean PoDs section (default: False, meaning filtering is applied)')
 
     return parser.parse_args()
 
@@ -1545,7 +1707,8 @@ def main():
             args.plot_height,
             args.pod_vs_fc_height,
             args.report_timeout,
-            args.plots_force_flat_numseries
+            args.plots_force_flat_numseries,
+            args.no_cds_threshold
         )
     except Exception as e:
         logger.error(f"Report generation failed: {e}")
