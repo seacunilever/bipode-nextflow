@@ -751,6 +751,29 @@ def timeout(seconds):
         signal.alarm(0)
         signal.signal(signal.SIGALRM, original_handler)
 
+def get_plot_elements_description(cds_threshold: float, apply_cds_threshold: bool = False) -> str:
+    """Generate the common plot elements description used across multiple sections.
+
+    Args:
+        cds_threshold: The CDS threshold value
+        apply_cds_threshold: Whether CDS threshold filtering is applied
+
+    Returns:
+        HTML string containing the plot elements description
+    """
+    return f'''
+        <p><strong>Plot Elements:</strong></p>
+        <ul>
+            <li><strong>Black X markers</strong>: Normalised count for treated samples</li>
+            <li><strong>Horizontal grey dashed lines</strong>: Normalised count for solvent control samples</li>
+            <li><strong>Red bands</strong>: 90% credible interval for expected counts (light red fill)</li>
+            <li><strong>Red line</strong>: Median of the expected count distribution</li>
+            <li><strong>Purple bands</strong>: Histogram-like representation of PoD distribution (intensity indicates bin height)</li>
+            <li><strong>Purple vertical line</strong>: Mean PoD estimate, conditional on there being a response</li>
+            <li><strong>CDS</strong>: Concentration-dependency-score (probability of response below max concentration){" with threshold = " + str(cds_threshold) if apply_cds_threshold else ""}</li>
+        </ul>
+    '''
+
 def create_multiqc_report(summary_file, test_substance, cell_type, timepoint, conc_units, output_name,
                          interactive_plots=False, n_fold_change_probes=5, cds_threshold=0.5,
                          n_lowest_means=10, n_pod_stats=100, control_line_tolerance=0.02,
@@ -1045,19 +1068,10 @@ def create_multiqc_report(summary_file, test_substance, cell_type, timepoint, co
     weighted_module.add_section(
         name='Overview',
         anchor='bifrost_weighted_overview',
-        description='''
+        description=f'''
         <p>Concentration-response plots for probes that contribute to the global PoD calculation.</p>
 
-        <p><strong>Plot Elements:</strong></p>
-        <ul>
-            <li><strong>Black X markers</strong>: Normalised count for treated samples</li>
-            <li><strong>Horizontal grey dashed lines</strong>: Normalised count for solvent control samples</li>
-            <li><strong>Red bands</strong>: 90% credible interval for expected counts (light red fill)</li>
-            <li><strong>Red line</strong>: Median of the expected count distribution</li>
-            <li><strong>Purple bands</strong>: Histogram-like representation of PoD distribution (intensity indicates bin height)</li>
-            <li><strong>Purple vertical line</strong>: Mean PoD estimate, conditional on there being a response</li>
-            <li><strong>CDS</strong>: Concentration-dependency-score (probability of response below max concentration)</li>
-        </ul>
+        {get_plot_elements_description(cds_threshold, apply_cds_threshold)}
 
         <p><strong>Probe Selection:</strong></p>
         <ul>
@@ -1122,16 +1136,7 @@ def create_multiqc_report(summary_file, test_substance, cell_type, timepoint, co
         description=f'''
         <p>Concentration-response plots for probes with extreme expression changes{" that meet the CDS threshold" if apply_cds_threshold else ""}.</p>
 
-        <p><strong>Plot Elements:</strong></p>
-        <ul>
-            <li><strong>Black X markers</strong>: Normalised count for treated samples</li>
-            <li><strong>Horizontal grey dashed lines</strong>: Normalised count for solvent control samples</li>
-            <li><strong>Red bands</strong>: 90% credible interval for expected counts (light red fill)</li>
-            <li><strong>Red line</strong>: Median of the expected count distribution</li>
-            <li><strong>Purple bands</strong>: Histogram-like representation of PoD distribution (intensity indicates bin height)</li>
-            <li><strong>Purple vertical line</strong>: Mean PoD estimate, conditional on there being a response</li>
-            <li><strong>CDS</strong>: Concentration-dependency-score (probability of response below max concentration){" with threshold = " + str(cds_threshold) if apply_cds_threshold else ""}</li>
-        </ul>
+        {get_plot_elements_description(cds_threshold, apply_cds_threshold)}
 
         <p><strong>Probe Selection:</strong></p>
         <ul>
@@ -1312,7 +1317,7 @@ def create_multiqc_report(summary_file, test_substance, cell_type, timepoint, co
             name='Probe Summary Statistics',
             anchor='bifrost_lowest_means_summary',
             plot=lowest_means_summary_table,
-            description='''
+            description=f'''
             <p>Summary statistics for the most sensitive probes with CDS > 0.5.</p>
             <p>The table shows key metrics for each probe, sorted by their mean PoD (most sensitive first).</p>
             '''
