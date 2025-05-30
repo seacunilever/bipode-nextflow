@@ -1139,9 +1139,7 @@ def create_multiqc_report(
     probes_to_plot = valid_probes[
         np.argsort(weights["weight"][weights["probe"] != "Max. conc."])
     ]
-    logger.info(
-        f"Found {len(probes_to_plot)} probes with non-zero global PoD weight to plot"
-    )
+    logger.info(f"Found {len(probes_to_plot)} probes with non-zero global PoD weight")
 
     if len(probes_to_plot) > 0:
         # Create summary table for weighted probes
@@ -1188,11 +1186,7 @@ def create_multiqc_report(
             """,
         )
 
-        logger.info(
-            "Generating concentration-response plots for probes with non-zero global PoD weight..."
-        )
-        for i, probe in enumerate(probes_to_plot, 1):
-            logger.info(f"Plotting probe {i}/{len(probes_to_plot)}: {probe}")
+        for probe in probes_to_plot:
             conc_response_plot = create_probe_plot(df, probe, conc_units)
             weighted_module.add_section(
                 name=probe,
@@ -1200,9 +1194,6 @@ def create_multiqc_report(
                 content=conc_response_plot,
                 description=f'CDS = {df[probe]["cds"]:.3f}, Mean PoD = {10**np.mean(df[probe]["pod"]):.2g} {conc_units}',
             )
-        logger.info(
-            "Completed all concentration-response plots for non-zero global PoD weight probes"
-        )
 
     # Create module for probes with largest fold changes
     fc_module.add_section(
@@ -1253,9 +1244,7 @@ def create_multiqc_report(
         n_up = min(n_fold_change_probes, len(stats["l2fc"]))
         # Get probes with largest absolute fold changes that are positive
         up_probes = stats["probe"][index][stats["l2fc"][index] > 0][:n_up]
-        logger.info(
-            f"Found {len(up_probes)} probes with largest positive fold changes to plot"
-        )
+        logger.info(f"Found {len(up_probes)} probes with largest positive fold changes")
 
         # Create summary table for upregulated probes
         up_table_data = create_summary_table_data(
@@ -1301,11 +1290,7 @@ def create_multiqc_report(
             """,
         )
 
-        logger.info(
-            "Generating concentration-response plots for most upregulated probes..."
-        )
-        for i, probe in enumerate(up_probes, 1):
-            logger.info(f"Plotting probe {i}/{len(up_probes)}: {probe}")
+        for probe in up_probes:
             conc_response_plot = create_probe_plot(df, probe, conc_units)
             fc_module.add_section(
                 name=probe,
@@ -1313,9 +1298,6 @@ def create_multiqc_report(
                 content=conc_response_plot,
                 description=f'CDS = {df[probe]["cds"]:.3f}, Mean PoD = {10**np.mean(df[probe]["pod"]):.2g} {conc_units}, Log2 Fold Change = {stats["l2fc"][stats["probe"] == probe][0]:.2f}',
             )
-        logger.info(
-            "Completed all concentration-response plots for most upregulated probes"
-        )
 
     # Add section for most downregulated probes
     fc_module.add_section(
@@ -1341,9 +1323,7 @@ def create_multiqc_report(
         n_down = min(n_fold_change_probes, len(stats["l2fc"]))
         # Get probes with largest absolute fold changes that are negative
         down_probes = stats["probe"][index][stats["l2fc"][index] < 0][:n_down]
-        logger.info(
-            f"Found {len(down_probes)} probes with largest negative fold changes to plot"
-        )
+        logger.info(f"Found {len(down_probes)} probes with largest negative fold changes")
 
         # Create summary table for downregulated probes
         down_table_data = create_summary_table_data(
@@ -1389,11 +1369,7 @@ def create_multiqc_report(
             """,
         )
 
-        logger.info(
-            "Generating concentration-response plots for most downregulated probes..."
-        )
-        for i, probe in enumerate(down_probes, 1):
-            logger.info(f"Plotting probe {i}/{len(down_probes)}: {probe}")
+        for probe in down_probes:
             conc_response_plot = create_probe_plot(df, probe, conc_units)
             fc_module.add_section(
                 name=probe,
@@ -1401,9 +1377,6 @@ def create_multiqc_report(
                 content=conc_response_plot,
                 description=f'CDS = {df[probe]["cds"]:.3f}, Mean PoD = {10**np.mean(df[probe]["pod"]):.2g} {conc_units}, Log2 Fold Change = {stats["l2fc"][stats["probe"] == probe][0]:.2f}',
             )
-        logger.info(
-            "Completed all concentration-response plots for most downregulated probes"
-        )
 
     # Add plots for lowest means to lowest means module
     n_probe = len(stats["probe"])
@@ -1416,9 +1389,7 @@ def create_multiqc_report(
         probes_to_plot = stats["probe"][np.argsort(stats["pod"])][
             : min(n_probe, n_lowest_means)
         ]
-    logger.info(
-        f"Found {len(probes_to_plot)} probes with lowest means{" and CDS > " + str(cds_threshold) if apply_cds_threshold else ""} to plot"
-    )
+    logger.info(f"Found {len(probes_to_plot)} probes with lowest means to plot")
 
     if len(probes_to_plot) > 0:
         # Add overview section to lowest means module
@@ -1488,11 +1459,7 @@ def create_multiqc_report(
             """,
         )
 
-        logger.info(
-            "Generating concentration-response plots for probes with lowest means..."
-        )
-        for i, probe in enumerate(probes_to_plot, 1):
-            logger.info(f"Plotting probe {i}/{len(probes_to_plot)}: {probe}")
+        for probe in probes_to_plot:
             conc_response_plot = create_probe_plot(df, probe, conc_units)
             lowest_means_module.add_section(
                 name=probe,
@@ -1500,9 +1467,6 @@ def create_multiqc_report(
                 content=conc_response_plot,
                 description=f'CDS = {df[probe]["cds"]:.3f}, Mean PoD = {10**np.mean(df[probe]["pod"]):.2g} {conc_units}',
             )
-        logger.info(
-            "Completed all concentration-response plots for lowest means probes"
-        )
 
     # Create module for PoD statistics
     stats_module = multiqc.BaseMultiqcModule(
@@ -1514,33 +1478,22 @@ def create_multiqc_report(
     # Add PoD statistics table to stats module
     if n_probe > 0:
         # Get probes and sort by PoD
-        logger.info(f"Total number of probes before filtering: {len(stats['probe'])}")
         if apply_cds_threshold:
             cds_mask = stats["cds"] > cds_threshold
-            logger.info(
-                f"Number of probes with CDS > {cds_threshold}: {np.sum(cds_mask)}"
-            )
-            logger.info(f"CDS values for all probes: {stats['cds']}")
             probes = stats["probe"][cds_mask][np.argsort(stats["pod"][cds_mask])][
                 :n_pod_stats
             ]
             cds = stats["cds"][cds_mask][np.argsort(stats["pod"][cds_mask])][
                 :n_pod_stats
             ]
-            logger.info(f"Selected probes after filtering and sorting: {probes}")
-            logger.info(f"Corresponding CDS values: {cds}")
         else:
             probes = stats["probe"][np.argsort(stats["pod"])][:n_pod_stats]
             cds = stats["cds"][np.argsort(stats["pod"])][:n_pod_stats]
-        logger.info(
-            f"Found {len(probes)} probes{" with CDS > " + str(cds_threshold) if apply_cds_threshold else ""} to include in PoD statistics table (limited to top {n_pod_stats})"
-        )
+        logger.info(f"Found {len(probes)} probes to include in PoD statistics table")
 
         # Create table data
         table_data = {}
-        logger.info("Creating table data...")
-        for i, (probe, cds_val) in enumerate(zip(probes, cds)):
-            logger.info(f"Processing probe {i+1}: {probe} with CDS {cds_val}")
+        for probe, cds_val in zip(probes, cds):
             n_pod_samples = len(df[probe]["pod"])
             extended_pod_samples = np.concatenate(
                 (
@@ -1568,11 +1521,6 @@ def create_multiqc_report(
                 "75th percentile": pod_values[3],
                 "95th percentile": pod_values[4],
             }
-            logger.info(f"Added row for probe {probe} to table data")
-
-        logger.info(
-            f"Final table data contains {len(table_data)} rows: {list(table_data.keys())}"
-        )
 
         # Create table plot
         pod_stats_table = table.plot(
