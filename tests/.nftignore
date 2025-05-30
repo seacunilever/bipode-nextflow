@@ -1,2 +1,2 @@
 pipeline_info/*.{html,json,txt,yml}
-reports/BIFROST_input_Nitrofurantoin_HepG2.html
+report/BIFROST_input_Nitrofurantoin_HepG2.html
