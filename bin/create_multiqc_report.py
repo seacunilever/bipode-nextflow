@@ -364,16 +364,30 @@ class ProbeData:
 
 def create_summary_table_data(probes: List[str], df: pd.Series, stats: Dict[str, np.ndarray],
                             weights: Dict[str, np.ndarray], conc_units: str, sort_by_abs_fc: bool = False) -> Dict[str, Dict[str, str]]:
-    """Create summary table data for a list of probes."""
-    # First create unsorted data
-    unsorted_data = {}
+    """Create summary table data for a list of probes.
+
+    Args:
+        probes: List of probe identifiers
+        df: Pandas Series containing probe data
+        stats: Dictionary containing summary statistics
+        weights: Dictionary containing probe weights
+        conc_units: String specifying concentration units
+        sort_by_abs_fc: Whether to sort probes by absolute fold change
+
+    Returns:
+        Dictionary mapping probe IDs to their summary statistics
+    """
+    # First create all data without any sorting
+    data = {}
     for probe in probes:
+        # Calculate all probe statistics
         mean_pod = np.mean(df[probe]['pod'])
         weight = weights['weight'][weights['probe'] == probe][0] if probe in weights['probe'] else 0.0
         l2fc = stats['l2fc'][stats['probe'] == probe][0]
-        abs_fc = abs(l2fc)  # Calculate absolute fold change
-        unsorted_data[probe] = {
-            '_abs_fc': abs_fc,  # Keep as float for sorting
+
+        # Store all data for this probe
+        data[probe] = {
+            '_abs_fc': abs(l2fc),  # Keep as float for potential sorting
             'CDS': f"{df[probe]['cds']:.3f}",
             'Mean PoD': f"{10**mean_pod:.2g} {conc_units}",
             'Log2 Fold Change': f"{l2fc:.2f}",
@@ -381,24 +395,20 @@ def create_summary_table_data(probes: List[str], df: pd.Series, stats: Dict[str,
             'Response Range': f"{df[probe]['response_threshold_lower']:.1f} - {df[probe]['response_threshold_upper']:.1f}"
         }
 
+    # Then sort if requested, creating a new dictionary with sorted probes
     if sort_by_abs_fc:
-        # Sort by absolute fold change in descending order
-        sorted_probes = sorted(unsorted_data.keys(),
-                             key=lambda x: unsorted_data[x]['_abs_fc'],
-                             reverse=True)
-        # Create new dictionary with sorted order
-        table_data = {}
-        for probe in sorted_probes:
-            data = unsorted_data[probe].copy()
-            data['_abs_fc'] = f"{data['_abs_fc']:.3f}"  # Convert to string after sorting
-            table_data[probe] = data
+        data = {
+            probe: {**data[probe], '_abs_fc': f"{data[probe]['_abs_fc']:.3f}"}
+            for probe in sorted(data.keys(), key=lambda x: data[x]['_abs_fc'], reverse=True)
+        }
     else:
-        # If not sorting by abs_fc, just convert _abs_fc to string
-        table_data = {probe: {k: (f"{v:.3f}" if k == '_abs_fc' else v)
-                            for k, v in data.items()}
-                     for probe, data in unsorted_data.items()}
+        # Just convert _abs_fc to string without sorting
+        data = {
+            probe: {**data[probe], '_abs_fc': f"{data[probe]['_abs_fc']:.3f}"}
+            for probe in data
+        }
 
-    return table_data
+    return data
 
 def create_table_plot(data: Dict[str, Dict[str, str]], headers: Dict[str, Dict[str, Any]],
                      table_id: str, title: str, sort_by_abs_fc: bool = False) -> table.plot:
