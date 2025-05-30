@@ -10,10 +10,8 @@ import pandas as pd
 import plotly.graph_objects as go
 import multiqc
 from multiqc.plots import table, linegraph, scatter, box
-import time
 import signal
 from contextlib import contextmanager
-import threading
 import sys
 
 # Configure logging
@@ -469,7 +467,6 @@ def fit_pod_histogram(pod_samples: np.ndarray, n_samp: int) -> Tuple[Optional[np
 def create_probe_plot(df: pd.Series, probe: str, conc_units: str) -> str:
     """Creates a concentration-response plot for a specific probe using Plotly."""
     logger.info(f"Creating concentration-response plot for probe {probe}")
-    start_time = time.time()
 
     probe_data = ProbeData(df, probe, conc_units)
     treatment_x, treatment_y, control_y, response_x, response = probe_data.get_response_data()
@@ -658,8 +655,7 @@ def create_probe_plot(df: pd.Series, probe: str, conc_units: str) -> str:
         }
     )
 
-    elapsed_time = time.time() - start_time
-    logger.info(f"Completed concentration-response plot for {probe} in {elapsed_time:.2f} seconds")
+    logger.info(f"Completed concentration-response plot for {probe}")
     return plot_html
 
 def create_diagnostic_table_data(df: pd.Series, conc_units: str, cds_threshold: float, apply_cds_threshold: bool = True) -> Dict[str, Dict[str, Any]]:
@@ -729,23 +725,6 @@ def create_diagnostic_table_data(df: pd.Series, conc_units: str, cds_threshold: 
 
     return diagnostic_data
 
-@contextmanager
-def timeout(seconds):
-    """Context manager to enforce a timeout on a block of code."""
-    def handler(signum, frame):
-        raise TimeoutError(f"Operation timed out after {seconds} seconds")
-
-    # Set the signal handler and a timer
-    original_handler = signal.signal(signal.SIGALRM, handler)
-    signal.alarm(seconds)
-
-    try:
-        yield
-    finally:
-        # Restore the original handler and cancel the alarm
-        signal.alarm(0)
-        signal.signal(signal.SIGALRM, original_handler)
-
 def get_plot_elements_description(cds_threshold: float, apply_cds_threshold: bool = False) -> str:
     """Generate the common plot elements description used across multiple sections.
 
@@ -773,7 +752,7 @@ def create_multiqc_report(summary_file, test_substance, cell_type, timepoint, co
                          interactive_plots=False, n_fold_change_probes=5, cds_threshold=0.5,
                          n_lowest_means=10, n_pod_stats=100, control_line_tolerance=0.02,
                          min_control_lines=2, plot_height=400, pod_vs_fc_height=600,
-                         report_timeout=300, plots_force_flat_numseries=10000, no_cds_threshold=False):
+                         plots_force_flat_numseries=10000, no_cds_threshold=False):
     """Create a MultiQC report from BIFROST data."""
     logger.info(f"Starting report generation for {test_substance} on {cell_type}")
 
@@ -817,7 +796,6 @@ def create_multiqc_report(summary_file, test_substance, cell_type, timepoint, co
 
     # Create summary table
     logger.info("Creating summary table...")
-    start_time = time.time()
     # Create summary table - format data as a dictionary of samples (metrics)
     summary_data = {
         'Global PoD': {
@@ -1112,7 +1090,6 @@ def create_multiqc_report(summary_file, test_substance, cell_type, timepoint, co
         )
 
         logger.info("Generating concentration-response plots for probes with non-zero global PoD weight...")
-        start_time = time.time()
         for i, probe in enumerate(probes_to_plot, 1):
             logger.info(f"Plotting probe {i}/{len(probes_to_plot)}: {probe}")
             conc_response_plot = create_probe_plot(df, probe, conc_units)
@@ -1122,7 +1099,7 @@ def create_multiqc_report(summary_file, test_substance, cell_type, timepoint, co
                 content=conc_response_plot,
                 description=f'CDS = {df[probe]["cds"]:.3f}, Mean PoD = {10**np.mean(df[probe]["pod"]):.2g} {conc_units}'
             )
-        logger.info(f"Completed all concentration-response plots for non-zero global PoD weight probes in {time.time() - start_time:.2f} seconds")
+        logger.info("Completed all concentration-response plots for non-zero global PoD weight probes")
 
     # Create module for probes with largest fold changes
     fc_module.add_section(
@@ -1203,7 +1180,6 @@ def create_multiqc_report(summary_file, test_substance, cell_type, timepoint, co
         )
 
         logger.info("Generating concentration-response plots for most upregulated probes...")
-        start_time = time.time()
         for i, probe in enumerate(up_probes, 1):
             logger.info(f"Plotting probe {i}/{len(up_probes)}: {probe}")
             conc_response_plot = create_probe_plot(df, probe, conc_units)
@@ -1213,7 +1189,7 @@ def create_multiqc_report(summary_file, test_substance, cell_type, timepoint, co
                 content=conc_response_plot,
                 description=f'CDS = {df[probe]["cds"]:.3f}, Mean PoD = {10**np.mean(df[probe]["pod"]):.2g} {conc_units}, Log2 Fold Change = {stats["l2fc"][stats["probe"] == probe][0]:.2f}'
             )
-        logger.info(f"Completed all concentration-response plots for most upregulated probes in {time.time() - start_time:.2f} seconds")
+        logger.info("Completed all concentration-response plots for most upregulated probes")
 
     # Add section for most downregulated probes
     fc_module.add_section(
@@ -1269,7 +1245,6 @@ def create_multiqc_report(summary_file, test_substance, cell_type, timepoint, co
         )
 
         logger.info("Generating concentration-response plots for most downregulated probes...")
-        start_time = time.time()
         for i, probe in enumerate(down_probes, 1):
             logger.info(f"Plotting probe {i}/{len(down_probes)}: {probe}")
             conc_response_plot = create_probe_plot(df, probe, conc_units)
@@ -1279,7 +1254,7 @@ def create_multiqc_report(summary_file, test_substance, cell_type, timepoint, co
                 content=conc_response_plot,
                 description=f'CDS = {df[probe]["cds"]:.3f}, Mean PoD = {10**np.mean(df[probe]["pod"]):.2g} {conc_units}, Log2 Fold Change = {stats["l2fc"][stats["probe"] == probe][0]:.2f}'
             )
-        logger.info(f"Completed all concentration-response plots for most downregulated probes in {time.time() - start_time:.2f} seconds")
+        logger.info("Completed all concentration-response plots for most downregulated probes")
 
     # Add plots for lowest means to lowest means module
     n_probe = len(stats['probe'])
@@ -1342,7 +1317,6 @@ def create_multiqc_report(summary_file, test_substance, cell_type, timepoint, co
         )
 
         logger.info("Generating concentration-response plots for probes with lowest means...")
-        start_time = time.time()
         for i, probe in enumerate(probes_to_plot, 1):
             logger.info(f"Plotting probe {i}/{len(probes_to_plot)}: {probe}")
             conc_response_plot = create_probe_plot(df, probe, conc_units)
@@ -1352,7 +1326,7 @@ def create_multiqc_report(summary_file, test_substance, cell_type, timepoint, co
                 content=conc_response_plot,
                 description=f'CDS = {df[probe]["cds"]:.3f}, Mean PoD = {10**np.mean(df[probe]["pod"]):.2g} {conc_units}'
             )
-        logger.info(f"Completed all concentration-response plots for lowest means probes in {time.time() - start_time:.2f} seconds")
+        logger.info("Completed all concentration-response plots for lowest means probes")
 
     # Create module for PoD statistics
     stats_module = multiqc.BaseMultiqcModule(
@@ -1587,52 +1561,23 @@ def create_multiqc_report(summary_file, test_substance, cell_type, timepoint, co
     ])
 
     # Write report
-    logger.info("Generating report (this may take a few minutes for large datasets)...")
-    start_time = time.time()
-
-    # Create a thread to monitor progress
-    stop_monitoring = threading.Event()
-
-    def monitor_progress():
-        last_update = time.time()
-        while not stop_monitoring.is_set():
-            current_time = time.time()
-            if current_time - last_update >= 30:  # Log every 30 seconds instead of 5
-                elapsed = current_time - start_time
-                logger.info(f"Still generating report... ({elapsed:.0f} seconds elapsed)")
-                last_update = current_time
-            time.sleep(1)
-
-    # Start the monitoring thread
-    monitor_thread = threading.Thread(target=monitor_progress, daemon=True)
-    monitor_thread.start()
+    logger.info("Generating report...")
 
     try:
         multiqc.config.verbose = True
-        try:
-            with timeout(report_timeout):
-                multiqc.write_report(
-                    output_dir=os.path.dirname(output_name),
-                    filename=os.path.basename(output_name),
-                    title=f'BIFROST HTTr Analysis - {test_substance} ({cell_type})',
-                    report_comment=f'Analysis of {test_substance} on {cell_type} cells after {timepoint} exposure',
-                    force=True
-                )
-        except TimeoutError:
-            logger.error(f"Report generation timed out after {report_timeout} seconds")
-            logger.error("Try running with --interactive-plots option for faster rendering")
-            sys.exit(1)
-
+        multiqc.write_report(
+            output_dir=os.path.dirname(output_name),
+            filename=os.path.basename(output_name),
+            title=f'BIFROST HTTr Analysis - {test_substance} ({cell_type})',
+            report_comment=f'Analysis of {test_substance} on {cell_type} cells after {timepoint} exposure',
+            force=True
+        )
     except Exception as e:
         logger.error(f"Error during report generation: {str(e)}")
         raise
-    finally:
-        stop_monitoring.set()
-        monitor_thread.join(timeout=1)
 
-    elapsed_time = time.time() - start_time
-    logger.info(f"Report generation complete in {elapsed_time:.0f} seconds")
-    if elapsed_time > 60 and not interactive_plots:
+    logger.info("Report generation complete")
+    if not interactive_plots:
         logger.info("Note: Consider using --interactive-plots for faster rendering with large datasets")
 
 def parse_args():
@@ -1664,8 +1609,6 @@ def parse_args():
                       type=int,
                       default=5,
                       help='Number of most up/down regulated probes to show (default: 5)')
-
-    # Add new parameters for configurable settings
     parser.add_argument('--cds-threshold',
                       type=float,
                       default=0.5,
@@ -1694,10 +1637,6 @@ def parse_args():
                       type=int,
                       default=600,
                       help='Height of PoD vs Fold Change plot in pixels (default: 600)')
-    parser.add_argument('--report-timeout',
-                      type=int,
-                      default=300,
-                      help='Timeout in seconds for report generation (default: 300)')
     parser.add_argument('--plots-force-flat-numseries',
                       type=int,
                       default=10000,
@@ -1729,7 +1668,6 @@ def main():
             args.min_control_lines,
             args.plot_height,
             args.pod_vs_fc_height,
-            args.report_timeout,
             args.plots_force_flat_numseries,
             args.no_cds_threshold
         )
