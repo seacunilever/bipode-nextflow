@@ -266,54 +266,6 @@ def get_min_probe_weights(df: Dict[str, np.ndarray]) -> Dict[str, np.ndarray]:
     }
     return weight_dict
 
-def filter_similar_control_lines(control_y: np.ndarray, tolerance: float = 0.02, min_lines: int = 2) -> np.ndarray:
-    """Filter out control lines that are too similar to each other.
-
-    Args:
-        control_y: Array of control y-values
-        tolerance: Maximum relative difference between y-values to consider them similar (default: 0.02 or 2%)
-        min_lines: Minimum number of control lines to show (default: 2)
-
-    Returns:
-        Filtered array of control y-values
-    """
-    if len(control_y) <= min_lines:
-        return control_y
-
-    # Sort y values
-    sorted_y = np.sort(control_y)
-
-    # Keep first value
-    filtered = [sorted_y[0]]
-
-    # Check each subsequent value against the last kept value
-    for y in sorted_y[1:]:
-        # Handle zero values
-        if filtered[-1] == 0:
-            if y == 0:
-                continue  # Skip if both values are zero
-            else:
-                filtered.append(y)  # Keep non-zero value
-        else:
-            # Calculate relative difference for non-zero values
-            rel_diff = abs(y - filtered[-1]) / filtered[-1]
-            if rel_diff > tolerance:
-                filtered.append(y)
-
-    # If we have fewer than min_lines, add more values
-    if len(filtered) < min_lines:
-        # Get remaining values that weren't included
-        remaining = sorted_y[~np.isin(sorted_y, filtered)]
-        # Add values until we reach min_lines or run out of values
-        for y in remaining:
-            if len(filtered) >= min_lines:
-                break
-            filtered.append(y)
-        # Sort the final list to maintain order
-        filtered.sort()
-
-    return np.array(filtered)
-
 def fit_pod_histogram(pod_samples: np.ndarray, n_samp: int) -> Tuple[Optional[np.ndarray], Optional[np.ndarray]]:
     """Creates histogram approximation of PoD distribution.
 
@@ -404,7 +356,6 @@ class ProbeData:
             treatment_x = conc[conc_index[treatment_mask] - 1]
             treatment_y = (count[treatment_mask] / total_count[treatment_mask]) * median_total_count
             control_y = (count[control_mask] / total_count[control_mask]) * median_total_count
-            control_y = filter_similar_control_lines(control_y, tolerance=1e-10, min_lines=1000)  # Effectively disable filtering
             response_x = 10**np.array(self.df[self.probe]['x'])  # Convert log10 x values to actual values
             response = np.array(self.df[self.probe]['response'])
 
