@@ -85,31 +85,65 @@ def filter_summary_statistics(df: Dict[str, np.ndarray], cds_threshold: float) -
         filtered_df[key] = df[key][mask]
     return filtered_df
 
-def get_confidence_threshold_probability_density(x: np.ndarray) -> np.ndarray:
+def get_confidence_threshold_probability_density(
+    x: np.ndarray,
+    threshold_lower: float = 0.5,
+    threshold_upper: float = 1.0,
+    param_a: float = 0.38387606,
+    param_b: float = -5.40387609,
+    param_c: float = 2.8775016
+) -> np.ndarray:
     """Evaluates probability density for CDS threshold uncertainty.
 
     This function calculates the probability density for a defined function that describes
-    uncertainty in the CDS threshold.
+    uncertainty in the CDS threshold using a sigmoid-based transformation.
 
     Args:
         x: Array of values at which to calculate density.
+        threshold_lower: Lower bound of the valid range (default: 0.5)
+        threshold_upper: Upper bound of the valid range (default: 1.0)
+        param_a: Parameter controlling the sigmoid shape (default: 0.38387606)
+        param_b: Parameter controlling the sigmoid shift (default: -5.40387609)
+        param_c: Parameter controlling the power transformation (default: 2.8775016)
 
     Returns:
         Array of probability density values corresponding to input x values.
 
     Note:
-        The function uses predefined parameters (tl, tu, a, b, c) that were determined
-        empirically for CDS threshold uncertainty modeling.
+        The default parameters were determined empirically for CDS threshold uncertainty modeling.
+        These values can be adjusted if different uncertainty modeling is required.
     """
-    dq = np.zeros(len(x))
-    index = np.where((x > 0.5) & (x < 1))[0]
-    tl, tu, a, b, c = 0.5, 1, 0.38387606, -5.40387609, 2.8775016
-    g = ((x[index] - tl) / (tu - tl)) ** (-1 / c) - 1
-    dg = - ((x[index] - tl) / (tu - tl)) ** (-1 / c - 1) / (c * (tu - tl))
-    h = b - np.log(g) / a
-    dh = - dg / (a * g)
-    dq[index] = np.exp(-h) / (1 + np.exp(-h)) ** 2 * dh
-    return dq
+    # Initialize output array with zeros
+    probability_density = np.zeros(len(x))
+
+    # Only calculate for values in the valid range
+    valid_indices = np.where((x > threshold_lower) & (x < threshold_upper))[0]
+
+    if len(valid_indices) == 0:
+        return probability_density
+
+    # Extract valid x values for cleaner calculations
+    x_valid = x[valid_indices]
+
+    # Step 1: Normalize x to [0,1] range and apply power transformation
+    normalized_x = (x_valid - threshold_lower) / (threshold_upper - threshold_lower)
+    g_function = normalized_x ** (-1 / param_c) - 1
+
+    # Step 2: Calculate derivative of g with respect to x
+    dg_dx = -(normalized_x ** (-1 / param_c - 1)) / (param_c * (threshold_upper - threshold_lower))
+
+    # Step 3: Apply logarithmic transformation
+    h_function = param_b - np.log(g_function) / param_a
+
+    # Step 4: Calculate derivative of h with respect to x
+    dh_dx = -dg_dx / (param_a * g_function)
+
+    # Step 5: Apply sigmoid function and its derivative to get probability density
+    sigmoid_exp = np.exp(-h_function)
+    sigmoid_derivative = sigmoid_exp / (1 + sigmoid_exp) ** 2
+    probability_density[valid_indices] = sigmoid_derivative * dh_dx
+
+    return probability_density
 
 def get_minimum_pod_means(stats: Dict[str, np.ndarray], cds_thresholds: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Computes minimum PoD means for specified CDS thresholds.
