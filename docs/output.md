@@ -44,13 +44,14 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 
 - `reports/`
   - `multiqc_report.html` - Interactive HTML report containing:
-</details>
+  </details>
 
 ![Bifrost Pipeline Report](../assets/images/pipeline_report.png)
 
 The MultiQC report provides a comprehensive analysis of your HTTr data, organized into several key sections:
 
 #### General Overview
+
 - **Introduction**: Context about the analysis, including test substance, cell type, and exposure duration
 - **Summary Statistics**: Key metrics including:
   - Global PoD (minimum effect concentration across all genes)
@@ -61,6 +62,7 @@ The MultiQC report provides a comprehensive analysis of your HTTr data, organize
 - **PoD vs Fold Change Plot**: Interactive scatter plot showing the relationship between probe sensitivity (PoD) and response magnitude (fold change)
 
 #### Probes with Non-zero Global PoD Weight
+
 - Concentration-response plots for probes that contribute meaningfully to the global PoD calculation
 - Each plot shows:
   - Treatment data points (black X markers)
@@ -71,6 +73,7 @@ The MultiQC report provides a comprehensive analysis of your HTTr data, organize
 - Summary statistics table with CDS, mean PoD, fold changes, and weights
 
 #### Probes with Largest Fold Changes
+
 - Separate sections for most upregulated and downregulated probes
 - Each section includes:
   - Concentration-response plots for the top N probes (default: 5)
@@ -79,18 +82,21 @@ The MultiQC report provides a comprehensive analysis of your HTTr data, organize
   - Download options for plot data
 
 #### Lowest Mean PoDs (CDS > 0.5)
+
 - Concentration-response plots for the most sensitive probes
 - Focuses on probes with strong concentration-dependent responses (CDS > 0.5)
 - Includes summary statistics and interactive visualizations
 - Helps identify the most sensitive biological responses
 
 #### Probe-level PoD Statistics
+
 - Detailed statistics table for probes with CDS > 0.5
 - Shows PoD distribution percentiles (5th, 25th, 50th, 75th, 95th)
 - Includes CDS values and other key metrics
 - Sortable and searchable for easy analysis
 
 #### Diagnostic Summary
+
 - Model convergence checks:
   - Treedepth (sampler transitions)
   - Divergences (transition quality)
@@ -104,6 +110,7 @@ The MultiQC report provides a comprehensive analysis of your HTTr data, organize
 The report is highly interactive and customizable:
 
 - **Interactive Features**:
+
   - Sort tables by clicking column headers
   - Hover over data points for detailed information
   - Zoom and pan in plots
@@ -124,6 +131,5 @@ The report is highly interactive and customizable:
   - `--report_no_cds_threshold` - Disable CDS threshold filtering
 
 For more details about customizing the report, see the [usage documentation](usage.md).
-
 
 [Nextflow](https://www.nextflow.io/docs/latest/tracing.html) provides excellent functionality for generating various reports relevant to the running and execution of the pipeline. This will allow you to troubleshoot errors with the running of the pipeline, and also provide you with other information such as launch commands, run times and resource usage.
