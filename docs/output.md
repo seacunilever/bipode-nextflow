@@ -44,44 +44,85 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 
 - `reports/`
   - `multiqc_report.html` - Interactive HTML report containing:
-    - **General Overview**
-      - Introduction to the analysis
-      - Summary statistics including global PoD, number of hits, and key metrics
-      - PoD vs Fold Change scatter plot showing the relationship between sensitivity and response magnitude
-    - **Probes with Non-zero Global PoD Weight**
-      - Concentration-response plots for probes contributing to the global PoD calculation
-      - Summary statistics table for these probes
-    - **Probes with Largest Fold Changes**
-      - Separate sections for most upregulated and downregulated probes
-      - Concentration-response plots and summary statistics for each category
-    - **Lowest Mean PoDs (CDS > 0.5)**
-      - Concentration-response plots for the most sensitive probes
-      - Summary statistics for probes with strong concentration-dependent responses
-    - **Probe-level PoD Statistics**
-      - Detailed statistics table for probes with CDS > 0.5
-      - Includes PoD distribution percentiles and other metrics
-    - **Diagnostic Summary**
-      - Model convergence checks and quality metrics
-      - Biological relevance indicators
-      - Regularization recommendations
 
-The report is highly interactive, allowing you to:
+![Bifrost Pipeline Report](assets/images/pipeline_report.png)
 
-- Sort tables by clicking column headers
-- Hover over data points for detailed information
-- Zoom and pan in plots
-- Download plot data
-- Filter and search through results
+The MultiQC report provides a comprehensive analysis of your HTTr data, organized into several key sections:
 
-The report can be customized using various parameters:
+#### General Overview
+- **Introduction**: Context about the analysis, including test substance, cell type, and exposure duration
+- **Summary Statistics**: Key metrics including:
+  - Global PoD (minimum effect concentration across all genes)
+  - Maximum tested concentration
+  - Number of probes analyzed and hits
+  - Most sensitive probe details
+  - Largest fold changes (up/down regulation)
+- **PoD vs Fold Change Plot**: Interactive scatter plot showing the relationship between probe sensitivity (PoD) and response magnitude (fold change)
 
-- `--report_timepoint` - Exposure duration (default: "24 hours")
-- `--report_conc_units` - Concentration units (default: "uM")
-- `--report_interactive_plots` - Enable interactive plot mode
-- `--report_n_fold_change_probes` - Number of most up/down regulated probes to show
-- `--report_cds_threshold` - CDS threshold for filtering probes
-- `--report_n_lowest_means` - Number of lowest mean PoD probes to show
-- And more (see usage documentation for full list)
+#### Probes with Non-zero Global PoD Weight
+- Concentration-response plots for probes that contribute meaningfully to the global PoD calculation
+- Each plot shows:
+  - Treatment data points (black X markers)
+  - Solvent control levels (grey dashed lines)
+  - Response model (red bands and line)
+  - PoD distribution (purple bands)
+  - Mean PoD estimate (purple vertical line)
+- Summary statistics table with CDS, mean PoD, fold changes, and weights
+
+#### Probes with Largest Fold Changes
+- Separate sections for most upregulated and downregulated probes
+- Each section includes:
+  - Concentration-response plots for the top N probes (default: 5)
+  - Summary statistics table with key metrics
+  - Interactive plots with hover information
+  - Download options for plot data
+
+#### Lowest Mean PoDs (CDS > 0.5)
+- Concentration-response plots for the most sensitive probes
+- Focuses on probes with strong concentration-dependent responses (CDS > 0.5)
+- Includes summary statistics and interactive visualizations
+- Helps identify the most sensitive biological responses
+
+#### Probe-level PoD Statistics
+- Detailed statistics table for probes with CDS > 0.5
+- Shows PoD distribution percentiles (5th, 25th, 50th, 75th, 95th)
+- Includes CDS values and other key metrics
+- Sortable and searchable for easy analysis
+
+#### Diagnostic Summary
+- Model convergence checks:
+  - Treedepth (sampler transitions)
+  - Divergences (transition quality)
+  - E-BFMI (Hamiltonian Monte Carlo energy)
+  - ESS (effective sample size)
+  - R-hat (Gelman-Rubin convergence)
+- Biological relevance indicators
+- Regularization recommendations
+- Quality metrics for each probe
+
+The report is highly interactive and customizable:
+
+- **Interactive Features**:
+  - Sort tables by clicking column headers
+  - Hover over data points for detailed information
+  - Zoom and pan in plots
+  - Download plot data
+  - Filter and search through results
+  - Export tables to CSV
+
+- **Customization Options**:
+  - `--report_timepoint` - Exposure duration (default: "24 hours")
+  - `--report_conc_units` - Concentration units (default: "uM")
+  - `--report_interactive_plots` - Enable interactive plot mode
+  - `--report_n_fold_change_probes` - Number of most up/down regulated probes to show
+  - `--report_cds_threshold` - CDS threshold for filtering probes
+  - `--report_n_lowest_means` - Number of lowest mean PoD probes to show
+  - `--report_n_pod_stats` - Number of probes to include in PoD statistics
+  - `--report_plot_height` - Height of concentration-response plots
+  - `--report_pod_vs_fc_height` - Height of PoD vs Fold Change plot
+  - `--report_no_cds_threshold` - Disable CDS threshold filtering
+
+For more details about customizing the report, see the [usage documentation](usage.md).
 
 </details>
 
