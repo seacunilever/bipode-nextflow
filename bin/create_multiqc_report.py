@@ -1330,6 +1330,29 @@ def create_multiqc_report(summary_file, test_substance, cell_type, timepoint, co
     logger.info(f"Found {len(probes_to_plot)} probes with lowest means{" and CDS > " + str(cds_threshold) if apply_cds_threshold else ""} to plot")
 
     if len(probes_to_plot) > 0:
+        # Add overview section to lowest means module
+        lowest_means_module.add_section(
+            name='Overview',
+            anchor='bifrost_lowest_means_overview',
+            description=f'''
+        {get_plot_elements_description(cds_threshold, apply_cds_threshold)}
+
+        <p><strong>Probe Selection:</strong></p>
+        <ul>
+            <li>This section displays the {n_lowest_means} probes with the lowest mean PoD values{" that meet two criteria:" if apply_cds_threshold else ":"}
+                {"<ul>" if apply_cds_threshold else ""}
+                {"<li>CDS > " + str(cds_threshold) + " (strong evidence for a concentration-dependent response)</li>" if apply_cds_threshold else ""}
+                {"<li>Valid PoD estimate (mean PoD less than maximum tested concentration)</li>" if apply_cds_threshold else ""}
+                {"</ul>" if apply_cds_threshold else ""}
+                {"<li>Valid PoD estimate (mean PoD less than maximum tested concentration)</li>" if not apply_cds_threshold else ""}
+            </li>
+            {"<li>Probes are first filtered to include only those with CDS > " + str(cds_threshold) + ", ensuring reliable concentration-dependent responses.</li>" if apply_cds_threshold else ""}
+            <li>Among {"these filtered probes" if apply_cds_threshold else "all probes"}, the {n_lowest_means} with the lowest mean PoD values are selected.</li>
+            <li>If fewer than {n_lowest_means} probes meet these criteria, all qualifying probes are shown.</li>
+        </ul>
+        '''
+        )
+
         # Create summary table for lowest means probes
         lowest_means_table_data = create_summary_table_data(probes_to_plot, df, stats, weights, conc_units, sort_by_abs_fc=True)
         lowest_means_summary_table = create_table_plot(
