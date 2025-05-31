@@ -938,12 +938,22 @@ class BifrostMultiQCReport:
 
         This is an internal method used for generating plot descriptions in the report.
 
+        Inputs:
+            self.cds_threshold (float): The CDS threshold value used for filtering
+            self.conc_units (str): Concentration units for display
+
         Args:
-            cds_threshold: The CDS threshold value
+            cds_threshold: The CDS threshold value to include in description
             apply_cds_threshold: Whether CDS threshold filtering is applied
 
         Returns:
-            HTML string containing the plot elements description
+            HTML string containing the plot elements description with:
+            - Treatment data points (black X markers)
+            - Control levels (horizontal grey dashed lines)
+            - Response curve with credible intervals (red bands)
+            - PoD distribution (purple bands)
+            - Mean PoD (purple vertical line)
+            - CDS information
         """
         return textwrap.dedent(f"""
             <p><strong>Plot Elements:</strong></p>
@@ -969,6 +979,32 @@ class BifrostMultiQCReport:
         """Create a MultiQC table plot with common configuration.
 
         This is an internal method used for creating table plots in the report.
+
+        Inputs:
+            self.plot_height (int): Height of plots in pixels
+            self.interactive_plots (bool): Whether to force interactive plots
+
+        Args:
+            data: Dictionary mapping probe IDs to their data dictionaries
+            headers: Dictionary defining column headers and their properties:
+                - title: Display name for the column
+                - description: Tooltip text
+                - format: Optional format string
+                - cond_formatting_rules: Optional conditional formatting rules
+            table_id: Unique identifier for the table
+            title: Display title for the table
+            sort_by_abs_fc: Whether to sort by absolute fold change
+
+        Returns:
+            MultiQC table plot object configured with:
+            - Common styling and layout
+            - Optional sorting by absolute fold change
+            - Column headers with descriptions
+            - Conditional formatting if specified
+            - Interactive features if enabled
+
+        Note:
+            If sort_by_abs_fc is True, adds a hidden _abs_fc column for sorting
         """
         pconfig = {
             "id": table_id,
@@ -992,6 +1028,41 @@ class BifrostMultiQCReport:
         return table.plot(data=data, headers=headers, pconfig=pconfig)
 
     def create_report(self):
+        """Generate the complete BIFROST MultiQC report.
+
+        This method orchestrates the creation of all report sections and components,
+        including summary statistics, plots, and diagnostic information.
+
+        Inputs:
+            self.data (BifrostData): Processed BIFROST data
+            self.test_substance (str): Name of the test substance
+            self.cell_type (str): Type of cell used
+            self.timepoint (str): Exposure duration
+            self.conc_units (str): Concentration units
+            self.output_name (str): Output report filename
+            self.interactive_plots (bool): Whether to force interactive plots
+            self.n_fold_change_probes (int): Number of up/down regulated probes to show
+            self.cds_threshold (float): CDS threshold for filtering
+            self.n_lowest_means (int): Number of lowest mean PoD probes to show
+            self.n_pod_stats (int): Number of probes in PoD statistics table
+            self.plot_height (int): Height of concentration-response plots
+            self.pod_vs_fc_height (int): Height of PoD vs Fold Change plot
+            self.no_cds_threshold (bool): Whether to skip CDS threshold filtering
+
+        The report includes:
+        1. Introduction and overview
+        2. Summary statistics table
+        3. PoD vs Fold Change plot
+        4. Concentration-response plots for:
+            - Probes with non-zero global PoD weight
+            - Most up/down regulated probes
+            - Probes with lowest mean PoD
+        5. Probe-level PoD statistics table
+        6. Diagnostic summary table
+
+        Raises:
+            Exception: If report generation fails
+        """
         logger.info(f"Starting report generation for {self.test_substance} on {self.cell_type}")
 
         # Convert no_cds_threshold to apply_cds_threshold (inverted logic)
