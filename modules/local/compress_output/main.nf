@@ -10,7 +10,7 @@ process COMPRESS_OUTPUT {
     tuple val(meta), path(all_fits_files)
 
     output:
-    path "${prefix}.json{,.zip}"
+    tuple val(meta), path("${prefix}.json{,.zip}")
 
     script:
     def args = task.ext.args ?: ''

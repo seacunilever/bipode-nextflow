@@ -1,3 +1,5 @@
 reports:
-  samplesheet.csv:
-    display: "Auto-created samplesheet with collated metadata and FASTQ paths"
+  report/*.html:
+    display: "Bifrost Analysis Report"
+  compressed_results/*.zip:
+    display: "Combined complete results of Bifrost concentration-response analysis"

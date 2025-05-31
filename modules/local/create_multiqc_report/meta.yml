@@ -1,0 +1,50 @@
+name: create_multiqc_report
+description: Generate MultiQC reports for BIFROST HTTr analysis
+keywords:
+  - multiqc
+  - bifrost
+  - httr
+  - report
+tools:
+  - name: multiqc
+    description: MultiQC is a tool to aggregate bioinformatics results across many samples into a single report
+    homepage: https://multiqc.info/
+    licence: GPL-3.0
+    documentation: https://multiqc.info/docs/
+  - name: python
+    description: Python programming language
+    homepage: https://www.python.org/
+    licence: PSF-2.0
+    documentation: https://docs.python.org/
+
+input:
+  - summary_file:
+      type: file
+      description: BIFROST summary JSON file containing probe-level statistics
+      pattern: "*.json.zip"
+  - test_substance:
+      type: string
+      description: Name of the test substance
+  - cell_type:
+      type: string
+      description: Type of cell used in the experiment
+  - timepoint:
+      type: string
+      description: Exposure duration within experiment
+  - conc_units:
+      type: string
+      description: Concentration units (uM, ugml-1, or mgml-1)
+      pattern: "uM|ugml-1|mgml-1"
+
+output:
+  - report:
+      type: file
+      description: MultiQC HTML report
+      pattern: "*_multiqc_report.html"
+  - versions:
+      type: file
+      description: YAML file containing version information
+      pattern: "versions.yml"
+
+authors:
+  - "@jonathanmanning"

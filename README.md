@@ -5,9 +5,15 @@
 [![run with docker](https://img.shields.io/badge/run%20with-docker-0db7ed?labelColor=000000&logo=docker)](https://www.docker.com/)
 [![run with singularity](https://img.shields.io/badge/run%20with-singularity-1d355c.svg?labelColor=000000)](https://sylabs.io/docs/)
 
+# Bifrost
+
+Bifrost is a Nextflow pipeline for analyzing high-throughput transcriptomics data (HTTr) to identify concentration-dependent responses and estimate points of departure (PoDs).
+
+![Bifrost Pipeline Report](assets/images/pipeline_report.png)
+
 ## Introduction
 
-Bifrost is a bioinformatics pipeline for processing and analyzing concentration response data. The workflow is designed to be portable across different execution environments (local, HPC, cloud providers) and takes in pre-formatted json data files for one cell line/chemical (referred to as one dataset).
+The Bifrost model (Bayesian inference for region of signal threshold) is a statistical model for analysis of HTTr concentration-response data. The model is designed to infer a point-of-departure (PoD) from a concentration-response dataset. The PoD is an estimate of the minimum effect concentration of the test substance for the experimental conditions under which the data were produced. PoDs are estimated as probability distributions.
 
 ## Usage
 
@@ -28,7 +34,7 @@ For more details and further functionality, please refer to the [usage documenta
 
 ## Pipeline output
 
-For more details about the output files and reports, please refer to the [output documentation](docs/output.md).
+For more details about the output files and reports, please refer to the [output documentation](docs/output.md). An [example output report](docs/examples/BIFROST_input_Nitrofurantoin_HepaG2_full.html.zip) is available for Nitrofurantoin treatment in HepaG2 cells.
 
 ## Credits
 
