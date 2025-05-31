@@ -22,7 +22,34 @@ logger = logging.getLogger(__name__)
 
 
 class BifrostData:
-    def __init__(self, summary_file):
+    """Helper class to manage BIFROST data and calculations.
+
+    This class handles loading and processing of BIFROST summary data, including
+    calculation of summary statistics, global PoD, and probe weights.
+
+    Attributes:
+        df (pd.Series): BIFROST summary data containing probe information
+        stats (Dict[str, Union[np.ndarray, float, int]]): Dictionary containing:
+            - probe: Array of probe identifiers
+            - pod: Array of PoD means for each probe
+            - cds: Array of CDS scores for each probe
+            - l2fc: Array of log2 fold changes for each probe
+            - max_conc: Maximum tested concentration
+            - n_samp: Number of samples
+            - conc: Array of concentration values
+            - _response_cache: Dictionary mapping probe IDs to response arrays
+    """
+
+    def __init__(self, summary_file: str):
+        """Initialize BifrostData with summary file.
+
+        Args:
+            summary_file: Path to the summary JSON file. Can be compressed (.zip)
+
+        Raises:
+            FileNotFoundError: If summary file doesn't exist
+            ValueError: If summary file is malformed
+        """
         compression = "zip" if summary_file.endswith(".zip") else None
         self.df = pd.read_json(
             summary_file,
@@ -33,7 +60,36 @@ class BifrostData:
         )
         self.stats = self.calculate_summary_statistics()
 
-    def calculate_summary_statistics(self):
+    def calculate_summary_statistics(self) -> Dict[str, Union[np.ndarray, float, int]]:
+        """Calculates summary statistics for BIFROST analysis.
+
+        This method computes various summary statistics including PoD mean, log2 fold-change
+        extrema, and CDS scores for each probe in the dataset.
+
+        Inputs:
+            self.df (pd.Series): BIFROST summary data containing probe information, loaded
+                during class initialization. Contains keys:
+                - probes: List of probe identifiers
+                - max_conc: Maximum tested concentration
+                - n_samp: Number of samples
+                - conc: Array of concentration values
+                - For each probe: pod, cds, response arrays
+
+        Returns:
+            Dictionary containing:
+                - probe: Array of probe identifiers
+                - pod: Array of PoD means for each probe
+                - cds: Array of CDS scores for each probe
+                - l2fc: Array of log2 fold changes for each probe
+                - max_conc: Maximum tested concentration
+                - n_samp: Number of samples
+                - conc: Array of concentration values
+                - _response_cache: Dictionary mapping probe IDs to response arrays
+
+        Raises:
+            KeyError: If required keys are missing from self.df
+            ValueError: If probe data is malformed
+        """
         df = self.df
         probes = np.array(df["probes"])
         max_conc = df["max_conc"]
@@ -61,7 +117,27 @@ class BifrostData:
         }
         return stats
 
-    def filter_summary_statistics(self, cds_threshold: float):
+    def filter_summary_statistics(self, cds_threshold: float) -> Dict[str, np.ndarray]:
+        """Filters summary statistics based on CDS threshold.
+
+        Inputs:
+            self.stats (Dict[str, Union[np.ndarray, float, int]]): Summary statistics dictionary
+                containing probe data, computed by calculate_summary_statistics(). Contains keys:
+                - probe: Array of probe identifiers
+                - pod: Array of PoD means for each probe
+                - cds: Array of CDS scores for each probe
+                - l2fc: Array of log2 fold changes for each probe
+
+        Args:
+            cds_threshold: Minimum CDS value to keep in filtered results.
+
+        Returns:
+            Filtered dictionary with same structure as self.stats, containing only entries where
+            CDS >= cds_threshold.
+
+        Raises:
+            KeyError: If required keys are missing from self.stats
+        """
         df = self.stats
         mask = df["cds"] >= cds_threshold
         filtered_df = df.copy()
@@ -69,13 +145,35 @@ class BifrostData:
             filtered_df[key] = df[key][mask]
         return filtered_df
 
-    def get_confidence_threshold_probability_density(self, x: np.ndarray,
+    def get_confidence_threshold_probability_density(
+        self,
+        x: np.ndarray,
         threshold_lower: float = 0.5,
         threshold_upper: float = 1.0,
         param_a: float = 0.38387606,
         param_b: float = -5.40387609,
         param_c: float = 2.8775016,
     ) -> np.ndarray:
+        """Evaluates probability density for CDS threshold uncertainty.
+
+        This method calculates the probability density for a defined function that describes
+        uncertainty in the CDS threshold.
+
+        Args:
+            x: Array of values at which to calculate density
+            threshold_lower: Lower bound of threshold range (default: 0.5)
+            threshold_upper: Upper bound of threshold range (default: 1.0)
+            param_a: Parameter a for density calculation (default: 0.38387606)
+            param_b: Parameter b for density calculation (default: -5.40387609)
+            param_c: Parameter c for density calculation (default: 2.8775016)
+
+        Returns:
+            Array of probability density values corresponding to input x values.
+
+        Note:
+            The function uses predefined parameters that were determined empirically
+            for CDS threshold uncertainty modeling.
+        """
         probability_density = np.zeros(len(x))
         valid_indices = np.where((x > threshold_lower) & (x < threshold_upper))[0]
         if len(valid_indices) == 0:
@@ -93,7 +191,29 @@ class BifrostData:
         probability_density[valid_indices] = sigmoid_derivative * dh_dx
         return probability_density
 
-    def get_minimum_pod_means(self, cds_thresholds: np.ndarray):
+    def get_minimum_pod_means(self, cds_thresholds: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """Computes minimum PoD means for specified CDS thresholds.
+
+        Inputs:
+            self.stats (Dict[str, Union[np.ndarray, float, int]]): Summary statistics dictionary
+                containing probe data, computed by calculate_summary_statistics(). Contains keys:
+                - probe: Array of probe identifiers
+                - pod: Array of PoD means for each probe
+                - cds: Array of CDS scores for each probe
+                - max_conc: Maximum tested concentration
+
+        Args:
+            cds_thresholds: Array of CDS threshold values to evaluate.
+
+        Returns:
+            Tuple containing:
+                - min_means: Array of minimum PoD means for each threshold
+                - min_probes: Array of probe IDs corresponding to minimum means
+                - min_cds: Array of CDS values for the minimum probes
+
+        Raises:
+            KeyError: If required keys are missing from self.stats
+        """
         stats = self.stats
         min_means = np.full(len(cds_thresholds), stats["max_conc"])
         min_probes = np.full(len(cds_thresholds), "Max. conc.", dtype="object")
@@ -108,7 +228,21 @@ class BifrostData:
                 min_cds[i] = stats["cds"][mask][index]
         return min_means, min_probes, min_cds
 
-    def fit_pod_histogram(self, pod_samples: np.ndarray, n_samp: int):
+    def fit_pod_histogram(self, pod_samples: np.ndarray, n_samp: int) -> Tuple[Optional[np.ndarray], Optional[np.ndarray]]:
+        """Creates histogram approximation of PoD distribution.
+
+        Args:
+            pod_samples: Array of samples from the PoD distribution
+            n_samp: Maximum number of possible samples
+
+        Returns:
+            Tuple containing:
+                - weights: Array of histogram weights (or None if no valid samples)
+                - bin_edges: Array of histogram bin edges (or None if no valid samples)
+
+        Note:
+            If pod_samples contains infinite values, n_samp is set to the length of pod_samples.
+        """
         if np.isinf(pod_samples).any():
             n_samp = len(pod_samples)
         pod_samples = pod_samples[~np.isinf(pod_samples)]
@@ -123,7 +257,33 @@ class BifrostData:
         weights = counts / total_weight * prob_response
         return weights, bin_edges
 
-    def get_global_pod(self):
+    def get_global_pod(self) -> Dict[str, Union[float, np.ndarray, int]]:
+        """Calculates global PoD from probe-level statistics.
+
+        This method computes the global point of departure (PoD) by aggregating
+        probe-level PoD distributions using a weighted approach based on CDS thresholds.
+
+        Inputs:
+            self.stats (Dict[str, Union[np.ndarray, float, int]]): Summary statistics dictionary
+                containing probe data, computed by calculate_summary_statistics(). Contains keys:
+                - probe: Array of probe identifiers
+                - cds: Array of CDS scores for each probe
+                - max_conc: Maximum tested concentration
+
+        Returns:
+            Dictionary containing:
+                - global_pod: Calculated global PoD value
+                - num_hits: Expected number of hits
+                - means: Array of minimum PoD means for each threshold
+                - probes: Array of probe IDs corresponding to minimum means
+                - weights: Array of weights used in calculation
+                - quantiles: Array of CDS threshold quantiles
+                - cds: Array of CDS values for minimum probes
+
+        Raises:
+            KeyError: If required keys are missing from self.stats
+            ValueError: If stats data is malformed
+        """
         stats = self.stats
         dq = 0.025
         quantiles = np.arange(0.5, 1 + dq, dq)
@@ -145,7 +305,26 @@ class BifrostData:
         }
         return results
 
-    def get_min_probe_weights(self, global_pod):
+    def get_min_probe_weights(self, global_pod: Dict[str, Union[float, np.ndarray, int]]) -> Dict[str, np.ndarray]:
+        """Computes weights for probes contributing to global PoD.
+
+        Inputs:
+            global_pod: Dictionary containing global PoD data with keys:
+                - probes: Array of probe identifiers
+                - means: Array of minimum means for each probe
+                - weights: Array of weights used in calculation
+                - cds: Array of CDS values for each probe
+
+        Returns:
+            Dictionary containing:
+                - probe: Array of probe identifiers
+                - weight: Array of weights for each probe
+                - min_mean: Array of minimum means for each probe
+                - cds: Array of CDS values for each probe
+
+        Raises:
+            KeyError: If required keys are missing from input dictionary
+        """
         probes = np.unique(global_pod["probes"])
         means = np.power(10, [global_pod["means"][global_pod["probes"] == i][0] for i in probes])
         cds = np.array([global_pod["cds"][global_pod["probes"] == i][0] for i in probes])
@@ -169,9 +348,18 @@ class BifrostData:
     ) -> Dict[str, Dict[str, str]]:
         """Create summary table data for a list of probes.
 
+        Inputs:
+            self.df (pd.Series): BIFROST summary data containing probe information
+            self.stats (Dict[str, Union[np.ndarray, float, int]]): Summary statistics dictionary
+                containing probe data, computed by calculate_summary_statistics(). Contains keys:
+                - probe: Array of probe identifiers
+                - l2fc: Array of log2 fold changes for each probe
+
         Args:
             probes: List of probe identifiers
-            weights: Dictionary containing probe weights
+            weights: Dictionary containing probe weights with keys:
+                - probe: Array of probe identifiers
+                - weight: Array of weights for each probe
             conc_units: String specifying concentration units
             sort_by_abs_fc: Whether to sort probes by absolute fold change
 
@@ -225,6 +413,13 @@ class BifrostData:
     ) -> Dict[str, Dict[str, Any]]:
         """Aggregate diagnostic data across all probes.
 
+        Inputs:
+            self.df (pd.Series): BIFROST summary data containing probe information
+            self.stats (Dict[str, Union[np.ndarray, float, int]]): Summary statistics dictionary
+                containing probe data, computed by calculate_summary_statistics(). Contains keys:
+                - probe: Array of probe identifiers
+                - max_conc: Maximum tested concentration
+
         Args:
             cds_threshold: The CDS threshold value
             conc_units: String specifying concentration units
@@ -242,9 +437,36 @@ class BifrostData:
 
 
 class ProbeData:
-    """Helper class to manage probe data and calculations."""
+    """Helper class to manage probe data and calculations.
+
+    This class handles probe-specific data processing and visualization, including
+    concentration-response plots and diagnostic information.
+
+    Attributes:
+        df (pd.Series): BIFROST summary data containing probe information
+        probe (str): Probe identifier
+        conc_units (str): Concentration units for display
+        bifrost_data (Optional[BifrostData]): Optional reference to parent BifrostData instance
+        _cache (Dict[str, Any]): Cache for computed values including:
+            - cds: CDS value for the probe
+            - mean_pod: Mean PoD if CDS > 0
+            - pod_percentiles: Tuple of (percentiles, percentile_values, widths, labels)
+            - response_data: Tuple of (treatment_x, treatment_y, control_y, response_x, response)
+    """
 
     def __init__(self, df: pd.Series, probe: str, conc_units: str, bifrost_data: Optional['BifrostData'] = None):
+        """Initialize ProbeData with probe information.
+
+        Args:
+            df: BIFROST summary data containing probe information
+            probe: Probe identifier
+            conc_units: Concentration units for display
+            bifrost_data: Optional reference to parent BifrostData instance
+
+        Raises:
+            KeyError: If probe data is missing from summary
+            ValueError: If probe data is malformed
+        """
         self.df = df
         self.probe = probe
         self.conc_units = conc_units
@@ -259,7 +481,17 @@ class ProbeData:
     def _calculate_pod_percentiles(
         self,
     ) -> Optional[Tuple[np.ndarray, List[int], List[float], List[str]]]:
-        """Calculate PoD percentiles and related data if CDS > 0."""
+        """Calculate PoD percentiles and related data if CDS > 0.
+
+        Returns:
+            Tuple containing:
+                - pod_percentiles: Array of PoD percentile values
+                - percentiles: List of percentile values (1, 5, 10, 25, 75, 90, 95, 99)
+                - pod_widths: List of widths for percentile bands
+                - pod_percentile_labels: List of labels for each percentile
+
+            Returns None if CDS <= 0
+        """
         if self._cache["cds"] <= 0:
             return None
         percentiles = [1, 5, 10, 25, 75, 90, 95, 99]
@@ -270,25 +502,60 @@ class ProbeData:
 
     @property
     def cds(self) -> float:
-        """Get CDS value for the probe."""
+        """Get CDS value for the probe.
+
+        Returns:
+            Concentration-Dependency Score (CDS) value
+        """
         return self._cache["cds"]
 
     @property
     def mean_pod(self) -> Optional[float]:
-        """Calculate mean PoD if CDS > 0."""
+        """Calculate mean PoD if CDS > 0.
+
+        Returns:
+            Mean PoD value if CDS > 0, None otherwise
+        """
         return self._cache.get("mean_pod")
 
     @property
     def pod_percentiles(
         self,
     ) -> Optional[Tuple[np.ndarray, List[int], List[float], List[str]]]:
-        """Calculate PoD percentiles and related data if CDS > 0."""
+        """Calculate PoD percentiles and related data if CDS > 0.
+
+        Returns:
+            Tuple containing:
+                - pod_percentiles: Array of PoD percentile values
+                - percentiles: List of percentile values
+                - pod_widths: List of widths for percentile bands
+                - pod_percentile_labels: List of labels for each percentile
+
+            Returns None if CDS <= 0
+        """
         return self._cache.get("pod_percentiles")
 
     def get_response_data(
         self,
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-        """Get response data for plotting."""
+        """Get response data for plotting.
+
+        Inputs:
+            self.df (pd.Series): BIFROST summary data containing probe information
+            self.probe (str): Probe identifier
+            self._cache (Dict[str, Any]): Cache for computed values
+
+        Returns:
+            Tuple containing:
+                - treatment_x: Array of treatment concentrations
+                - treatment_y: Array of normalized treatment counts
+                - control_y: Array of normalized control counts
+                - response_x: Array of x-values for response curve
+                - response: Array of response curve values
+
+        Note:
+            Results are cached in self._cache["response_data"] for efficiency
+        """
         if "response_data" not in self._cache:
             # Pre-calculate arrays to avoid repeated calculations
             conc = 10 ** np.array(
@@ -326,7 +593,32 @@ class ProbeData:
         return self._cache["response_data"]
 
     def create_probe_plot(self) -> str:
-        """Creates a concentration-response plot for this probe using Plotly."""
+        """Creates a concentration-response plot for this probe using Plotly.
+
+        This method generates an interactive HTML plot showing:
+        - Treatment data points
+        - Control levels
+        - Response curve with credible intervals
+        - PoD distribution (if CDS > 0)
+        - Mean PoD (if CDS > 0)
+
+        Inputs:
+            self.df (pd.Series): BIFROST summary data containing probe information
+            self.probe (str): Probe identifier
+            self.conc_units (str): Concentration units for display
+            self.bifrost_data (Optional[BifrostData]): Optional reference to parent BifrostData instance
+            self._cache (Dict[str, Any]): Cache for computed values including:
+                - cds: CDS value for the probe
+                - mean_pod: Mean PoD if CDS > 0
+                - response_data: Tuple of response data arrays
+
+        Returns:
+            HTML string containing the interactive plot
+
+        Note:
+            The plot is styled consistently with other BIFROST plots and includes
+            hover information and interactive features.
+        """
         logger.info(f"Creating concentration-response plot for probe {self.probe}")
 
         treatment_x, treatment_y, control_y, response_x, response = self.get_response_data()
@@ -524,12 +816,42 @@ class ProbeData:
     ) -> Dict[str, Dict[str, Any]]:
         """Create diagnostic data for this single probe.
 
+        This method generates diagnostic information including:
+        - CDS and PoD values
+        - Model convergence checks (Treedepth, Divergences, E-BFMI, ESS, R-hat)
+        - Response range
+        - Regularization recommendations
+
+        Inputs:
+            self.df (pd.Series): BIFROST summary data containing probe information
+            self.probe (str): Probe identifier
+            self.conc_units (str): Concentration units for display
+            self._cache (Dict[str, Any]): Cache for computed values including:
+                - cds: CDS value for the probe
+                - mean_pod: Mean PoD if CDS > 0
+
         Args:
             cds_threshold: The CDS threshold value
             apply_cds_threshold: Whether to apply CDS threshold filtering
 
         Returns:
-            Dictionary containing diagnostic data for this probe
+            Dictionary containing diagnostic data for this probe, with keys:
+                - CDS: CDS value
+                - CDS_str: Formatted CDS string
+                - Mean PoD: Mean PoD value
+                - Mean PoD_str: Formatted PoD string
+                - Treedepth: Check result (✓/✗)
+                - Divergences: Check result (✓/✗)
+                - E-BFMI: Check result (✓/✗)
+                - ESS: Check result (✓/✗)
+                - R-hat: Check result (✓/✗)
+                - High R-hat Parameters: Number of parameters with R-hat > 1.01
+                - Response Range: Range of response thresholds
+                - Needs Regularization: Warning if regularization needed (⚠️/✓)
+                - _sort_score: Score for sorting probes by biological relevance
+
+        Note:
+            Returns empty dictionary if apply_cds_threshold is True and CDS <= cds_threshold
         """
         if apply_cds_threshold and self._cache["cds"] <= cds_threshold:
             return {}
