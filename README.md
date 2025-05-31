@@ -34,7 +34,7 @@ For more details and further functionality, please refer to the [usage documenta
 
 ## Pipeline output
 
-For more details about the output files and reports, please refer to the [output documentation](docs/output.md).
+For more details about the output files and reports, please refer to the [output documentation](docs/output.md). An [example output report](docs/examples/BIFROST_input_Nitrofurantoin_HepaG2_full.html.zip) is available for Nitrofurantoin treatment in HepaG2 cells.
 
 ## Credits
 
