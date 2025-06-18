@@ -3,6 +3,7 @@ import argparse
 import pickle
 import os
 import tarfile
+import shutil
 from pathlib import Path
 from typing import Dict, Any, Union, List, Optional
 import numpy as np
@@ -33,7 +34,15 @@ def create_tar_archive(files: List[str], output_path: Path) -> None:
             tar.add(file, arcname=Path(file).name)
 
 
-def process_batches(data_dir: Path, prefix: str, batch_size: int, batch_mode: str) -> Path:
+def create_directory_archive(files: List[str], output_path: Path) -> None:
+    """Create a directory containing the files."""
+    output_path.mkdir(parents=True, exist_ok=True)
+    for file in files:
+        # Copy file to output directory
+        shutil.copy2(file, output_path / Path(file).name)
+
+
+def process_batches(data_dir: Path, prefix: str, batch_size: int, batch_mode: str, archive_mode: str = "tar") -> Path:
     """
     Process the pickle files into batches and create manifests and archives.
 
@@ -42,13 +51,18 @@ def process_batches(data_dir: Path, prefix: str, batch_size: int, batch_mode: st
         prefix: Prefix for output files
         batch_size: Number of files per batch
         batch_mode: Either 'batch' or 'all' to control archiving behavior
+        archive_mode: Either 'tar' or 'directory' to control how files are stored
 
     Returns:
         Path: Path to the created manifest file
 
     Raises:
         FileNotFoundError: If no pickle files are found in the data directory
+        ValueError: If archive_mode is not 'tar' or 'directory'
     """
+    if archive_mode not in ["tar", "directory"]:
+        raise ValueError("archive_mode must be either 'tar' or 'directory'")
+
     # Get list of all pickle files
     files = sorted(glob.glob(str(data_dir / "*.pkl")))
     total_files = len(files)
@@ -61,16 +75,21 @@ def process_batches(data_dir: Path, prefix: str, batch_size: int, batch_mode: st
     # Clear the manifest file if it exists
     manifest_path.unlink(missing_ok=True)
 
-    # Create single tar.gz if batch_mode is 'all'
+    # Create single archive if batch_mode is 'all'
     if batch_mode == 'all':
-        tar_filename = f"{prefix}_batch0.tar.gz"
-        create_tar_archive(files, Path(tar_filename))
+        archive_name = f"{prefix}_batch0"
+        if archive_mode == "tar":
+            archive_path = Path(f"{archive_name}.tar.gz")
+            create_tar_archive(files, archive_path)
+        else:  # directory mode
+            archive_path = Path(archive_name + "_dir")
+            create_directory_archive(files, archive_path)
 
         # Process files in batches for manifest, even though we're using a single archive
         batch_num = 1
         for i in range(0, total_files, batch_size):
             batch_files = files[i:i + batch_size]
-            create_manifest(batch_files, manifest_path, tar_filename, batch_num)
+            create_manifest(batch_files, manifest_path, str(archive_path), batch_num)
             batch_num += 1
         return manifest_path
 
@@ -79,13 +98,16 @@ def process_batches(data_dir: Path, prefix: str, batch_size: int, batch_mode: st
     for i in range(0, total_files, batch_size):
         batch_files = files[i:i + batch_size]
         batch_prefix = f"{prefix}_batch{batch_num}"
-        tar_filename = f"{batch_prefix}.tar.gz"
 
-        # Create individual tar file
-        create_tar_archive(batch_files, Path(tar_filename))
+        if archive_mode == "tar":
+            archive_path = Path(f"{batch_prefix}.tar.gz")
+            create_tar_archive(batch_files, archive_path)
+        else:  # directory mode
+            archive_path = Path(batch_prefix)
+            create_directory_archive(batch_files, archive_path)
+
         # Add entries to manifest
-        create_manifest(batch_files, manifest_path, tar_filename, batch_num)
-
+        create_manifest(batch_files, manifest_path, str(archive_path), batch_num)
         batch_num += 1
 
     return manifest_path
@@ -183,6 +205,8 @@ def main() -> None:
     parser.add_argument('--batch-size', type=int, default=0, help='number of files per batch')
     parser.add_argument('--batch-mode', type=str, choices=['batch', 'all'], default='all',
                       help='batch mode: "batch" for individual archives, "all" for single archive')
+    parser.add_argument('--archive-mode', type=str, choices=['tar', 'directory'], default='tar',
+                      help='archive mode: "tar" for tar.gz files, "directory" for directories')
     parser.add_argument('--prefix', type=str, help='prefix for output files')
     args = parser.parse_args()
 
@@ -191,7 +215,7 @@ def main() -> None:
 
     # Process the pickle files into batches
     data_dir = Path(args.analysis_dir) / "Data"
-    manifest_file = process_batches(data_dir, args.prefix, args.batch_size, args.batch_mode)
+    manifest_file = process_batches(data_dir, args.prefix, args.batch_size, args.batch_mode, args.archive_mode)
 
 
 if __name__ == '__main__':
