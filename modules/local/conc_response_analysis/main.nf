@@ -44,6 +44,6 @@ process CONC_RESPONSE_ANALYSIS {
 
     sleep 5
 
-    find Fits/ -name "*.pkl" -print0 | tar $args2 -cf - --null -T - | gzip $args3 > ${prefix}.tar.gz
+    cd Fits && find . -name "*.pkl" -print0 | tar $args2 -cf - --null -T - | gzip $args3 > ../${prefix}.tar.gz
     """
 }
