@@ -15,7 +15,7 @@ nextflow_process {
                 """
                 input[0] = file("${projectDir}/assets/test_data/minimal/Example_Meta_Data.csv", checkIfExists: true)
                 input[1] = file("${projectDir}/assets/test_data/minimal/sers_meta_data_mapper.yml", checkIfExists: true)
-                input[2] = file("${projectDir}/assets/test_data/minimal/Example_counts_5probes.csv", checkIfExists: true)
+                input[2] = file("${projectDir}/assets/test_data/minimal/Example_Counts_5probes.csv", checkIfExists: true)
                 input[3] = file("${projectDir}/assets/test_data/minimal/substances_cell_types.yml", checkIfExists: true)
                 """
             }
