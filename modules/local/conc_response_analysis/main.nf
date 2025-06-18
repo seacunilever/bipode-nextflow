@@ -12,6 +12,7 @@ process CONC_RESPONSE_ANALYSIS {
 
     output:
     tuple val(meta), path("${prefix}.tar.gz"), emit: compressed_fits_files
+    tuple val(meta), path("Fits"), emit: fits_files
 
     script:
     def args = task.ext.args ?: ''
