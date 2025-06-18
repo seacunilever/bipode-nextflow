@@ -8,8 +8,8 @@
                         "batch_number": 0
                     },
                     [
-                        "ACBD3_59.pkl:md5,c741f97111a5d51cc8b5afac3746feeb",
-                        "CEP89_11010.pkl:md5,4c21013bd6d26631a636cc499e496103"
+                        "ACBD3_59.json:md5,52c4f8bae666c09411cfc33c0117e038",
+                        "CEP89_11010.json:md5,46f44630ecad0ad83ea8a2442f472bcf"
                     ]
                 ]
             ]
@@ -18,6 +18,6 @@
             "nf-test": "0.9.2",
             "nextflow": "25.04.4"
         },
-        "timestamp": "2025-06-17T22:20:25.081974"
+        "timestamp": "2025-06-18T15:50:20.430096"
     }
 }

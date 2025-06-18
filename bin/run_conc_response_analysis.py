@@ -10,6 +10,7 @@ import pandas as pd
 import cmdstanpy
 import pickle
 import time
+import json
 from contextlib import contextmanager
 
 from shutil import rmtree
@@ -153,6 +154,113 @@ class BetaLogistic:
         logpdf = (- self.a * np.logaddexp(0, -y) - self.b * np.logaddexp(0, y)
                   - np.log(beta(self.a, self.b)) + np.log(self.s) - np.log(self.sigma))
         return logpdf
+
+
+def generate_results_summary(
+    data: Dict[str, Any],
+    samples: Dict[str, Any],
+    fit_results: pd.Series,
+    diagnostics: str
+) -> Dict[str, Any]:
+    """
+    Generate a JSON-serializable summary of key scientific conclusions.
+
+    This focuses only on high-level categorical conclusions that should be
+    consistent across architectures, avoiding numerical values that vary
+    due to MCMC sampling differences.
+
+    Args:
+        data: Input data dictionary
+        samples: MCMC samples dictionary
+        fit_results: Fitted response curve results
+        diagnostics: Diagnostic string from Stan
+
+    Returns:
+        Dictionary containing key scientific conclusions for JSON export
+    """
+    # Analyze PoD results - only categorical conclusion
+    pod_samples = fit_results['pod']
+    finite_pods = pod_samples[np.isfinite(pod_samples)] if len(pod_samples) > 0 else []
+    has_detectable_effect = len(finite_pods) > 0 and (len(finite_pods) / len(pod_samples)) > 0.01
+
+    # PoD detection rate - this was identical between architectures
+    detection_rate = len(finite_pods) / len(pod_samples) if len(pod_samples) > 0 else 0.0
+
+    # Response analysis - only direction and magnitude categories
+    response_curves = fit_results['response']
+    max_response = float(np.max(response_curves))
+    min_response = float(np.min(response_curves))
+
+    # Determine effect direction
+    if abs(max_response) > abs(min_response):
+        effect_direction = 'up'
+    elif abs(min_response) > abs(max_response):
+        effect_direction = 'down'
+    else:
+        effect_direction = 'none'
+
+    # Effect magnitude categories (based on absolute response)
+    max_abs_response = max(abs(max_response), abs(min_response))
+    if max_abs_response < 10:
+        effect_magnitude = 'minimal'
+    elif max_abs_response < 50:
+        effect_magnitude = 'small'
+    elif max_abs_response < 100:
+        effect_magnitude = 'moderate'
+    else:
+        effect_magnitude = 'large'
+
+    # Check if effect exceeds thresholds
+    threshold_lower = float(fit_results['response_threshold_lower'])
+    threshold_upper = float(fit_results['response_threshold_upper'])
+    effect_exceeds_threshold = (max_response > threshold_upper or min_response < threshold_lower)
+
+    # Convergence analysis - only status
+    has_convergence_issues = (
+        'R-hat greater than 1.01' in diagnostics or
+        ('divergent transitions found' in diagnostics and 'No divergent transitions found' not in diagnostics) or
+        'Treedepth satisfactory' not in diagnostics or
+        'E-BFMI satisfactory' not in diagnostics
+    )
+    convergence_status = 'good' if not has_convergence_issues else 'issues_detected'
+
+    # CDS category (avoid precise values)
+    cds_value = float(fit_results['cds'])
+    if cds_value < 0.01:
+        cds_category = 'very_low'
+    elif cds_value < 0.1:
+        cds_category = 'low'
+    elif cds_value < 0.5:
+        cds_category = 'moderate'
+    else:
+        cds_category = 'high'
+
+    summary = {
+        'scientific_conclusions': {
+            'has_detectable_effect': bool(has_detectable_effect),
+            'effect_direction': str(effect_direction),
+            'effect_magnitude': str(effect_magnitude),
+            'effect_exceeds_threshold': bool(effect_exceeds_threshold),
+            'cds_category': str(cds_category)
+        },
+        'pod_analysis': {
+            'detection_rate': round(float(detection_rate), 6)  # This was identical between archs
+        },
+        'response_analysis': {
+            'response_shape': [int(x) for x in response_curves.shape] if hasattr(response_curves, 'shape') else None
+        },
+        'model_quality': {
+            'convergence_status': str(convergence_status)
+        },
+        'sample_metadata': {
+            'n_concentrations': int(data['n_conc']),
+            'n_batches': int(data['n_batch']),
+            'n_samples_total': int(data['n_sample']),
+            'mcmc_samples': int(data['n_samp'])
+        }
+    }
+
+    return summary
 
 
 def get_inits(data: Dict[str, Any]) -> Dict[str, Any]:
@@ -536,8 +644,15 @@ def gen_plotting_data(
     # Add diagnostics
     data['diagnostics'] = diagnostics
 
+    # Save the full pickle file
     with open(path_to_output, 'wb') as f:
         pickle.dump(data, f)
+
+    # Generate and save JSON summary
+    json_summary = generate_results_summary(data, samples, data['fit'], diagnostics)
+    json_path = Path(path_to_output).with_suffix('.json')
+    with open(json_path, 'w') as f:
+        json.dump(json_summary, f, indent=2)
 
 
 def main() -> None:

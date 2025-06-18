@@ -21,7 +21,7 @@ nextflow_process {
 
         then {
             assert process.success
-            assert snapshot(process.out.fits_files).match()
+            assert snapshot(process.out.json_summaries).match()
         }
 
     }

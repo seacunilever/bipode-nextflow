@@ -12,7 +12,8 @@ process CONC_RESPONSE_ANALYSIS {
 
     output:
     tuple val(meta), path("${prefix}.tar.gz"), emit: compressed_fits_files
-    tuple val(meta), path("Fits"), emit: fits_files
+    tuple val(meta), path("Fits/*.pkl"), emit: fits_files
+    tuple val(meta), path("Fits/*.json"), emit: json_summaries
 
     script:
     def args = task.ext.args ?: ''
@@ -43,6 +44,6 @@ process CONC_RESPONSE_ANALYSIS {
 
     sleep 5
 
-    tar $args2 -cf - -C Fits/ . | gzip $args3 > ${prefix}.tar.gz
+    find Fits/ -name "*.pkl" -print0 | tar $args2 -cf - --null -T - | gzip $args3 > ${prefix}.tar.gz
     """
 }
