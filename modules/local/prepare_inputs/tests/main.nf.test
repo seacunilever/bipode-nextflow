@@ -1,7 +1,7 @@
 nextflow_process {
 
     name "Test Process PREPARE_INPUTS"
-    script "modules/local/prepare_inputs/main.nf"
+    script "../main.nf"
     process "PREPARE_INPUTS"
 
     test("Should run without failures") {

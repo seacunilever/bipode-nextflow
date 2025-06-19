@@ -1,7 +1,7 @@
 nextflow_process {
 
     name "Test Process SPLIT_DATA"
-    script "modules/local/split_data/main.nf"
+    script "../main.nf"
     process "SPLIT_DATA"
 
     config './nextflow.config'
