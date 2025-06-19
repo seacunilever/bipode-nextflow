@@ -2,25 +2,16 @@ lint:
   files_exist:
     - .github/workflows/awstest.yml
     - .github/workflows/branch.yml
-    - conf/igenomes.config
-    - conf/igenomes_ignored.config
-    - assets/multiqc_config.yml
-    - assets/email_template.html
-    - assets/sendmail_template.txt
-    - assets/email_template.txt
-    - conf/igenomes.config
-    - conf/igenomes_ignored.config
-    - assets/multiqc_config.yml
-    - assets/email_template.html
-    - assets/sendmail_template.txt
-    - assets/email_template.txt
     - CODE_OF_CONDUCT.md
+    - assets/email_template.html
+    - assets/email_template.txt
+    - assets/multiqc_config.yml
     - assets/nf-core-bifrost_logo_light.png
-    - docs/images/nf-core-bifrost_logo_light.png
-    - docs/images/nf-core-bifrost_logo_dark.png
-  files_unchanged:
-    - .github/CONTRIBUTING.md
     - assets/sendmail_template.txt
+    - conf/igenomes.config
+    - conf/igenomes_ignored.config
+    - docs/images/nf-core-bifrost_logo_light.png
+  files_unchanged:
     - .github/CONTRIBUTING.md
     - assets/sendmail_template.txt
   included_configs: false
