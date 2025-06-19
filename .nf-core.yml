@@ -1,9 +1,21 @@
-repository_type: pipeline
-
-nf_core_version: 3.2.0
-
 lint:
-  actions_ci: false
+  files_exist:
+    - .github/workflows/awstest.yml
+    - .github/workflows/branch.yml
+    - CODE_OF_CONDUCT.md
+    - assets/email_template.html
+    - assets/email_template.txt
+    - assets/multiqc_config.yml
+    - assets/nf-core-bifrost_logo_light.png
+    - assets/sendmail_template.txt
+    - conf/igenomes.config
+    - conf/igenomes_ignored.config
+    - docs/images/nf-core-bifrost_logo_light.png
+  files_unchanged:
+    - .github/CONTRIBUTING.md
+    - assets/sendmail_template.txt
+  included_configs: false
+  multiqc_config: false
   nextflow_config:
     - manifest.name
     - manifest.homePage
@@ -16,40 +28,15 @@ lint:
     - validation.help.afterText
     - validation.summary.beforeText
     - validation.summary.afterText
-  files_unchanged:
-    - .github/CONTRIBUTING.md
-    - assets/sendmail_template.txt
-    - .github/CONTRIBUTING.md
-    - assets/sendmail_template.txt
-  multiqc_config: false
-  files_exist:
-    - .github/workflows/awstest.yml
-    - .github/workflows/branch.yml
-    - conf/igenomes.config
-    - conf/igenomes_ignored.config
-    - assets/multiqc_config.yml
-    - assets/email_template.html
-    - assets/sendmail_template.txt
-    - assets/email_template.txt
-    - conf/igenomes.config
-    - conf/igenomes_ignored.config
-    - assets/multiqc_config.yml
-    - assets/email_template.html
-    - assets/sendmail_template.txt
-    - assets/email_template.txt
-    - CODE_OF_CONDUCT.md
-    - assets/nf-core-bifrost_logo_light.png
-    - docs/images/nf-core-bifrost_logo_light.png
-    - docs/images/nf-core-bifrost_logo_dark.png
-  included_configs: false
-
+nf_core_version: 3.3.1
+repository_type: pipeline
 template:
-  org: seqera-services
-  name: bifrost
-  description: Bifrost pipeline
   author: Joe Reynolds, Mark Liddell, Jonathan Manning
-  version: 1.0.0dev
-  force: true
+  description: Bifrost pipeline
+  force: false
+  is_nfcore: false
+  name: bifrost
+  org: seqera-services
   outdir: .
   skip_features:
     - igenomes
@@ -59,4 +46,4 @@ template:
     - email
     - adaptivecard
     - slackreport
-  is_nfcore: false
+  version: 1.0.0dev
