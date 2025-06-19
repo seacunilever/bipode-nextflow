@@ -19,7 +19,6 @@ nextflow_process {
         }
 
         then {
-            println process.stdout
             assert process.success
             def compiled_model = file(process.out.compiled_model[0])
 

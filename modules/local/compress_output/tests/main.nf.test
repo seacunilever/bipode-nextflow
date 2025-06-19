@@ -1,7 +1,7 @@
 nextflow_process {
 
     name "Test Process COMPRESS_OUTPUT"
-    script "modules/local/compress_output/main.nf"
+    script "../main.nf"
     process "COMPRESS_OUTPUT"
 
     test("Should run without failures") {
