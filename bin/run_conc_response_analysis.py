@@ -156,6 +156,12 @@ class BetaLogistic:
         return logpdf
 
 
+def _categorize_by_thresholds(value: float, thresholds: List[float], labels: List[str]) -> str:
+    """Helper function to categorize a numeric value using thresholds."""
+    bin_index = np.digitize(value, thresholds)
+    return labels[min(bin_index, len(labels) - 1)]
+
+
 def generate_results_summary(
     data: Dict[str, Any],
     samples: Dict[str, Any],
@@ -165,33 +171,54 @@ def generate_results_summary(
     """
     Generate a JSON-serializable summary of key scientific conclusions.
 
-    This focuses only on high-level categorical conclusions that should be
-    consistent across architectures, avoiding numerical values that vary
-    due to MCMC sampling differences.
+    This creates consistent categorical classifications for BIFROST results,
+    using CDS > 0.5 as the primary threshold for biological significance.
+    Designed to be deterministic for reproducible snapshots.
 
     Args:
         data: Input data dictionary
-        samples: MCMC samples dictionary
+        samples: MCMC samples dictionary (unused but kept for API consistency)
         fit_results: Fitted response curve results
         diagnostics: Diagnostic string from Stan
 
     Returns:
-        Dictionary containing key scientific conclusions for JSON export
+        Dictionary containing categorized scientific conclusions
     """
-    # Analyze PoD results - only categorical conclusion
+    # Extract core metrics
     pod_samples = fit_results['pod']
-    finite_pods = pod_samples[np.isfinite(pod_samples)] if len(pod_samples) > 0 else []
-    has_detectable_effect = len(finite_pods) > 0 and (len(finite_pods) / len(pod_samples)) > 0.01
+    cds_value = float(fit_results['cds'])
+    response_curves = fit_results['response']
 
-    # PoD detection rate - this was identical between architectures
+    # PoD analysis
+    finite_pods = pod_samples[np.isfinite(pod_samples)] if len(pod_samples) > 0 else []
     detection_rate = len(finite_pods) / len(pod_samples) if len(pod_samples) > 0 else 0.0
 
-    # Response analysis - only direction and magnitude categories
-    response_curves = fit_results['response']
+    # Response analysis
     max_response = float(np.max(response_curves))
     min_response = float(np.min(response_curves))
+    max_abs_response = max(abs(max_response), abs(min_response))
 
-    # Determine effect direction
+    # Threshold analysis
+    threshold_lower = float(fit_results['response_threshold_lower'])
+    threshold_upper = float(fit_results['response_threshold_upper'])
+    exceeds_threshold = (max_response > threshold_upper or min_response < threshold_lower)
+
+    # Categorize CDS (biological significance)
+    cds_exceeds_threshold = cds_value > 0.5
+    cds_category = _categorize_by_thresholds(
+        cds_value,
+        [0.1, 0.3, 0.5, 0.8],
+        ['very_low', 'low', 'moderate', 'high', 'very_high']
+    )
+
+    # Categorize detection rate (statistical power)
+    signal_strength = _categorize_by_thresholds(
+        detection_rate,
+        [0.1, 0.5, 0.7, 0.9],
+        ['very_low', 'low', 'moderate', 'high', 'very_high']
+    )
+
+    # Effect direction
     if abs(max_response) > abs(min_response):
         effect_direction = 'up'
     elif abs(min_response) > abs(max_response):
@@ -199,58 +226,76 @@ def generate_results_summary(
     else:
         effect_direction = 'none'
 
-    # Effect magnitude categories (based on absolute response)
-    max_abs_response = max(abs(max_response), abs(min_response))
-    if max_abs_response < 10:
-        effect_magnitude = 'minimal'
-    elif max_abs_response < 50:
-        effect_magnitude = 'small'
-    elif max_abs_response < 100:
-        effect_magnitude = 'moderate'
-    else:
-        effect_magnitude = 'large'
-
-    # Check if effect exceeds thresholds
-    threshold_lower = float(fit_results['response_threshold_lower'])
-    threshold_upper = float(fit_results['response_threshold_upper'])
-    effect_exceeds_threshold = (max_response > threshold_upper or min_response < threshold_lower)
-
-    # Convergence analysis - only status
-    has_convergence_issues = (
-        'R-hat greater than 1.01' in diagnostics or
-        ('divergent transitions found' in diagnostics and 'No divergent transitions found' not in diagnostics) or
-        'Treedepth satisfactory' not in diagnostics or
-        'E-BFMI satisfactory' not in diagnostics
+    # Effect magnitude (with CDS-informed adjustment)
+    base_magnitude = _categorize_by_thresholds(
+        max_abs_response,
+        [10, 50, 100],
+        ['minimal', 'small', 'moderate', 'large']
     )
-    convergence_status = 'good' if not has_convergence_issues else 'issues_detected'
 
-    # CDS category (avoid precise values)
-    cds_value = float(fit_results['cds'])
-    if cds_value < 0.01:
-        cds_category = 'very_low'
-    elif cds_value < 0.1:
-        cds_category = 'low'
-    elif cds_value < 0.5:
-        cds_category = 'moderate'
+    # Adjust magnitude based on CDS confidence
+    if cds_value < 0.3 and base_magnitude in ['moderate', 'large']:
+        effect_magnitude = 'small'
+    elif cds_value < 0.1 and base_magnitude != 'minimal':
+        effect_magnitude = 'minimal'
     else:
-        cds_category = 'high'
+        effect_magnitude = base_magnitude
 
-    summary = {
+    # Convergence assessment
+    convergence_issues = []
+    if 'R-hat greater than 1.01' in diagnostics:
+        convergence_issues.append('high_rhat')
+    if 'divergent transitions found' in diagnostics and 'No divergent transitions found' not in diagnostics:
+        convergence_issues.append('divergent_transitions')
+    if 'Treedepth satisfactory' not in diagnostics:
+        convergence_issues.append('max_treedepth')
+    if 'E-BFMI satisfactory' not in diagnostics:
+        convergence_issues.append('low_bfmi')
+    if 'effective sample size satisfactory' not in diagnostics:
+        convergence_issues.append('low_ess')
+
+    if len(convergence_issues) == 0:
+        convergence_status = 'excellent'
+    elif len(convergence_issues) == 1 and 'high_rhat' in convergence_issues:
+        convergence_status = 'acceptable'
+    elif len(convergence_issues) <= 2:
+        convergence_status = 'issues_detected'
+    else:
+        convergence_status = 'poor'
+
+    # Overall interpretation confidence
+    if cds_value > 0.8 and convergence_status in ['excellent', 'acceptable']:
+        interpretation_confidence = 'high'
+    elif cds_value > 0.5 and convergence_status != 'poor':
+        interpretation_confidence = 'moderate'
+    else:
+        interpretation_confidence = _categorize_by_thresholds(
+            cds_value,
+            [0.3],
+            ['very_low', 'low']
+        )
+
+    return {
         'scientific_conclusions': {
-            'has_detectable_effect': bool(has_detectable_effect),
+            'cds_exceeds_threshold': bool(cds_exceeds_threshold),
             'effect_direction': str(effect_direction),
             'effect_magnitude': str(effect_magnitude),
-            'effect_exceeds_threshold': bool(effect_exceeds_threshold),
-            'cds_category': str(cds_category)
+            'effect_exceeds_threshold': bool(exceeds_threshold),
+            'cds_category': str(cds_category),
+            'interpretation_confidence': str(interpretation_confidence)
         },
         'pod_analysis': {
-            'detection_rate': round(float(detection_rate), 6)  # This was identical between archs
+            'detection_rate': float(round(detection_rate, 6)),
+            'statistical_signal_strength': str(signal_strength)
         },
         'response_analysis': {
-            'response_shape': [int(x) for x in response_curves.shape] if hasattr(response_curves, 'shape') else None
+            'response_shape': list(response_curves.shape) if hasattr(response_curves, 'shape') else None,
+            'max_absolute_response': float(round(max_abs_response, 2))
         },
         'model_quality': {
-            'convergence_status': str(convergence_status)
+            'convergence_status': str(convergence_status),
+            'convergence_issues': list(convergence_issues) if convergence_issues else [],
+            'has_regularization_warning': bool('regularizating your model' in diagnostics)
         },
         'sample_metadata': {
             'n_concentrations': int(data['n_conc']),
@@ -259,8 +304,6 @@ def generate_results_summary(
             'mcmc_samples': int(data['n_samp'])
         }
     }
-
-    return summary
 
 
 def get_inits(data: Dict[str, Any]) -> Dict[str, Any]:
