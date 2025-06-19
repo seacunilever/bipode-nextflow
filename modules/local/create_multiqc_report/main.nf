@@ -12,6 +12,7 @@ process CREATE_MULTIQC_REPORT {
 
     output:
     path "${prefix}.html", emit: report
+    path "${prefix}_data", emit: data
     path "versions.yml", emit: versions
 
     when:
