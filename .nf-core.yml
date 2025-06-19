@@ -16,6 +16,7 @@ lint:
     - docs/images/nf-core-bifrost_logo_light.png
   files_unchanged:
     - assets/sendmail_template.txt
+    - .github/CONTRIBUTING.md
   included_configs: false
   multiqc_config: false
   nextflow_config:
