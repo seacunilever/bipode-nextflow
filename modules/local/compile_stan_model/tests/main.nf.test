@@ -1,7 +1,7 @@
 nextflow_process {
 
     name "Test Process COMPILE_STAN_MODEL"
-    script "modules/local/compile_stan_model/main.nf"
+    script "../main.nf"
     process "COMPILE_STAN_MODEL"
 
     test("Should compile Stan model successfully") {
