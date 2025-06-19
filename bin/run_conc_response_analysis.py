@@ -290,7 +290,7 @@ def generate_results_summary(
         },
         'response_analysis': {
             'response_shape': list(response_curves.shape) if hasattr(response_curves, 'shape') else None,
-            'max_absolute_response': float(round(max_abs_response, 2))
+            'max_absolute_response_nearest_10': float(round(max_abs_response / 10) * 10)
         },
         'model_quality': {
             'convergence_status': str(convergence_status),
