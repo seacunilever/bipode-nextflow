@@ -10,9 +10,9 @@ lint:
     - assets/sendmail_template.txt
     - conf/igenomes.config
     - conf/igenomes_ignored.config
+    - docs/images/nf-core-bifrost_logo_dark.png
     - docs/images/nf-core-bifrost_logo_light.png
   files_unchanged:
-    - .github/CONTRIBUTING.md
     - assets/sendmail_template.txt
   included_configs: false
   multiqc_config: false
