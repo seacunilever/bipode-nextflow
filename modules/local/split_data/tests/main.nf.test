@@ -1,0 +1,32 @@
+nextflow_process {
+
+    name "Test Process SPLIT_DATA"
+    script "../main.nf"
+    process "SPLIT_DATA"
+
+    config './nextflow.config'
+
+    test("Should run without failures") {
+
+        when {
+            params {
+                // define parameters here. Example:
+                // outdir = "tests/results"
+            }
+            process {
+                """
+                input[0] = [ ['id': 'Nitrofurantoin_HepG2'], file("${projectDir}/assets/test_data/minimal/BIFROST_input_Nitrofurantoin_HepG2.json", checkIfExists: true)]
+                """
+            }
+        }
+
+        then {
+            def (id_map, manifest_path, archive_path) = process.out.probe_files[0]
+
+            assert process.success
+            assert snapshot(process.out).match()
+        }
+
+    }
+
+}

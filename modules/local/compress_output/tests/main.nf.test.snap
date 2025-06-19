@@ -1,0 +1,21 @@
+{
+    "Should run without failures": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "Nitrofurantoin_HepG2"
+                        },
+                        "Nitrofurantoin_HepG2_results.json:md5,f2932944e5fcc0f4393cd40f2eca1f8e"
+                    ]
+                ]
+            }
+        ],
+        "meta": {
+            "nf-test": "0.9.2",
+            "nextflow": "25.04.3"
+        },
+        "timestamp": "2025-06-13T15:13:06.636733"
+    }
+}

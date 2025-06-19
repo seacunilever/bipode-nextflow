@@ -1,0 +1,12 @@
+{
+    "Should run without failures": {
+        "content": [
+            "bifrost_summary.txt:md5,2d008f31cd6ad3b0b13ec05cdd24be07"
+        ],
+        "meta": {
+            "nf-test": "0.9.2",
+            "nextflow": "25.04.4"
+        },
+        "timestamp": "2025-06-19T14:36:27.285965"
+    }
+}

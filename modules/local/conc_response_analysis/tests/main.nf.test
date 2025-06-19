@@ -1,0 +1,51 @@
+nextflow_process {
+
+    name "Test Process CONC_RESPONSE_ANALYSIS"
+    script "../main.nf"
+    process "CONC_RESPONSE_ANALYSIS"
+
+    test("Test with responder") {
+
+        when {
+            params {
+                // define parameters here. Example:
+                // outdir = "tests/results"
+            }
+            process {
+                """
+                input[0] = file("${projectDir}/assets/model/BIFROST_HTTr_beta_logistic_batch.stan")
+                input[1] = [['name': 'Nitrofurantoin_HepG2', 'batch_number': 0], ['MPDU1_11661'], file("${projectDir}/assets/test_data/minimal/Nitrofurantoin_HepG2_probes_batch0.tar.gz")]
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            assert snapshot(process.out.json_summaries).match()
+        }
+
+    }
+
+    test("Test with non-responder") {
+
+        when {
+            params {
+                // define parameters here. Example:
+                // outdir = "tests/results"
+            }
+            process {
+                """
+                input[0] = file("${projectDir}/assets/model/BIFROST_HTTr_beta_logistic_batch.stan")
+                input[1] = [['name': 'Nitrofurantoin_HepG2', 'batch_number': 0], ['ACBD3_59'], file("${projectDir}/assets/test_data/minimal/Nitrofurantoin_HepG2_probes_batch0.tar.gz")]
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            assert snapshot(process.out.json_summaries).match()
+        }
+
+    }
+
+}

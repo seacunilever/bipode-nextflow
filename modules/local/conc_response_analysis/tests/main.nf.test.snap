@@ -1,0 +1,38 @@
+{
+    "Test with responder": {
+        "content": [
+            [
+                [
+                    {
+                        "name": "Nitrofurantoin_HepG2",
+                        "batch_number": 0
+                    },
+                    "MPDU1_11661.json:md5,06b5cd17ad2ba52c2c5862497d488db9"
+                ]
+            ]
+        ],
+        "meta": {
+            "nf-test": "0.9.2",
+            "nextflow": "25.04.4"
+        },
+        "timestamp": "2025-06-19T18:44:26.996096"
+    },
+    "Test with non-responder": {
+        "content": [
+            [
+                [
+                    {
+                        "name": "Nitrofurantoin_HepG2",
+                        "batch_number": 0
+                    },
+                    "ACBD3_59.json:md5,4de4ce1f24e172537c7664173d1bcd83"
+                ]
+            ]
+        ],
+        "meta": {
+            "nf-test": "0.9.2",
+            "nextflow": "25.04.4"
+        },
+        "timestamp": "2025-06-19T18:47:12.497788"
+    }
+}
