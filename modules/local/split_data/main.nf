@@ -17,7 +17,7 @@ process SPLIT_DATA {
     def args = task.ext.args ?: ''
 
     """
-    split_data.py \\
+    bifrost-httr split-data \\
         --input-file $input_data \\
         --analysis-dir . \\
         --prefix $prefix \\

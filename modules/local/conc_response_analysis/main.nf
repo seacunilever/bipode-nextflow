@@ -31,12 +31,12 @@ process CONC_RESPONSE_ANALYSIS {
     if [[ "$model" == *.stan ]]; then
         echo "Compiling Stan model..."
         model_executable="${model.baseName}"
-        compile_stan_model.py "$model"
+        bifrost-httr compile-model "$model"
     else
         model_executable="$model"
     fi
 
-    run_conc_response_analysis.py \
+    bifrost-httr run-analysis \
         --data-files $probe_files_extract \
         --model-executable \$model_executable \
         --n-cores $task.cpus \

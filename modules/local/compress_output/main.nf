@@ -21,7 +21,7 @@ process COMPRESS_OUTPUT {
     mkdir Fits
     for file in $fits_files; do tar -zxf "\$file" -C Fits/; done
 
-    compress_output.py \
+    bifrost-httr compress-output \
         --fits-dir Fits \
         --output ${prefix}${output_ext} \
         $args

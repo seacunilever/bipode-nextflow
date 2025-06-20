@@ -17,7 +17,7 @@ process PREPARE_INPUTS {
     script:
     def args = task.ext.args ?: ''
     """
-    prepare_bifrost_inputs.py \
+    bifrost-httr prepare-inputs \
         --meta-data $meta_data \
         --meta-mapper $meta_mapper \
         --counts $counts \

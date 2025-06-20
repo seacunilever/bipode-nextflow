@@ -22,7 +22,7 @@ process CREATE_MULTIQC_REPORT {
     def args = task.ext.args ?: ''
     prefix = task.ext.prefix ?: "${meta.id}"
     """
-    create_multiqc_report.py \\
+    bifrost-httr create-report \\
         --summary-file ${input_file} \\
         --test-substance "${test_substance}" \\
         --cell-type "${cell_type}" \\

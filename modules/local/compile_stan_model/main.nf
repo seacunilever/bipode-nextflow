@@ -17,6 +17,6 @@ process COMPILE_STAN_MODEL {
 
     script:
     """
-    compile_stan_model.py ${model}
+    bifrost-httr compile-model ${model}
     """
 }
