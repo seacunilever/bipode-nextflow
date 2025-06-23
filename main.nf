@@ -35,7 +35,11 @@ workflow NFCORE_BIFROST {
     ch_meta_mapper = Channel.from(file(params.meta_mapper, checkIfExists: true))
     ch_counts = Channel.from(file(params.counts, checkIfExists: true))
     ch_substances_cell_types = Channel.from(file(params.substances_cell_types, checkIfExists: true))
-    ch_model = Channel.fromPath(params.model_file, checkIfExists: true).first()
+    
+    ch_model = []
+    if (params.model_file) {
+        ch_model = Channel.fromPath(params.model_file, checkIfExists: true).first()
+    }
     //
     // WORKFLOW: Run pipeline
     //

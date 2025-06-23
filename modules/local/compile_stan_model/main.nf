@@ -13,10 +13,18 @@ process COMPILE_STAN_MODEL {
     path model
 
     output:
-    path "${model.baseName}", emit: compiled_model
+    path "compiled_model/*", emit: compiled_model
 
     script:
+    def args = task.ext.args ?: ''
     """
-    bifrost-httr compile-model ${model}
+    mkdir -p compiled_model && cd compiled_model
+
+    # Handle model: empty (compile default) or .stan (compile file)
+    if [[ -z "$model" ]]; then
+        bifrost-httr compile-model $args
+    else
+        bifrost-httr compile-model "$model" $args
+    fi
     """
 }

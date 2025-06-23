@@ -20,16 +20,25 @@ process CONC_RESPONSE_ANALYSIS {
     def args2 = task.ext.args2 ?: ''
     def args3 = task.ext.args3 ?: ''
     def probe_files = probes.collect { it + ".pkl" }.join(" ")
-    def probe_files_extract = probes.collect { "Data/" + it + ".pkl" }.join(" ")
+    def probe_files_extract = probes.collect { " -f Data/" + it + ".pkl" }.join(" ")
     prefix = task.ext.prefix ?: "${meta.id}"
     """
     mkdir Data Samples Fits
 
     tar -zxf $all_probe_file -C Data/ $probe_files
 
-    # Compile Stan model if .stan file is provided
-    if [[ "$model" == *.stan ]]; then
-        echo "Compiling Stan model..."
+    # Handle model: empty (compile default), .stan (compile file), or executable (use as-is)
+    if [[ -z "$model" ]]; then
+        mkdir -p ModelCompilation && cd ModelCompilation
+        bifrost-httr compile-model
+        executable_file=\$(find . -maxdepth 1 -type f -perm +111 | head -n 1)
+        if [[ -z "\$executable_file" ]]; then
+            echo "Error: No executable found after compilation"
+            exit 1
+        fi
+        model_executable=\$(realpath "\$executable_file")
+        cd ..
+    elif [[ "$model" == *.stan ]]; then
         model_executable="${model.baseName}"
         bifrost-httr compile-model "$model"
     else
@@ -37,7 +46,7 @@ process CONC_RESPONSE_ANALYSIS {
     fi
 
     bifrost-httr run-analysis \
-        --data-files $probe_files_extract \
+        $probe_files_extract \
         --model-executable \$model_executable \
         --n-cores $task.cpus \
         $args
