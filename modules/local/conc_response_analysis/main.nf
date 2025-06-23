@@ -31,7 +31,7 @@ process CONC_RESPONSE_ANALYSIS {
     if [[ -z "$model" ]]; then
         mkdir -p ModelCompilation && cd ModelCompilation
         bifrost-httr compile-model
-        executable_file=\$(find . -maxdepth 1 -type f -perm +111 | head -n 1)
+        executable_file=\$(find . -maxdepth 1 -type f -perm /111 | head -n 1)
         if [[ -z "\$executable_file" ]]; then
             echo "Error: No executable found after compilation"
             exit 1
