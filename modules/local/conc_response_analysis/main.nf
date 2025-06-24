@@ -6,6 +6,11 @@ process CONC_RESPONSE_ANALYSIS {
         'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/33/33499ba0fef01239be35b4b8ffae2f35bc921bd88d622a5f5f5c6ed2edb3eaa0/data' :
         'community.wave.seqera.io/library/python_cmdstanpy_numpy_pandas_pruned:b21b7854a692918a' }"
 
+    cpus { params.n_cores }
+    memory { 3.GB * task.attempt }
+    time { 4.h * task.attempt }
+    disk '10 GB'
+
     input:
     path model
     tuple val(meta), val(probes), path(all_probe_file)
