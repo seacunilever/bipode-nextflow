@@ -6,6 +6,12 @@ This document describes the output produced by the pipeline.
 
 The directories listed below will be created in the results directory after the pipeline has finished. All paths are relative to the top-level results directory.
 
+## Example Outputs
+
+Example outputs from the pipeline are available in the `docs/examples` directory:
+
+- `BIFROST_input_Nitrofurantoin_HepaG2_full.html.zip` - An example HTML report for Nitrofurantoin treatment in HepaG2 cells, showing concentration-response analysis results including interactive plots, summary statistics, and diagnostic information.
+
 ## Pipeline overview
 
 The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes data using the following steps:
@@ -36,5 +42,100 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
   - Summary statistics and visualizations
 
 </details>
+
+### MultiQC Report
+
+<details markdown="1">
+<summary>Output files</summary>
+
+- `reports/`
+  - `multiqc_report.html` - Interactive HTML report containing:
+  </details>
+
+![Bifrost Pipeline Report](../assets/images/pipeline_report.png)
+
+The MultiQC report provides a comprehensive analysis of your HTTr data, organized into several key sections:
+
+#### General Overview
+
+- **Introduction**: Context about the analysis, including test substance, cell type, and exposure duration
+- **Summary Statistics**: Key metrics including:
+  - Global PoD (minimum effect concentration across all genes)
+  - Maximum tested concentration
+  - Number of probes analyzed and hits
+  - Most sensitive probe details
+  - Largest fold changes (up/down regulation)
+- **PoD vs Fold Change Plot**: Interactive scatter plot showing the relationship between probe sensitivity (PoD) and response magnitude (fold change)
+
+#### Probes with Non-zero Global PoD Weight
+
+- Concentration-response plots for probes that contribute meaningfully to the global PoD calculation
+- Each plot shows:
+  - Treatment data points (black X markers)
+  - Solvent control levels (grey dashed lines)
+  - Response model (red bands and line)
+  - PoD distribution (purple bands)
+  - Mean PoD estimate (purple vertical line)
+- Summary statistics table with CDS, mean PoD, fold changes, and weights
+
+#### Probes with Largest Fold Changes
+
+- Separate sections for most upregulated and downregulated probes
+- Each section includes:
+  - Concentration-response plots for the top N probes (default: 5)
+  - Summary statistics table with key metrics
+  - Interactive plots with hover information
+  - Download options for plot data
+
+#### Lowest Mean PoDs (CDS > 0.5)
+
+- Concentration-response plots for the most sensitive probes
+- Focuses on probes with strong concentration-dependent responses (CDS > 0.5)
+- Includes summary statistics and interactive visualizations
+- Helps identify the most sensitive biological responses
+
+#### Probe-level PoD Statistics
+
+- Detailed statistics table for probes with CDS > 0.5
+- Shows PoD distribution percentiles (5th, 25th, 50th, 75th, 95th)
+- Includes CDS values and other key metrics
+- Sortable and searchable for easy analysis
+
+#### Diagnostic Summary
+
+- Model convergence checks:
+  - Treedepth (sampler transitions)
+  - Divergences (transition quality)
+  - E-BFMI (Hamiltonian Monte Carlo energy)
+  - ESS (effective sample size)
+  - R-hat (Gelman-Rubin convergence)
+- Biological relevance indicators
+- Regularization recommendations
+- Quality metrics for each probe
+
+The report is highly interactive and customizable:
+
+- **Interactive Features**:
+
+  - Sort tables by clicking column headers
+  - Hover over data points for detailed information
+  - Zoom and pan in plots
+  - Download plot data
+  - Filter and search through results
+  - Export tables to CSV
+
+- **Customization Options**:
+  - `--report_timepoint` - Exposure duration (default: "24 hours")
+  - `--report_conc_units` - Concentration units (default: "uM")
+  - `--report_interactive_plots` - Enable interactive plot mode
+  - `--report_n_fold_change_probes` - Number of most up/down regulated probes to show
+  - `--report_cds_threshold` - CDS threshold for filtering probes
+  - `--report_n_lowest_means` - Number of lowest mean PoD probes to show
+  - `--report_n_pod_stats` - Number of probes to include in PoD statistics
+  - `--report_plot_height` - Height of concentration-response plots
+  - `--report_pod_vs_fc_height` - Height of PoD vs Fold Change plot
+  - `--report_no_cds_threshold` - Disable CDS threshold filtering
+
+For more details about customizing the report, see the [usage documentation](usage.md).
 
 [Nextflow](https://www.nextflow.io/docs/latest/tracing.html) provides excellent functionality for generating various reports relevant to the running and execution of the pipeline. This will allow you to troubleshoot errors with the running of the pipeline, and also provide you with other information such as launch commands, run times and resource usage.

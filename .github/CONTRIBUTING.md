@@ -9,9 +9,6 @@ Please use the pre-filled template to save time.
 However, don't be put off by this template - other more general issues and suggestions are welcome!
 Contributions to the code are even more welcome ;)
 
-> [!NOTE]
-> If you need help using or modifying seqera-services/bifrost then the best place to ask is on the nf-core Slack [#bifrost](https://nfcore.slack.com/channels/bifrost) channel ([join our Slack here](https://nf-co.re/join/slack)).
-
 ## Contribution workflow
 
 If you'd like to write some code for seqera-services/bifrost, the standard workflow is as follows:
@@ -59,10 +56,6 @@ These tests are run both with the latest available version of `Nextflow` and als
 - Fix the bug, and bump version (X.Y.Z+1).
 - Open a pull-request from `patch` to `main`/`master` with the changes.
 
-## Getting help
-
-For further information/help, please consult the [seqera-services/bifrost documentation](https://nf-co.re/bifrost/usage) and don't hesitate to get in touch on the nf-core Slack [#bifrost](https://nfcore.slack.com/channels/bifrost) channel ([join our Slack here](https://nf-co.re/join/slack)).
-
 ## Pipeline contribution conventions
 
 To make the `seqera-services/bifrost` code and processing logic more understandable for new contributors and to ensure quality, we semi-standardise the way the code and other contributions are written.
@@ -78,7 +71,7 @@ If you wish to contribute a new step, please use the following coding standards:
 5. Add any new parameters to `nextflow_schema.json` with help text (via the `nf-core pipelines schema build` tool).
 6. Add sanity checks and validation for all relevant parameters.
 7. Perform local tests to validate that the new code works as expected.
-8. If applicable, add a new test command in `.github/workflow/ci.yml`.
+8. If applicable, add a new test in the `tests` directory.
 
 ### Default values
 
