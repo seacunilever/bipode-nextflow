@@ -28,19 +28,14 @@ process CONC_RESPONSE_ANALYSIS {
     tar -zxf $all_probe_file -C Data/ $probe_files
 
     # Handle model: empty (compile default), .stan (compile file), or executable (use as-is)
-    if [[ -z "$model" ]]; then
-        mkdir -p ModelCompilation && cd ModelCompilation
-        bifrost-httr compile-model
-        executable_file=\$(find . -maxdepth 1 -type f -perm /111 | head -n 1)
-        if [[ -z "\$executable_file" ]]; then
+    if [[ -z "$model" ]] || [[ "$model" == *.stan ]]; then
+        model_input=\${model:-""}  # Use empty string if model is empty, otherwise use model path
+        bifrost-httr compile-model \$model_input
+        model_executable=\$(find . -maxdepth 1 -type f -exec test -x {} \\; -print | head -n 1)
+        if [[ -z "\$model_executable" ]]; then
             echo "Error: No executable found after compilation"
             exit 1
         fi
-        model_executable=\$(realpath "\$executable_file")
-        cd ..
-    elif [[ "$model" == *.stan ]]; then
-        model_executable="${model.baseName}"
-        bifrost-httr compile-model "$model"
     else
         model_executable="$model"
     fi
