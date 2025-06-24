@@ -18,7 +18,9 @@ Bifrost is a Nextflow pipeline for analyzing high-throughput transcriptomics dat
 
 ## Introduction
 
-The Bifrost model (Bayesian inference for region of signal threshold) is a statistical model for analysis of HTTr concentration-response data. The model is designed to infer a point-of-departure (PoD) from a concentration-response dataset. The PoD is an estimate of the minimum effect concentration of the test substance for the experimental conditions under which the data were produced. PoDs are estimated as probability distributions.
+The Bifrost model (Bayesian inference for region of signal threshold) is a statistical model for analysis of HTTr concentration-response data. The pipeline is powered by [bifrost-httr](https://pypi.org/project/bifrost-httr/), a Python package that implements the core statistical functionality for analyzing concentration-response relationships and inferring points of departure (PoDs). All modules in this pipeline utilize bifrost-httr via Conda environments or Docker containers to perform the analysis steps.
+
+The model is designed to infer a point-of-departure (PoD) from a concentration-response dataset. The PoD is an estimate of the minimum effect concentration of the test substance for the experimental conditions under which the data were produced. PoDs are estimated as probability distributions.
 
 ## Usage
 
