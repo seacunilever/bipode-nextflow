@@ -1,3 +1,5 @@
 .DS_Store
 pipeline_info/*.{html,json,txt,yml}
 report/BIFROST_input_Nitrofurantoin_HepG2.html
+report/BIFROST_input_Nitrofurantoin_HepG2_data/{multiqc_data.json,pod_vs_fc.txt}
+compressed_results/*.{json,json.zip}

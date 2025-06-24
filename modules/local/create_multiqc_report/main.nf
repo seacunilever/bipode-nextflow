@@ -3,9 +3,9 @@ process CREATE_MULTIQC_REPORT {
     publishDir "${params.outdir}/reports", mode: 'copy'
 
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/89/89f6935902ad9f958380b66f7bb6b1e1bbc590907dff9438da89f61d3441bd82/data' :
-        'community.wave.seqera.io/library/multiqc_numpy_pandas_python:821220a16cc579d0' }"
-    conda "${moduleDir}/environment.yml"
+        'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/e0/e05fa08012fb11ccb282c05e1b48b53c6220b0853692cafcbaf8829749d6aabc/data' :
+        'wave.seqera.io/wt/25fa77f460cd/wave/build:bifrost-httr-0.1.0--2c648d2de87966a9' }"
+    conda "bifrost-httr=0.1.0"
 
     input:
     tuple val(meta), path(input_file), val(cell_type), val(test_substance)
@@ -22,7 +22,7 @@ process CREATE_MULTIQC_REPORT {
     def args = task.ext.args ?: ''
     prefix = task.ext.prefix ?: "${meta.id}"
     """
-    create_multiqc_report.py \\
+    bifrost-httr create-report \\
         --summary-file ${input_file} \\
         --test-substance "${test_substance}" \\
         --cell-type "${cell_type}" \\

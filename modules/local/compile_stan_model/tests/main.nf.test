@@ -13,7 +13,7 @@ nextflow_process {
             }
             process {
                 """
-                input[0] = file("${projectDir}/assets/model/BIFROST_HTTr_beta_logistic_batch.stan")
+                input[0] = []
                 """
             }
         }

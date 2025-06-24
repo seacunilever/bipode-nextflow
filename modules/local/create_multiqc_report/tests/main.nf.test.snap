@@ -1,12 +1,22 @@
 {
     "Should run without failures": {
         "content": [
-            "bifrost_summary.txt:md5,2d008f31cd6ad3b0b13ec05cdd24be07"
+            [
+                "bifrost_diagnostics_table.txt:md5,cece1ce2cf68a16966908b8b4dd27d2b",
+                "bifrost_fc_down_summary.txt:md5,b1e75125cdd77235de030a61a8fc6de1",
+                "multiqc_citations.txt:md5,4c806e63a283ec1b7e78cdae3a923d4f",
+                "bifrost_summary.txt:md5,8603b2dc722791f1bf8e4482b46efbea",
+                "bifrost_fc_up_summary.txt:md5,239229d74de7040d01396d211b7af2e2",
+                "multiqc_sources.txt:md5,d2a044df39ce3c6abe5cdc2d67473490",
+                "bifrost_lowest_means_summary.txt:md5,26b0ed9d009c9e3ca0d8cd9e321d894b",
+                "bifrost_weighted_summary.txt:md5,26b0ed9d009c9e3ca0d8cd9e321d894b",
+                "bifrost_stats_table.txt:md5,ab4bee526b55e6f1568b1cc8ccfa80b6"
+            ]
         ],
         "meta": {
             "nf-test": "0.9.2",
             "nextflow": "25.04.4"
         },
-        "timestamp": "2025-06-19T14:36:27.285965"
+        "timestamp": "2025-06-24T09:49:09.271338"
     }
 }
