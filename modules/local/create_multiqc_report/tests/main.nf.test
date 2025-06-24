@@ -20,9 +20,11 @@ nextflow_process {
         }
 
         then {
-            def summary_file = file(process.out.data[0]).listFiles().findAll { it.name == "bifrost_summary.txt" }[0]
+            def output_files = file(process.out.data[0]).listFiles().findAll { 
+                !['multiqc_data.json', 'pod_vs_fc.txt'].contains(it.name) 
+            }
             assert process.success
-            assert snapshot(summary_file).match()
+            assert snapshot(output_files).match()
         }
 
     }
