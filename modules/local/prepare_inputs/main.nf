@@ -5,6 +5,9 @@ process PREPARE_INPUTS {
         'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/e0/e05fa08012fb11ccb282c05e1b48b53c6220b0853692cafcbaf8829749d6aabc/data' :
         'wave.seqera.io/wt/25fa77f460cd/wave/build:bifrost-httr-0.1.0--2c648d2de87966a9' }"
 
+    cpus { 2 * task.attempt }
+    memory { 1.GB * task.attempt }
+
     input:
     path meta_data
     path meta_mapper
