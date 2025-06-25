@@ -108,7 +108,7 @@ workflow BIFROST {
 
     // Step 7: Create reports
 
-    ch_compressed_output = COMPRESS_OUTPUT.out.map{meta, fits ->
+    ch_compressed_output = COMPRESS_OUTPUT.out.compressed_fits_files.map{meta, fits ->
         [
             meta,
             fits,

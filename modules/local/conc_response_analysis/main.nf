@@ -54,7 +54,7 @@ process CONC_RESPONSE_ANALYSIS {
 
     sleep 5
 
-    cd Fits && find . -name "*.pkl" -print0 | tar $args2 -cf - --null -T - | gzip $args3 > ../${prefix}.tar.gz
+    cd Fits && find . -name "*.pkl" -print0 | tar $args2 -cf - --null -T - | gzip $args3 > ../${prefix}.tar.gz && cd ..
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
