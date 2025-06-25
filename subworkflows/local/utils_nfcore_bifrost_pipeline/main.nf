@@ -62,7 +62,7 @@ workflow PIPELINE_INITIALISATION {
     )
 
     // Then create channel from the file path
-    ch_input = file(params.input)
+    ch_input = Channel.from(file(params.input, checkIfExists: true))
 
     emit:
     input       = ch_input

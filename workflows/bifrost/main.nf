@@ -28,17 +28,23 @@ workflow BIFROST {
     precompile_model
 
     main:
-    // Step 1: Prepare input files from meta data, counts, and config
-    ch_prepared_inputs = PREPARE_INPUTS(
-        ch_input,
+    // Branch inputs into JSON and raw data
+    ch_input_json = ch_input.branch {
+        json: it.name.endsWith('.json')
+        raw: true
+    }
+
+    // (optional) Step 1: Prepare input files from meta data, counts, and config
+    PREPARE_INPUTS(
+        ch_input_json.raw,
         ch_meta_mapper,
         ch_counts,
         ch_substances_cell_types
     )
 
     // Step 2: Process prepared inputs and probes
-    ch_named_prepared_inputs = PREPARE_INPUTS.out.prepared_inputs
-        .flatten()
+    ch_named_prepared_inputs = PREPARE_INPUTS.out.prepared_inputs.flatten()
+        .mix(ch_input_json.json)
         .map{
             def json = new groovy.json.JsonSlurper().parseText(it.text)
             [

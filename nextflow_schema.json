@@ -10,32 +10,59 @@
             "type": "object",
             "fa_icon": "fas fa-terminal",
             "description": "Define where the pipeline should find input data and save output data.",
-            "required": ["input", "meta_mapper", "counts", "outdir"],
+            "required": ["input", "outdir"],
             "properties": {
                 "input": {
-                    "type": "string",
-                    "mimetype": "text/csv",
-                    "format": "file-path",
-                    "description": "Path to the input CSV file containing sample information",
-                    "schema": "assets/schema_input.json",
+                    "anyOf": [
+                        {
+                            "type": "string",
+                            "format": "file-path",
+                            "mimetype": "application/json"
+                        },
+                        {
+                            "type": "string",
+                            "format": "file-path",
+                            "mimetype": "text/csv",
+                            "schema": "assets/schema_input.json"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "format": "file-path",
+                                        "mimetype": "application/json"
+                                    },
+                                    {
+                                        "type": "string",
+                                        "format": "file-path",
+                                        "mimetype": "text/csv",
+                                        "schema": "assets/schema_input.json"
+                                    }
+                                ]
+                            }
+                        }
+                    ],
+                    "description": "Path to input file(s). Can be either:\n1. A CSV file containing sample information (raw data input)\n2. One or more pre-prepared JSON files in Bifrost format (to skip the prepare_inputs step)\nIf both raw data and JSON files are provided, both will be processed.",
                     "fa_icon": "fas fa-file-csv"
                 },
                 "meta_mapper": {
                     "type": "string",
                     "format": "file-path",
-                    "description": "Path to the metadata mapper YAML file that defines column mappings",
+                    "description": "Path to the metadata mapper YAML file that defines column mappings. Only required when processing raw data inputs.",
                     "fa_icon": "fas fa-file-code"
                 },
                 "counts": {
                     "type": "string",
                     "format": "file-path",
-                    "description": "Path to the counts CSV file containing probe counts",
+                    "description": "Path to the counts CSV file containing probe counts. Only required when processing raw data inputs.",
                     "fa_icon": "fas fa-file-csv"
                 },
                 "substances_cell_types": {
                     "type": "string",
                     "format": "file-path",
-                    "description": "Path to YAML file containing test substances and cell types to analyze",
+                    "description": "Path to YAML file containing test substances and cell types to analyze. Only required when processing raw data inputs.",
                     "fa_icon": "fas fa-file-code"
                 },
                 "batch_mode": {
