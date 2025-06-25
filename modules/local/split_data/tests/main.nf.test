@@ -24,7 +24,7 @@ nextflow_process {
             def (id_map, manifest_path, archive_path) = process.out.probe_files[0]
 
             assert process.success
-            assert snapshot(process.out).match()
+            assert snapshot(process.out.probe_files).match()
         }
 
     }
