@@ -20,9 +20,9 @@
                             "mimetype": "application/json"
                         },
                         {
-                    "type": "string",
+                            "type": "string",
                             "format": "file-path",
-                    "mimetype": "text/csv",
+                            "mimetype": "text/csv",
                             "schema": "assets/schema_input.json"
                         },
                         {
@@ -36,7 +36,7 @@
                                     },
                                     {
                                         "type": "string",
-                    "format": "file-path",
+                                        "format": "file-path",
                                         "mimetype": "text/csv",
                                         "schema": "assets/schema_input.json"
                                     }
