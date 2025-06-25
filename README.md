@@ -29,8 +29,7 @@ The model is designed to infer a point-of-departure (PoD) from a concentration-r
 
 The pipeline accepts two types of input:
 
-1. Raw data input:
-
+1. Raw data input - for processing new data:
 ```bash
 nextflow run bifrost \
    -profile <docker/singularity/.../institute> \
@@ -41,8 +40,7 @@ nextflow run bifrost \
    --outdir <OUTDIR>
 ```
 
-2. Pre-prepared JSON input:
-
+2. Pre-prepared JSON input - for using previously prepared data:
 ```bash
 nextflow run bifrost \
    -profile <docker/singularity/.../institute> \
@@ -50,7 +48,7 @@ nextflow run bifrost \
    --outdir <OUTDIR>
 ```
 
-When using pre-prepared JSON input, the pipeline will skip the data preparation step and process the JSON file(s) directly. You can also mix both types of input to process raw and pre-prepared data in the same run.
+When using pre-prepared JSON input, the pipeline will skip the data preparation step and process the JSON file(s) directly.
 
 For more details and further functionality, please refer to the [usage documentation](docs/usage.md) and the [output documentation](docs/output.md).
 

@@ -11,12 +11,14 @@ This document describes how to use the Bifrost pipeline. The pipeline is designe
 
 ## Input Modes
 
-The pipeline supports two input modes:
+The pipeline supports two distinct input modes:
 
-1. Raw data input - requires a samplesheet, counts file, and configuration files
-2. Pre-prepared JSON input - accepts pre-formatted JSON files directly
+1. Raw data input - for processing new data, requires a samplesheet, counts file, and configuration files
+2. Pre-prepared JSON input - for using previously prepared data, accepts pre-formatted JSON files directly
 
-You can use either mode or mix both in the same run. When using pre-prepared JSON input, the pipeline will skip the data preparation step and process the JSON files directly.
+Choose the appropriate mode based on your needs:
+- Use raw data input when starting with new experimental data
+- Use pre-prepared JSON input when working with data that has already been formatted for Bifrost
 
 ### Pre-prepared JSON Input
 
@@ -50,7 +52,6 @@ The JSON files must follow the Bifrost format. Here's an example (truncated for 
 ```
 
 The JSON format consists of:
-
 - `test_substance`: Name of the substance being tested
 - `cell_type`: Type of cells used in the experiment
 - `probes`: Array of probe identifiers
@@ -60,10 +61,8 @@ The JSON format consists of:
 - `n_treatment_batch`: Number of treatment batches in the dataset
 
 When using pre-prepared JSON input:
-
 - The meta_mapper, counts, and substances_cell_types parameters are not required
-- You can provide multiple JSON files in the --input parameter
-- You can mix JSON files with raw data input in the same run
+- You can provide multiple JSON files using the --input parameter
 
 ## Raw Data Input
 

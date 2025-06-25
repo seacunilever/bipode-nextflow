@@ -20,9 +20,9 @@
                             "mimetype": "application/json"
                         },
                         {
-                            "type": "string",
+                    "type": "string",
                             "format": "file-path",
-                            "mimetype": "text/csv",
+                    "mimetype": "text/csv",
                             "schema": "assets/schema_input.json"
                         },
                         {
@@ -36,7 +36,7 @@
                                     },
                                     {
                                         "type": "string",
-                                        "format": "file-path",
+                    "format": "file-path",
                                         "mimetype": "text/csv",
                                         "schema": "assets/schema_input.json"
                                     }
@@ -44,7 +44,7 @@
                             }
                         }
                     ],
-                    "description": "Path to input file(s). Can be either:\n1. A CSV file containing sample information (raw data input)\n2. One or more pre-prepared JSON files in Bifrost format (to skip the prepare_inputs step)\nIf both raw data and JSON files are provided, both will be processed.",
+                    "description": "Path to input file(s). Choose ONE of these input modes:\n1. A CSV file containing sample information (raw data input mode)\n2. One or more pre-prepared JSON files in Bifrost format (prepared input mode).",
                     "fa_icon": "fas fa-file-csv"
                 },
                 "meta_mapper": {
