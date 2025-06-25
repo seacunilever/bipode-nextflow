@@ -49,7 +49,8 @@ workflow NFCORE_BIFROST {
         ch_counts,
         ch_substances_cell_types,
         ch_model,
-        params.n_cores
+        params.n_cores,
+        params.precompile_model
     )
 }
 /*

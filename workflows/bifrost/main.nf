@@ -25,6 +25,7 @@ workflow BIFROST {
     ch_substances_cell_types
     ch_model
     n_cores
+    precompile_model
 
     main:
     // Step 1: Prepare input files from meta data, counts, and config
@@ -54,7 +55,7 @@ workflow BIFROST {
     SPLIT_DATA(ch_named_prepared_inputs)
 
     // Step 4: Compile Stan model once (if precompile_model is true)
-    if (params.precompile_model) {
+    if (precompile_model) {
         COMPILE_STAN_MODEL(ch_model)
         ch_model_for_analysis = COMPILE_STAN_MODEL.out.compiled_model
     } else {
