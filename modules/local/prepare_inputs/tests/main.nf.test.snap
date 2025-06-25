@@ -1,19 +1,14 @@
 {
     "Should run without failures": {
         "content": [
-            {
-                "0": [
-                    "BIFROST_input_Nitrofurantoin_HepG2.json:md5,59f55bb27430d2ce61da731983e28ce3"
-                ],
-                "prepared_inputs": [
-                    "BIFROST_input_Nitrofurantoin_HepG2.json:md5,59f55bb27430d2ce61da731983e28ce3"
-                ]
-            }
+            [
+                "BIFROST_input_Nitrofurantoin_HepG2.json:md5,59f55bb27430d2ce61da731983e28ce3"
+            ]
         ],
         "meta": {
             "nf-test": "0.9.2",
-            "nextflow": "25.04.3"
+            "nextflow": "25.04.4"
         },
-        "timestamp": "2025-06-06T15:02:14.193569"
+        "timestamp": "2025-06-25T10:35:03.631916"
     }
 }

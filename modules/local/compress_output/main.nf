@@ -13,7 +13,7 @@ process COMPRESS_OUTPUT {
     tuple val(meta), path(all_fits_files)
 
     output:
-    tuple val(meta), path("${prefix}.json{,.zip}")
+    tuple val(meta), path("${prefix}.json{,.zip}"), emit: compressed_fits_files
     path "versions.yml", emit: versions
 
     script:
