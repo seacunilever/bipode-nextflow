@@ -22,7 +22,7 @@ nextflow_process {
         then {
             def output_files = file(process.out.data[0]).listFiles().findAll { 
                 !['multiqc_data.json', 'pod_vs_fc.txt'].contains(it.name) 
-            }
+            }.sort { it.name }
             assert process.success
             assert snapshot(output_files).match()
         }
