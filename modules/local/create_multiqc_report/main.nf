@@ -3,9 +3,9 @@ process CREATE_MULTIQC_REPORT {
     publishDir "${params.outdir}/reports", mode: 'copy'
 
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/e0/e05fa08012fb11ccb282c05e1b48b53c6220b0853692cafcbaf8829749d6aabc/data' :
-        'wave.seqera.io/wt/25fa77f460cd/wave/build:bifrost-httr-0.1.0--2c648d2de87966a9' }"
-    conda "bifrost-httr=0.1.0"
+        'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/ed/ed90af4777d8d7086ed99d0a825f99e20e39278a75c70d3f4f7b6336edf7e210/data' :
+        'community.wave.seqera.io/library/bifrost-httr:0.2.0--e8ca5c015e9a6142' }"
+    conda "bifrost-httr=0.2.0"
 
     input:
     tuple val(meta), path(input_file), val(cell_type), val(test_substance)
@@ -33,6 +33,7 @@ process CREATE_MULTIQC_REPORT {
     "${task.process}":
         python: \$(python --version | sed 's/Python //')
         multiqc: \$(multiqc --version | sed 's/multiqc, version //')
+        bifrost-httr: \$(bifrost-httr --version | sed 's/bifrost-httr, version //')
     END_VERSIONS
     """
 
@@ -42,8 +43,8 @@ process CREATE_MULTIQC_REPORT {
     touch "${prefix}_multiqc_report.html"
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        python: \$(python --version | sed 's/Python //')
         multiqc: \$(multiqc --version | sed 's/multiqc, version //')
+        bifrost-httr: \$(bifrost-httr --version | sed 's/bifrost-httr, version //')
     END_VERSIONS
     """
 }

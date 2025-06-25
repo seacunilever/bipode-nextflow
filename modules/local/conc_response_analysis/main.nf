@@ -1,10 +1,10 @@
 process CONC_RESPONSE_ANALYSIS {
     tag "${meta.id}"
 
-    conda "bifrost-httr=0.1.0"
+    conda "bifrost-httr=0.2.0"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/e0/e05fa08012fb11ccb282c05e1b48b53c6220b0853692cafcbaf8829749d6aabc/data' :
-        'wave.seqera.io/wt/25fa77f460cd/wave/build:bifrost-httr-0.1.0--2c648d2de87966a9' }"
+        'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/ed/ed90af4777d8d7086ed99d0a825f99e20e39278a75c70d3f4f7b6336edf7e210/data' :
+        'community.wave.seqera.io/library/bifrost-httr:0.2.0--e8ca5c015e9a6142' }"
 
     cpus { params.n_cores }
     memory { 3.GB * task.attempt }
@@ -19,6 +19,7 @@ process CONC_RESPONSE_ANALYSIS {
     tuple val(meta), path("${prefix}.tar.gz"), emit: compressed_fits_files
     tuple val(meta), path("Fits/*.pkl"), emit: fits_files
     tuple val(meta), path("Fits/*.json"), emit: json_summaries
+    path "versions.yml", emit: versions
 
     script:
     def args = task.ext.args ?: ''
@@ -54,5 +55,24 @@ process CONC_RESPONSE_ANALYSIS {
     sleep 5
 
     cd Fits && find . -name "*.pkl" -print0 | tar $args2 -cf - --null -T - | gzip $args3 > ../${prefix}.tar.gz
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        bifrost-httr: \$(bifrost-httr --version | sed 's/bifrost-httr, version //')
+    END_VERSIONS
+    """
+
+    stub:
+    prefix = task.ext.prefix ?: "${meta.id}"
+    """
+    mkdir -p Fits
+    touch Fits/stub.pkl
+    touch Fits/stub.json
+    touch ${prefix}.tar.gz
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        bifrost-httr: \$(bifrost-httr --version | sed 's/bifrost-httr, version //')
+    END_VERSIONS
     """
 }
