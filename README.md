@@ -30,6 +30,7 @@ The model is designed to infer a point-of-departure (PoD) from a concentration-r
 The pipeline accepts two types of input:
 
 1. Raw data input:
+
 ```bash
 nextflow run bifrost \
    -profile <docker/singularity/.../institute> \
@@ -41,6 +42,7 @@ nextflow run bifrost \
 ```
 
 2. Pre-prepared JSON input:
+
 ```bash
 nextflow run bifrost \
    -profile <docker/singularity/.../institute> \

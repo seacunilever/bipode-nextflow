@@ -50,6 +50,7 @@ The JSON files must follow the Bifrost format. Here's an example (truncated for 
 ```
 
 The JSON format consists of:
+
 - `test_substance`: Name of the substance being tested
 - `cell_type`: Type of cells used in the experiment
 - `probes`: Array of probe identifiers
@@ -59,6 +60,7 @@ The JSON format consists of:
 - `n_treatment_batch`: Number of treatment batches in the dataset
 
 When using pre-prepared JSON input:
+
 - The meta_mapper, counts, and substances_cell_types parameters are not required
 - You can provide multiple JSON files in the --input parameter
 - You can mix JSON files with raw data input in the same run
