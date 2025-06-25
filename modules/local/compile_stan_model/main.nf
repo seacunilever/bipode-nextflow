@@ -27,6 +27,7 @@ process COMPILE_STAN_MODEL {
     else
         bifrost-httr compile-model "$model" $args
     fi
+    cd ..
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
