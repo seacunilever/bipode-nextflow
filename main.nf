@@ -31,10 +31,10 @@ workflow NFCORE_BIFROST {
     ch_input // channel: input read in from --input
 
     main:
-
-    ch_meta_mapper = Channel.from(file(params.meta_mapper, checkIfExists: true))
-    ch_counts = Channel.from(file(params.counts, checkIfExists: true))
-    ch_substances_cell_types = Channel.from(file(params.substances_cell_types, checkIfExists: true))
+    // Create channels for raw data processing
+    ch_meta_mapper = params.meta_mapper ? Channel.from(file(params.meta_mapper, checkIfExists: true)) : Channel.empty()
+    ch_counts = params.counts ? Channel.from(file(params.counts, checkIfExists: true)) : Channel.empty()
+    ch_substances_cell_types = params.substances_cell_types ? Channel.from(file(params.substances_cell_types, checkIfExists: true)) : Channel.empty()
 
     ch_model = []
     if (params.model_file) {
@@ -49,7 +49,8 @@ workflow NFCORE_BIFROST {
         ch_counts,
         ch_substances_cell_types,
         ch_model,
-        params.n_cores
+        params.n_cores,
+        params.precompile_model
     )
 }
 /*

@@ -27,15 +27,30 @@ The model is designed to infer a point-of-departure (PoD) from a concentration-r
 > [!NOTE]
 > If you are new to Nextflow, please refer to [this page](https://www.nextflow.io/docs/latest/getstarted.html) on how to set-up Nextflow. Make sure to [test your setup](https://www.nextflow.io/docs/latest/getstarted.html#testing-the-installation) with `-profile test` before running the workflow on actual data.
 
-First, prepare your input data in the required format. Then, you can run the pipeline using:
+The pipeline accepts two types of input:
+
+1. Raw data input - for processing new data:
 
 ```bash
 nextflow run bifrost \
    -profile <docker/singularity/.../institute> \
    --input samplesheet.csv \
    --counts counts.csv \
+   --meta_mapper meta_mapper.yml \
+   --substances_cell_types substances_cell_types.yml \
    --outdir <OUTDIR>
 ```
+
+2. Pre-prepared JSON input - for using previously prepared data:
+
+```bash
+nextflow run bifrost \
+   -profile <docker/singularity/.../institute> \
+   --input prepared_data.json \
+   --outdir <OUTDIR>
+```
+
+When using pre-prepared JSON input, the pipeline will skip the data preparation step and process the JSON file(s) directly.
 
 For more details and further functionality, please refer to the [usage documentation](docs/usage.md) and the [output documentation](docs/output.md).
 

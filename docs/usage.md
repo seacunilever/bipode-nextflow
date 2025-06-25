@@ -9,9 +9,69 @@ This document describes how to use the Bifrost pipeline. The pipeline is designe
 - Linux (required for Nextflow, can be WSL2 https://learn.microsoft.com/en-us/windows/wsl/install)
 - Nextflow version 21.04.0 or later (https://www.nextflow.io/docs/latest/getstarted.html)
 
-## Samplesheet input
+## Input Modes
 
-You will need to create a samplesheet with information about the samples you would like to analyse before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with a header row, containing the required columns as defined in the schema.
+The pipeline supports two distinct input modes:
+
+1. Raw data input - for processing new data, requires a samplesheet, counts file, and configuration files
+2. Pre-prepared JSON input - for using previously prepared data, accepts pre-formatted JSON files directly
+
+Choose the appropriate mode based on your needs:
+
+- Use raw data input when starting with new experimental data
+- Use pre-prepared JSON input when working with data that has already been formatted for Bifrost
+
+### Pre-prepared JSON Input
+
+To use pre-prepared JSON files:
+
+```bash
+nextflow run bifrost \
+   -profile <docker/singularity/.../institute> \
+   --input prepared_data.json \
+   --outdir <OUTDIR>
+```
+
+The JSON files must follow the Bifrost format. Here's an example (truncated for readability):
+
+```json
+{
+    "test_substance": "Nitrofurantoin",
+    "cell_type": "HepG2",
+    "probes": ["ACBD3_59", "CEP89_11010", "MPDU1_11661", "OAS3_90233", "TMEM183A_34069"],
+    "counts": [
+        [79, 141, 153, 249, 64, 159, 39, ...],  // Counts for probe 1
+        [75, 240, 140, 109, 61, 150, 21, ...],  // Counts for probe 2
+        [263, 310, 319, 438, 202, 255, 35, ...], // Counts for probe 3
+        [17, 104, 78, 69, 18, 54, 15, ...],     // Counts for probe 4
+        [117, 187, 174, 220, 135, 159, 41, ...] // Counts for probe 5
+    ],
+    "batch_index": [1, 1, 1, 1, 1, 1, 1, 2, 2, 2, ...],
+    "concentration": [0.0192, 0.096, 0.48, 2.4, 12.0, 60.0, 300.0, ...],
+    "n_treatment_batch": 5
+}
+```
+
+The JSON format consists of:
+
+- `test_substance`: Name of the substance being tested
+- `cell_type`: Type of cells used in the experiment
+- `probes`: Array of probe identifiers
+- `counts`: 2D array where each inner array contains counts for one probe across all samples
+- `batch_index`: Array of batch indices (1-based) for each sample
+- `concentration`: Array of concentrations for each sample
+- `n_treatment_batch`: Number of treatment batches in the dataset
+
+When using pre-prepared JSON input:
+
+- The meta_mapper, counts, and substances_cell_types parameters are not required
+- You can provide multiple JSON files using the --input parameter
+
+## Raw Data Input
+
+### Samplesheet input
+
+For raw data input, you will need to create a samplesheet with information about the samples you would like to analyse before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with a header row, containing the required columns as defined in the schema.
 
 ```bash
 --input '[path to samplesheet file]'

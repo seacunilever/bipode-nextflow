@@ -3,6 +3,33 @@ nextflow_pipeline {
     name "Test pipeline with default settings"
     script "../main.nf"
 
+    test("Params: prepared inputs") {
+
+        when {
+            params {
+                outdir = "$outputDir"
+                input = "${projectDir}/assets/test_data/minimal/BIFROST_input_Nitrofurantoin_HepG2.json"
+                meta_mapper = null
+                counts = null
+                substances_cell_types = null
+            }
+        }
+
+        then {
+            // stable_name: All files + folders in ${params.outdir}/ with a stable name
+            def stable_name = getAllFilesFromDir(params.outdir, relative: true, includeDir: true, ignore: ['pipeline_info/*.{html,json,txt}'])
+            assertAll(
+                { assert workflow.success},
+                { assert snapshot(
+                    // Number of successful tasks
+                    workflow.trace.succeeded().size(),
+                    // All stable path name, with a relative path
+                    stable_name
+                ).match() }
+            )
+        }
+    }
+
     test("Params: default") {
 
         when {
