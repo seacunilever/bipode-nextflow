@@ -1,5 +1,5 @@
 process COMPILE_STAN_MODEL {
-    tag model == '[]' ? 'default model' : model
+    tag "${model ?: 'default model'}"
     label 'process_single'
 
     conda "bifrost-httr=0.2.0"
