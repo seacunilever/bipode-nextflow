@@ -29,7 +29,7 @@ process CONC_RESPONSE_ANALYSIS {
     def probe_files_extract = probes.collect { " -f Data/" + it + ".pkl" }.join(" ")
     prefix = task.ext.prefix ?: "${meta.id}"
     """
-    mkdir Data Samples Fits
+    mkdir -p Data Samples Fits
 
     tar -zxf $all_probe_file -C Data/ $probe_files
 
