@@ -115,7 +115,7 @@ nextflow run seqera-services/bifrost \
 
 When using pre-prepared JSON input, the pipeline will skip the data preparation step and process the JSON file(s) directly.
 
-For more details and further functionality, please refer to the [usage documentation](docs/usage.md) and the [output documentation](docs/output.md).
+For more details and further functionality, please refer to the [usage documentation](docs/usage.md), [parameter documentation](docs/parameters.md), and the [output documentation](docs/output.md).
 
 ## Pipeline output
 

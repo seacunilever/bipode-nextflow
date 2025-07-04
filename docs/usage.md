@@ -4,6 +4,8 @@
 
 This document describes how to use the Bifrost pipeline. The pipeline is designed to be portable across different execution environments (local, HPC, cloud providers) and takes in pre-formatted json data files for one cell line/chemical (referred to as one dataset).
 
+For a complete list of all available parameters and their descriptions, see the [parameter documentation](parameters.md).
+
 ## Prerequisites
 
 - Linux (required for Nextflow, can be WSL2 https://learn.microsoft.com/en-us/windows/wsl/install)
