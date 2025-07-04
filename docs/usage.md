@@ -441,6 +441,22 @@ nf-core provides pre-configured profiles for popular cloud platforms:
 - **Azure Batch**: [nf-core/configs/azurebatch](https://nf-co.re/configs/azurebatch/)
 - **Google Cloud Batch**: Available through standard Nextflow configuration
 
+#### Organization-Specific Profile
+
+This pipeline also includes a `unilever_azure` profile configured for Unilever's Azure infrastructure. This profile:
+
+- Uses Unilever's Azure Container Registry and Batch account
+- Configures auto-scaling pools with `Standard_F4s_v2` VMs
+- Uses low-priority nodes for cost optimization (up to `max_nodes` parameter)
+- Automatically creates and deletes compute pools
+- Sets retry strategy (3 attempts) for handling preemptible node interruptions
+
+To use this profile (requires Unilever Azure credentials):
+
+```bash
+nextflow run seqera-services/bifrost -profile unilever_azure --input samplesheet.csv --outdir results
+```
+
 ### Getting Started with Cloud Execution
 
 To run the pipeline on a cloud platform:
