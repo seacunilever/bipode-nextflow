@@ -43,6 +43,7 @@ The pipeline provides a test profile:
 ### What the test does
 
 The test profile:
+
 - Uses minimal test data from `assets/test_data/minimal/`
 - Processes a small dataset with 5 probes across multiple concentrations
 - Tests both Paracetamol and Nitrofurantoin treatments in HepG2 cells
@@ -52,6 +53,7 @@ The test profile:
 ### Expected test output
 
 If the test runs successfully, you should see:
+
 - Pipeline completion message
 - Generated HTML report in the `test_results/report/` directory
 - Compressed results in `test_results/compressed_results/`
@@ -124,6 +126,7 @@ Individual modules have their own test suites located in `modules/local/*/tests/
 - Handles edge cases appropriately
 
 **Example module test structure:**
+
 ```groovy
 nextflow_process {
     name "Test Process PREPARE_INPUTS"
@@ -197,6 +200,7 @@ The pipeline includes tests for the following modules:
 ### Pipeline Schema
 
 The main pipeline schema is defined in `nextflow_schema.json` and validates:
+
 - Parameter types and ranges
 - Required vs optional parameters
 - Default values
@@ -211,24 +215,28 @@ The pipeline uses several GitHub Actions workflows for automated testing:
 #### 1. nf-test Workflow (`.github/workflows/nf-test.yml`)
 
 **Triggers:**
+
 - Pull requests (excluding documentation changes)
 - Releases
 - Manual dispatch
 
 **Features:**
+
 - **Test sharding**: Automatically distributes tests across multiple CI jobs
 - **Matrix testing**: Tests multiple Nextflow versions and profiles
 - **Concurrency control**: Cancels outdated runs to save resources
 - **Artifact collection**: Stores test results and logs
 
 **Test Matrix:**
-- **Profiles**: `docker` 
+
+- **Profiles**: `docker`
 - **Nextflow versions**: `24.04.2`, `latest-everything`
 - **Sharding**: Up to 7 parallel shards
 
 #### 2. Linting Workflow (`.github/workflows/linting.yml`)
 
 **Components:**
+
 - **Pre-commit checks**: Code formatting and basic linting
 - **nf-core linting**: Pipeline-specific linting using nf-core standards
 - **Release validation**: Additional checks for release branches
@@ -247,6 +255,7 @@ The pipeline uses intelligent test sharding to improve CI performance:
 ### Prerequisites
 
 1. Install nf-test:
+
 ```bash
 # Using conda
 conda install -c bioconda nf-test
@@ -379,4 +388,4 @@ When creating pull requests:
 3. Test coverage should be maintained or improved
 4. Documentation should be updated for new test procedures
 
-This comprehensive testing framework ensures the reliability and maintainability of the Bifrost pipeline across different environments and use cases. 
+This comprehensive testing framework ensures the reliability and maintainability of the Bifrost pipeline across different environments and use cases.

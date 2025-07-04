@@ -76,7 +76,7 @@ When using pre-prepared JSON input:
 For raw data input, you need three files with specific structures and formats:
 
 1. **Metadata CSV file** (`--input`) - Sample information and experimental metadata
-2. **Counts CSV file** (`--counts`) - Gene expression count data matrix  
+2. **Counts CSV file** (`--counts`) - Gene expression count data matrix
 3. **Configuration YAML file** (`--substances-cell-types`) - Analysis configuration
 
 ### Metadata CSV File Structure
@@ -85,23 +85,23 @@ The metadata file must be a comma-separated CSV file with specific required colu
 
 #### Required Columns
 
-| Column                 | Type    | Description                                                       | Validation Rules                    |
-| ---------------------- | ------- | ----------------------------------------------------------------- | ----------------------------------- |
-| `SAMPLE_ID`            | string  | Unique identifier for each sample                                 | Must not contain spaces            |
-| `CELL_TYPE`            | string  | The type of cell used in the experiment                          | Must not contain spaces            |
-| `TEST_SUBSTANCE`       | string  | The substance being tested                                        | Must not contain spaces            |
-| `CONCENTRATION`        | numeric | The concentration of the test substance                           | Must be non-negative (≥ 0)         |
-| `NUM_MAPPED_READS`     | integer | Number of mapped reads                                            | Must be non-negative (≥ 0)         |
-| `PERCENT_MAPPED_READS` | numeric | Percentage of mapped reads                                        | Must be between 0 and 100          |
+| Column                 | Type    | Description                             | Validation Rules           |
+| ---------------------- | ------- | --------------------------------------- | -------------------------- |
+| `SAMPLE_ID`            | string  | Unique identifier for each sample       | Must not contain spaces    |
+| `CELL_TYPE`            | string  | The type of cell used in the experiment | Must not contain spaces    |
+| `TEST_SUBSTANCE`       | string  | The substance being tested              | Must not contain spaces    |
+| `CONCENTRATION`        | numeric | The concentration of the test substance | Must be non-negative (≥ 0) |
+| `NUM_MAPPED_READS`     | integer | Number of mapped reads                  | Must be non-negative (≥ 0) |
+| `PERCENT_MAPPED_READS` | numeric | Percentage of mapped reads              | Must be between 0 and 100  |
 
 > [!IMPORTANT]
 > Number of mapped reads and read depth in the experiment are required fields in the metadata and are critical to the Bifrost model. If these fields are not available, users can estimate the number of mapped reads by summing the counts table, but only if the table is unfiltered. Filtering, such as using test datasets with reduced probes, invalidates this approach. Additionally, mapped reads are used in the model to calculate the probability of generating a particular count for each sample, making their accuracy essential.
 
 #### Optional Columns
 
-| Column                | Type    | Description                                               | Usage                                    |
-| --------------------- | ------- | --------------------------------------------------------- | ---------------------------------------- |
-| `TREATMENT_VESSEL_ID` | string  | ID of the treatment vessel                                | Used as batch key by default             |
+| Column                | Type   | Description                | Usage                        |
+| --------------------- | ------ | -------------------------- | ---------------------------- |
+| `TREATMENT_VESSEL_ID` | string | ID of the treatment vessel | Used as batch key by default |
 
 Additional columns present in your metadata file are preserved but not actively used by the pipeline analysis.
 
@@ -110,7 +110,7 @@ Additional columns present in your metadata file are preserved but not actively 
 The pipeline automatically filters samples based on the following criteria (configurable via parameters):
 
 - **Minimum percentage of mapped reads**: Default 50% (`--min_percent_mapped_reads`)
-- **Minimum number of mapped reads**: Default 100,000 (`--min_num_mapped_reads`)  
+- **Minimum number of mapped reads**: Default 100,000 (`--min_num_mapped_reads`)
 - **Minimum average treatment count**: Default 5.0 (`--min_avg_treatment_count`)
 
 Samples not meeting these criteria are excluded from analysis.
@@ -138,6 +138,7 @@ S_B10180393_HG2_DMSO_0,HepG2,DMSO,0.0,4842380,95.87,A18039301
 ```
 
 This example shows:
+
 - **Dose-response series**: Nitrofurantoin at concentrations from 0.0192 to 300 μM
 - **Control samples**: DMSO controls with concentration 0.0
 - **Quality metrics**: Mapped reads ranging from ~1.5M to ~6.4M with mapping percentages 76-96%
@@ -147,7 +148,7 @@ This example shows:
 
 The counts file contains the gene expression count data in a matrix format where:
 
-- **Rows represent probes/genes** 
+- **Rows represent probes/genes**
 - **Columns represent samples**
 - **First column contains probe identifiers**
 - **Remaining columns contain count values for each sample**
@@ -155,7 +156,7 @@ The counts file contains the gene expression count data in a matrix format where
 #### File Format Requirements
 
 - Must be a comma-separated CSV file
-- First column must contain unique probe identifiers  
+- First column must contain unique probe identifiers
 - Column headers must match `SAMPLE_ID` values from metadata file
 - Count values must be non-negative integers
 - Missing values are not allowed
@@ -163,8 +164,9 @@ The counts file contains the gene expression count data in a matrix format where
 #### Structure and Validation
 
 The pipeline validates that:
+
 - The file has at least 2 columns (probe ID + at least one sample)
-- All count values are non-negative  
+- All count values are non-negative
 - Sample IDs in column headers match those in the metadata file
 - No missing or invalid count data
 
@@ -182,6 +184,7 @@ TMEM183A_34069,117,187,174,220,...
 ```
 
 **Key characteristics:**
+
 - **Probe identifiers**: First column contains unique probe names (e.g., `ACBD3_59`, `CEP89_11010`)
 - **Sample columns**: Each subsequent column represents one sample with its count data
 - **Count values**: Integer expression counts for each probe in each sample
@@ -234,7 +237,7 @@ Test substances:
   - Nitrofurantoin
   - Paracetamol
 
-# Cell types to analyze  
+# Cell types to analyze
 Cell types:
   - HepG2
 
@@ -250,6 +253,7 @@ Specific filters: null
 - **`Cell types`**: List of cell types to analyze. Must match values in the `CELL_TYPE` column of your metadata file.
 
 - **`Additional divider`**: Optional field to further subdivide the analysis. Options:
+
   - Set to a column name from your samplesheet to create separate analyses for each unique value in that column
   - For example, if set to `TREATMENT_VESSEL_ID`, the pipeline will create separate analyses for each treatment vessel
   - Set to `N/A` to disable additional subdivision
@@ -258,9 +262,9 @@ Specific filters: null
   ```yaml
   Specific filters:
     TREATMENT_VESSEL_ID:
-      - A18039301  # Exclude this treatment vessel
+      - A18039301 # Exclude this treatment vessel
     CELL_TYPE:
-      - HepG2      # Exclude this cell type
+      - HepG2 # Exclude this cell type
   ```
 
 #### Example Configuration
@@ -282,8 +286,9 @@ Specific filters: null
 ```
 
 This configuration tells the pipeline to:
+
 1. Analyze only Nitrofurantoin experiments
-2. Include only HepG2 cell data  
+2. Include only HepG2 cell data
 3. Not use additional subdivision
 4. Apply no specific exclusion filters
 
@@ -300,6 +305,7 @@ The batch key should be a column in your samplesheet that identifies groups of s
 #### Choosing an Appropriate Batch Key
 
 Common batch key options include:
+
 - `TREATMENT_VESSEL_ID`: Groups samples by treatment vessel/plate (default)
 - `CELL_BATCH_ID`: Groups samples by cell culture batch
 - `SEQUENCING_PLATE_ID`: Groups samples by sequencing plate
@@ -477,7 +483,7 @@ To run the pipeline on a cloud platform:
 # AWS Batch example
 nextflow run seqera-services/bifrost -profile awsbatch --input samplesheet.csv --outdir results
 
-# Azure Batch example  
+# Azure Batch example
 nextflow run seqera-services/bifrost -profile azurebatch --input samplesheet.csv --outdir results
 ```
 
@@ -486,13 +492,15 @@ nextflow run seqera-services/bifrost -profile azurebatch --input samplesheet.csv
 For detailed setup instructions and configuration options, refer to the official documentation:
 
 #### nf-core Cloud Configs
+
 - [nf-core/configs](https://nf-co.re/configs/) - Browse all available institutional and cloud configurations
 - [AWS Batch config](https://nf-co.re/configs/awsbatch/) - AWS-specific configuration and setup
 - [Azure Batch config](https://nf-co.re/configs/azurebatch/) - Azure-specific configuration and setup
 
 #### Nextflow Cloud Documentation
+
 - [AWS Batch](https://www.nextflow.io/docs/latest/aws.html#aws-batch) - Official Nextflow AWS documentation
-- [Azure Batch](https://www.nextflow.io/docs/latest/azure.html#azure-batch) - Official Nextflow Azure documentation  
+- [Azure Batch](https://www.nextflow.io/docs/latest/azure.html#azure-batch) - Official Nextflow Azure documentation
 - [Google Cloud Batch](https://www.nextflow.io/docs/latest/google.html#cloud-batch) - Official Nextflow Google Cloud documentation
 
 ### Cloud Execution Tips
