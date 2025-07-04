@@ -94,6 +94,9 @@ The metadata file must be a comma-separated CSV file with specific required colu
 | `NUM_MAPPED_READS`     | integer | Number of mapped reads                                            | Must be non-negative (≥ 0)         |
 | `PERCENT_MAPPED_READS` | numeric | Percentage of mapped reads                                        | Must be between 0 and 100          |
 
+> [!IMPORTANT]
+> Number of mapped reads and read depth in the experiment are required fields in the metadata and are critical to the Bifrost model. If these fields are not available, users can estimate the number of mapped reads by summing the counts table, but only if the table is unfiltered. Filtering, such as using test datasets with reduced probes, invalidates this approach. Additionally, mapped reads are used in the model to calculate the probability of generating a particular count for each sample, making their accuracy essential.
+
 #### Optional Columns
 
 | Column                | Type    | Description                                               | Usage                                    |
