@@ -25,64 +25,7 @@ The model is designed to infer a point-of-departure (PoD) from a concentration-r
 ## Usage
 
 > [!NOTE]
-> If you are new to Nextflow, please refer to [this page](https://www.nextflow.io/docs/latest/getstarted.html) on how to set-up Nextflow. Make sure to [test your setup](https://www.nextflow.io/docs/latest/getstarted.html#testing-the-installation) with `-profile test` before running the workflow on actual data.
-
-## Testing your setup
-
-Before running the pipeline with your own data, it's recommended to test your setup using the provided test profile. The test profile uses a small dataset and minimal computational resources to verify that the pipeline runs correctly in your environment.
-
-### Quick test
-
-To run a quick test with Docker:
-
-```bash
-nextflow run seqera-services/bifrost -profile test,docker --outdir test_results
-```
-
-To run a quick test with Singularity:
-
-```bash
-nextflow run seqera-services/bifrost -profile test,singularity --outdir test_results
-```
-
-To run a quick test with Conda:
-
-```bash
-nextflow run seqera-services/bifrost -profile test,conda --outdir test_results
-```
-
-Alternatively, you can install the dependencies directly on your host system:
-
-```bash
-pip install bifrost-httr
-# You'll also need to install cmdstan - see https://github.com/seqera-services/bifrost-httr
-nextflow run seqera-services/bifrost -profile test --outdir test_results
-```
-
-### Test profiles available
-
-The pipeline provides a test profile:
-
-- `test`: Minimal test using a small subset of data (5 probes, ~10 minutes runtime)
-
-### What the test does
-
-The test profile:
-- Uses minimal test data from `assets/test_data/minimal/`
-- Processes a small dataset with 5 probes across multiple concentrations
-- Tests both Paracetamol and Nitrofurantoin treatments in HepG2 cells
-- Runs with reduced computational resources (2 cores, 1 node)
-- Generates a test report to verify all pipeline steps work correctly
-
-### Expected test output
-
-If the test runs successfully, you should see:
-- Pipeline completion message
-- Generated HTML report in the `test_results/report/` directory
-- Compressed results in `test_results/compressed_results/`
-- Pipeline execution reports in `test_results/pipeline_info/`
-
-The test should complete in approximately 10 minutes depending on your system.
+> If you are new to Nextflow, please refer to [this page](https://www.nextflow.io/docs/latest/getstarted.html) on how to set-up Nextflow. Before running the workflow on actual data, make sure to test your setup using the minimal test profile - see [Manual Testing](docs/testing.md#manual-testing).
 
 ## Usage
 
@@ -115,7 +58,11 @@ nextflow run seqera-services/bifrost \
 
 When using pre-prepared JSON input, the pipeline will skip the data preparation step and process the JSON file(s) directly.
 
-For more details and further functionality, please refer to the [usage documentation](docs/usage.md), [parameter documentation](docs/parameters.md), and the [output documentation](docs/output.md).
+For more details and further functionality, please refer to the:
+- [Usage documentation](docs/usage.md)
+- [Parameter documentation](docs/parameters.md)
+- [Testing documentation](docs/testing.md)
+- [Output documentation](docs/output.md)
 
 ## Pipeline output
 

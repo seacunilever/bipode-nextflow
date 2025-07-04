@@ -308,6 +308,8 @@ An [example samplesheet](../assets/samplesheet.csv) has been provided with the p
 
 ## Running the pipeline
 
+Before running the pipeline with your own data, it's recommended to test your setup using the provided test profile. For comprehensive information about testing the pipeline, see the [testing documentation](testing.md).
+
 The typical command for running the pipeline is as follows:
 
 ```bash
