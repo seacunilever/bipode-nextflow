@@ -91,21 +91,25 @@ The pipeline accepts two types of input:
 1. Raw data input - for processing new data:
 
 ```bash
-nextflow run bifrost \
+# Using test data from the repository
+TEST_DATA=assets/test_data/minimal
+nextflow run seqera-services/bifrost \
    -profile <docker/singularity/.../institute> \
-   --input samplesheet.csv \
-   --counts counts.csv \
-   --meta_mapper meta_mapper.yml \
-   --substances_cell_types substances_cell_types.yml \
+   --input ${TEST_DATA}/Example_Meta_Data.csv \
+   --counts ${TEST_DATA}/Example_Counts_5probes.csv \
+   --meta_mapper ${TEST_DATA}/sers_meta_data_mapper.yml \
+   --substances_cell_types ${TEST_DATA}/substances_cell_types.yml \
    --outdir <OUTDIR>
 ```
 
 2. Pre-prepared JSON input - for using previously prepared data:
 
 ```bash
-nextflow run bifrost \
+# Using test data from the repository
+TEST_DATA=assets/test_data/minimal
+nextflow run seqera-services/bifrost \
    -profile <docker/singularity/.../institute> \
-   --input prepared_data.json \
+   --input ${TEST_DATA}/BIFROST_input_Nitrofurantoin_HepG2.json \
    --outdir <OUTDIR>
 ```
 
