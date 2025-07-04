@@ -69,6 +69,125 @@ When using pre-prepared JSON input:
 
 ## Raw Data Input
 
+### Input File Requirements
+
+For raw data input, you need three files with specific structures and formats:
+
+1. **Metadata CSV file** (`--input`) - Sample information and experimental metadata
+2. **Counts CSV file** (`--counts`) - Gene expression count data matrix  
+3. **Configuration YAML file** (`--substances-cell-types`) - Analysis configuration
+
+### Metadata CSV File Structure
+
+The metadata file must be a comma-separated CSV file with specific required columns. The pipeline validates this file and applies quality filters before analysis.
+
+#### Required Columns
+
+| Column                 | Type    | Description                                                       | Validation Rules                    |
+| ---------------------- | ------- | ----------------------------------------------------------------- | ----------------------------------- |
+| `SAMPLE_ID`            | string  | Unique identifier for each sample                                 | Must not contain spaces            |
+| `CELL_TYPE`            | string  | The type of cell used in the experiment                          | Must not contain spaces            |
+| `TEST_SUBSTANCE`       | string  | The substance being tested                                        | Must not contain spaces            |
+| `CONCENTRATION`        | numeric | The concentration of the test substance                           | Must be non-negative (≥ 0)         |
+| `NUM_MAPPED_READS`     | integer | Number of mapped reads                                            | Must be non-negative (≥ 0)         |
+| `PERCENT_MAPPED_READS` | numeric | Percentage of mapped reads                                        | Must be between 0 and 100          |
+
+#### Optional Columns
+
+| Column                | Type    | Description                                               | Usage                                    |
+| --------------------- | ------- | --------------------------------------------------------- | ---------------------------------------- |
+| `TREATMENT_VESSEL_ID` | string  | ID of the treatment vessel                                | Used as batch key by default             |
+
+Additional columns present in your metadata file are preserved but not actively used by the pipeline analysis.
+
+#### Quality Filtering Criteria
+
+The pipeline automatically filters samples based on the following criteria (configurable via parameters):
+
+- **Minimum percentage of mapped reads**: Default 50% (`--min_percent_mapped_reads`)
+- **Minimum number of mapped reads**: Default 100,000 (`--min_num_mapped_reads`)  
+- **Minimum average treatment count**: Default 5.0 (`--min_avg_treatment_count`)
+
+Samples not meeting these criteria are excluded from analysis.
+
+#### Sample ID Requirements
+
+- Sample IDs must be unique across the entire dataset
+- Sample IDs cannot contain spaces
+- Sample IDs should be consistent with column headers in the counts file
+
+#### Example Metadata Structure
+
+Based on the test data, here's an example of the metadata file structure:
+
+```csv
+SAMPLE_ID,CELL_TYPE,TEST_SUBSTANCE,CONCENTRATION,NUM_MAPPED_READS,PERCENT_MAPPED_READS,TREATMENT_VESSEL_ID
+S_O5180393_HG2_NFUR_1,HepG2,Nitrofurantoin,0.0192,2857440,86.0,A18039301
+S_M5180393_HG2_NFUR_2,HepG2,Nitrofurantoin,0.096,5710831,95.35,A18039301
+S_K5180393_HG2_NFUR_3,HepG2,Nitrofurantoin,0.48,4481281,84.35,A18039301
+S_I5180393_HG2_NFUR_4,HepG2,Nitrofurantoin,2.4,5654424,95.05,A18039301
+S_G5180393_HG2_NFUR_5,HepG2,Nitrofurantoin,12.0,3290920,78.26,A18039301
+S_E5180393_HG2_NFUR_6,HepG2,Nitrofurantoin,60.0,6389756,95.9,A18039301
+S_C5180393_HG2_NFUR_7,HepG2,Nitrofurantoin,300.0,1538838,76.1,A18039301
+S_B10180393_HG2_DMSO_0,HepG2,DMSO,0.0,4842380,95.87,A18039301
+```
+
+This example shows:
+- **Dose-response series**: Nitrofurantoin at concentrations from 0.0192 to 300 μM
+- **Control samples**: DMSO controls with concentration 0.0
+- **Quality metrics**: Mapped reads ranging from ~1.5M to ~6.4M with mapping percentages 76-96%
+- **Batch information**: All samples from the same treatment vessel (A18039301)
+
+### Counts CSV File Structure
+
+The counts file contains the gene expression count data in a matrix format where:
+
+- **Rows represent probes/genes** 
+- **Columns represent samples**
+- **First column contains probe identifiers**
+- **Remaining columns contain count values for each sample**
+
+#### File Format Requirements
+
+- Must be a comma-separated CSV file
+- First column must contain unique probe identifiers  
+- Column headers must match `SAMPLE_ID` values from metadata file
+- Count values must be non-negative integers
+- Missing values are not allowed
+
+#### Structure and Validation
+
+The pipeline validates that:
+- The file has at least 2 columns (probe ID + at least one sample)
+- All count values are non-negative  
+- Sample IDs in column headers match those in the metadata file
+- No missing or invalid count data
+
+#### Example Counts File Structure
+
+Based on the test data, here's the expected format:
+
+```csv
+Unnamed: 0,S_O5180393_HG2_NFUR_1,S_M5180393_HG2_NFUR_2,S_K5180393_HG2_NFUR_3,S_I5180393_HG2_NFUR_4,...
+ACBD3_59,79,141,153,249,...
+CEP89_11010,75,240,140,109,...
+MPDU1_11661,263,310,319,438,...
+OAS3_90233,17,104,78,69,...
+TMEM183A_34069,117,187,174,220,...
+```
+
+**Key characteristics:**
+- **Probe identifiers**: First column contains unique probe names (e.g., `ACBD3_59`, `CEP89_11010`)
+- **Sample columns**: Each subsequent column represents one sample with its count data
+- **Count values**: Integer expression counts for each probe in each sample
+- **Matrix dimensions**: In the test data, 5 probes × 562 samples
+
+#### Data Processing Notes
+
+- The pipeline will log-transform concentrations for modeling
+- Counts are split into "high" (>100) and "low" (≤100) categories for statistical modeling
+- Batch effects are modeled using the specified batch key column
+
 ### Samplesheet input
 
 For raw data input, you will need to create a samplesheet with information about the samples you would like to analyse before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with a header row, containing the required columns as defined in the schema.
@@ -77,50 +196,19 @@ For raw data input, you will need to create a samplesheet with information about
 --input '[path to samplesheet file]'
 ```
 
-### Required Columns
-
-The samplesheet must contain the following required columns:
-
-| Column                 | Description                                                       |
-| ---------------------- | ----------------------------------------------------------------- |
-| `SAMPLE_ID`            | Unique identifier for each sample. Must not contain spaces.       |
-| `CELL_TYPE`            | The type of cell used in the experiment. Must not contain spaces. |
-| `TEST_SUBSTANCE`       | The substance being tested. Must not contain spaces.              |
-| `CONCENTRATION`        | The concentration of the test substance (numeric)                 |
-| `NUM_MAPPED_READS`     | Number of mapped reads (numeric)                                  |
-| `PERCENT_MAPPED_READS` | Percentage of mapped reads (numeric)                              |
-
-### Optional Columns
-
-The following columns are optional but may be required depending on your analysis:
-
-| Column                | Description                                               |
-| --------------------- | --------------------------------------------------------- |
-| `TREATMENT_VESSEL_ID` | ID of the treatment vessel (used as batch key by default) |
-| `EXPOSURE_TIME`       | Duration of exposure (numeric)                            |
-
-### Additional Requirements
-
-- The pipeline will filter samples based on the following criteria:
-  - Minimum percentage of mapped reads (default: 50%)
-  - Minimum number of mapped reads (default: 100,000)
-  - Minimum average treatment count (default: 5.0)
-- Sample IDs must not contain spaces
-- Numeric values should be provided as numbers, not strings
-
 ### Example Samplesheet
 
 Here's an example of a minimal samplesheet for testing Nitrofurantoin on HepG2 cells:
 
 ```csv
-SAMPLE_ID,CELL_TYPE,TEST_SUBSTANCE,CONCENTRATION,NUM_MAPPED_READS,PERCENT_MAPPED_READS,TREATMENT_VESSEL_ID,EXPOSURE_TIME
-S_O5180393_HG2_NFUR_1,HepG2,Nitrofurantoin,0.0192,2857440,86.0,A18039301,24.0
-S_M5180393_HG2_NFUR_2,HepG2,Nitrofurantoin,0.096,5710831,95.35,A18039301,24.0
-S_K5180393_HG2_NFUR_3,HepG2,Nitrofurantoin,0.48,4481281,84.35,A18039301,24.0
-S_I5180393_HG2_NFUR_4,HepG2,Nitrofurantoin,2.4,5654424,95.05,A18039301,24.0
-S_G5180393_HG2_NFUR_5,HepG2,Nitrofurantoin,12.0,3290920,78.26,A18039301,24.0
-S_E5180393_HG2_NFUR_6,HepG2,Nitrofurantoin,60.0,6389756,95.9,A18039301,24.0
-S_C5180393_HG2_NFUR_7,HepG2,Nitrofurantoin,300.0,1538838,76.1,A18039301,24.0
+SAMPLE_ID,CELL_TYPE,TEST_SUBSTANCE,CONCENTRATION,NUM_MAPPED_READS,PERCENT_MAPPED_READS,TREATMENT_VESSEL_ID
+S_O5180393_HG2_NFUR_1,HepG2,Nitrofurantoin,0.0192,2857440,86.0,A18039301
+S_M5180393_HG2_NFUR_2,HepG2,Nitrofurantoin,0.096,5710831,95.35,A18039301
+S_K5180393_HG2_NFUR_3,HepG2,Nitrofurantoin,0.48,4481281,84.35,A18039301
+S_I5180393_HG2_NFUR_4,HepG2,Nitrofurantoin,2.4,5654424,95.05,A18039301
+S_G5180393_HG2_NFUR_5,HepG2,Nitrofurantoin,12.0,3290920,78.26,A18039301
+S_E5180393_HG2_NFUR_6,HepG2,Nitrofurantoin,60.0,6389756,95.9,A18039301
+S_C5180393_HG2_NFUR_7,HepG2,Nitrofurantoin,300.0,1538838,76.1,A18039301
 ```
 
 ### Substances and Cell Types Configuration
@@ -131,7 +219,48 @@ You also need to provide a YAML file specifying which test substances and cell t
 --substances-cell-types '[path to substances_cell_types.yml]'
 ```
 
-Example `substances_cell_types.yml`:
+#### Configuration File Structure
+
+The YAML file must contain the following sections:
+
+```yaml
+# Test substances to analyze
+Test substances:
+  - Nitrofurantoin
+  - Paracetamol
+
+# Cell types to analyze  
+Cell types:
+  - HepG2
+
+Additional divider: N/A
+
+Specific filters: null
+```
+
+#### Configuration Options
+
+- **`Test substances`**: List of substances to analyze. Must match values in the `TEST_SUBSTANCE` column of your metadata file.
+
+- **`Cell types`**: List of cell types to analyze. Must match values in the `CELL_TYPE` column of your metadata file.
+
+- **`Additional divider`**: Optional field to further subdivide the analysis. Options:
+  - Set to a column name from your samplesheet to create separate analyses for each unique value in that column
+  - For example, if set to `TREATMENT_VESSEL_ID`, the pipeline will create separate analyses for each treatment vessel
+  - Set to `N/A` to disable additional subdivision
+
+- **`Specific filters`**: Optional dictionary to exclude specific values from analysis. Example:
+  ```yaml
+  Specific filters:
+    TREATMENT_VESSEL_ID:
+      - A18039301  # Exclude this treatment vessel
+    CELL_TYPE:
+      - HepG2      # Exclude this cell type
+  ```
+
+#### Example Configuration
+
+Based on the test data, here's a complete example:
 
 ```yaml
 # Test substances to analyze
@@ -147,19 +276,11 @@ Additional divider: N/A
 Specific filters: null
 ```
 
-This configuration tells the pipeline to analyze Nitrofurantoin on HepG2 cells. The following fields are available:
-
-- `Test substances`: List of substances to analyze
-- `Cell types`: List of cell types to analyze
-- `Additional divider`: Optional field to further subdivide the analysis. If set to a column name from your samplesheet, the pipeline will create separate analyses for each unique value in that column. For example, if set to `TREATMENT_VESSEL_ID`, it will create separate analyses for each treatment vessel. Set to `N/A` to disable.
-- `Specific filters`: Optional dictionary of filters to exclude specific values. For example:
-  ```yaml
-  Specific filters:
-    TREATMENT_VESSEL_ID:
-      - A18039301 # Exclude this treatment vessel
-    CELL_TYPE:
-      - HepG2 # Exclude this cell type
-  ```
+This configuration tells the pipeline to:
+1. Analyze only Nitrofurantoin experiments
+2. Include only HepG2 cell data  
+3. Not use additional subdivision
+4. Apply no specific exclusion filters
 
 ### Batch Key Configuration
 
@@ -170,6 +291,16 @@ The pipeline uses a batch key to group samples for statistical analysis. By defa
 ```
 
 The batch key should be a column in your samplesheet that identifies groups of samples that were processed together (e.g., same plate, same experiment, etc.). This is used to account for batch effects in the statistical model.
+
+#### Choosing an Appropriate Batch Key
+
+Common batch key options include:
+- `TREATMENT_VESSEL_ID`: Groups samples by treatment vessel/plate (default)
+- `CELL_BATCH_ID`: Groups samples by cell culture batch
+- `SEQUENCING_PLATE_ID`: Groups samples by sequencing plate
+- `MEASUREMENT_DATE`: Groups samples by measurement date
+
+Choose a batch key that represents the most relevant source of technical variation in your experiment.
 
 An [example samplesheet](../assets/samplesheet.csv) has been provided with the pipeline.
 
