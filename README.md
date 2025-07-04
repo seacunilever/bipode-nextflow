@@ -25,7 +25,7 @@ The model is designed to infer a point-of-departure (PoD) from a concentration-r
 ## Usage
 
 > [!NOTE]
-> If you are new to Nextflow, please refer to [this page](https://www.nextflow.io/docs/latest/getstarted.html) on how to set-up Nextflow. Before running the workflow on actual data, make sure to test your setup using the minimal test profile - see [Manual Testing](docs/testing.md#manual-testing).
+> If you are new to Nextflow, please refer to [this page](https://www.nextflow.io/docs/latest/getstarted.html) on how to set-up Nextflow. Before running the workflow on actual data, make sure to test your setup using the minimal test profile - see [Manual Testing](docs/test_guide.md#manual-testing).
 
 ## Usage
 
@@ -61,7 +61,7 @@ When using pre-prepared JSON input, the pipeline will skip the data preparation 
 For more details and further functionality, please refer to the:
 - [Usage documentation](docs/usage.md)
 - [Parameter documentation](docs/parameters.md)
-- [Testing documentation](docs/testing.md)
+- [Test Guide](docs/test_guide.md)
 - [Output documentation](docs/output.md)
 
 ## Pipeline output

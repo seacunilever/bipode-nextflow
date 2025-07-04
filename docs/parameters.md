@@ -2,7 +2,7 @@
 
 This document describes the parameters used in the Bifrost pipeline. Parameters are grouped into different sections based on their functionality.
 
-For information about testing the pipeline and validating parameter inputs, see the [testing documentation](testing.md).
+For information about testing the pipeline and validating parameter inputs, see the [test guide](test_guide.md).
 
 ## Table of Contents
 - [Input/Output Options](#inputoutput-options)
