@@ -429,40 +429,55 @@ nextflow run seqera-services/bifrost \
 > [!NOTE]
 > For large datasets, consider using `--report_interactive_plots` as it may significantly improve report generation performance. However, this will require JavaScript to be enabled in the browser to view the plots.
 
-## Azure Cloud Execution
+## Running on Cloud Platforms
 
-The pipeline supports execution on Azure Batch, which allows for cost-effective processing using Low Priority instances. This section describes the Azure-specific setup and configuration.
+Nextflow supports execution on various cloud platforms including AWS Batch, Azure Batch, and Google Cloud Batch. nf-core provides pre-configured profiles to simplify cloud setup, allowing for cost-effective processing using managed compute resources.
 
-### Prerequisites
+### Cloud Configuration Profiles
 
-- Azure Batch account
-- Azure Blob storage container (associated with batch account)
-- Azure Container Registry (ACR)
+nf-core provides pre-configured profiles for popular cloud platforms:
 
-### Running on Azure
+- **AWS Batch**: [nf-core/configs/awsbatch](https://nf-co.re/configs/awsbatch/)
+- **Azure Batch**: [nf-core/configs/azurebatch](https://nf-co.re/configs/azurebatch/)
+- **Google Cloud Batch**: Available through standard Nextflow configuration
 
-Make sure `n_cores` matches with the cloud machine set in `nextflow.config`. Note that Azure cloud files should be prefixed with `az://`. You can also use files local to where you are running the workflow, they do not need to be on azure cloud storage.
+### Getting Started with Cloud Execution
+
+To run the pipeline on a cloud platform:
+
+1. **Choose your cloud platform** and review the nf-core configuration profile
+2. **Set up the required cloud resources** (compute environments, storage, etc.)
+3. **Configure authentication** for your cloud provider
+4. **Run the pipeline** with the appropriate profile:
 
 ```bash
-nextflow run bifrost.nf -profile az -params-file params_az.yml
+# AWS Batch example
+nextflow run seqera-services/bifrost -profile awsbatch --input samplesheet.csv --outdir results
+
+# Azure Batch example  
+nextflow run seqera-services/bifrost -profile azurebatch --input samplesheet.csv --outdir results
 ```
 
-### Azure Cloud Notes
+### Cloud Platform Documentation
 
-- A pool is created on workflow execution and deleted after finishing
-- Low priority nodes are used to save cost (20% of Dedicated instances)
-- The compute pool scaling formula will scale up and down the pool size based on the amount of work in the queue up to a provided maximum number of nodes
-- Processes are set to retry 3 times before failing so if any tasks are kicked by Azure they will restart
-- If all tasks do not complete re-running with `-resume` will process these as long as the work directory has not been touched or settings changed
-- Costs for compute can be found here https://azure.microsoft.com/en-gb/pricing/details/batch/windows-virtual-machines/
-- Azure machine type `Standard_F4s_v2` is used by default and set in `nextflow.config`
+For detailed setup instructions and configuration options, refer to the official documentation:
 
-### Known Issues with Azure
+#### nf-core Cloud Configs
+- [nf-core/configs](https://nf-co.re/configs/) - Browse all available institutional and cloud configurations
+- [AWS Batch config](https://nf-co.re/configs/awsbatch/) - AWS-specific configuration and setup
+- [Azure Batch config](https://nf-co.re/configs/azurebatch/) - Azure-specific configuration and setup
 
-- Running locally using the Azure `az` profile may be blocked by Zscalar
-- Conda installed Nextflow may cause `java.lang.UnsupportedOperationException: Not a valid Azure Blob Storage file attribute view: interface`
-- Do not use `scratch = true` directive in any nextflow process as this causes issues writing files to cloud blob store as working directory
-- If using azure cloud, run from an Azure VM. Using `SEACserver` has incurred timeout errors
+#### Nextflow Cloud Documentation
+- [AWS Batch](https://www.nextflow.io/docs/latest/aws.html#aws-batch) - Official Nextflow AWS documentation
+- [Azure Batch](https://www.nextflow.io/docs/latest/azure.html#azure-batch) - Official Nextflow Azure documentation  
+- [Google Cloud Batch](https://www.nextflow.io/docs/latest/google.html#cloud-batch) - Official Nextflow Google Cloud documentation
+
+### Cloud Execution Tips
+
+- **Storage**: Use cloud-native storage solutions (S3, Azure Blob, Google Cloud Storage) for input and output data
+- **Costs**: Consider using spot/preemptible instances for cost savings
+- **Networking**: Ensure proper VPC/network configuration for security and performance
+- **Monitoring**: Use cloud-native monitoring tools or Nextflow Tower for pipeline execution tracking
 
 ## Developer Notes
 
