@@ -2,13 +2,13 @@
     "Should run without failures": {
         "content": [
             [
-                "BIFROST_input_Nitrofurantoin_HepG2.json:md5,59f55bb27430d2ce61da731983e28ce3"
+                "BIFROST_input_Nitrofurantoin_HepG2.json:md5,022bd61a67ac649a2519e7ad57e3031e"
             ]
         ],
         "meta": {
             "nf-test": "0.9.2",
-            "nextflow": "25.04.4"
+            "nextflow": "24.10.2"
         },
-        "timestamp": "2025-06-25T10:35:03.631916"
+        "timestamp": "2025-07-07T15:25:48.562137"
     }
 }
