@@ -1,9 +1,9 @@
 process PREPARE_INPUTS {
 
-    conda "bifrost-httr=0.2.0"
+    conda "bifrost-httr=0.3.0"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/ed/ed90af4777d8d7086ed99d0a825f99e20e39278a75c70d3f4f7b6336edf7e210/data' :
-        'community.wave.seqera.io/library/bifrost-httr:0.2.0--e8ca5c015e9a6142' }"
+        'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/37/37b8df53325072038a7dce735a434031e56946aeca172a683216dbdbc197fc5d/data' :
+        'community.wave.seqera.io/library/bifrost-httr:0.3.0--6161c4cc71c68c4c' }"
 
     cpus { 2 * task.attempt }
     memory { 1.GB * task.attempt }
