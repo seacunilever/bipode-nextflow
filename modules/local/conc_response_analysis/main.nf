@@ -29,7 +29,7 @@ process CONC_RESPONSE_ANALYSIS {
     def probe_files_extract = probes.collect { " -f Data/" + it + ".pkl" }.join(" ")
     prefix = task.ext.prefix ?: "${meta.id}"
     """
-    mkdir -p Data Samples Fits
+    mkdir -p Data $prefix
 
     tar -zxf $all_probe_file -C Data/ $probe_files
 
@@ -55,7 +55,7 @@ process CONC_RESPONSE_ANALYSIS {
 
     sleep 5
 
-    cd Fits && find . -name "*.pkl" -print0 | tar $args2 -cf - --null -T - | gzip $args3 > ../${prefix}.tar.gz && cd ..
+    cd $prefix && find . -name "*.pkl" -print0 | tar $args2 -cf - --null -T - | gzip $args3 > ../${prefix}.tar.gz && cd ..
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
@@ -66,9 +66,9 @@ process CONC_RESPONSE_ANALYSIS {
     stub:
     prefix = task.ext.prefix ?: "${meta.id}"
     """
-    mkdir -p Fits
-    touch Fits/stub.pkl
-    touch Fits/stub.json
+    mkdir -p $prefix
+    touch $prefix/stub.pkl
+    touch $prefix/stub.json
     touch ${prefix}.tar.gz
 
     cat <<-END_VERSIONS > versions.yml
