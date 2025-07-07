@@ -2,7 +2,6 @@
     "Should run without failures": {
         "content": [
             [
-                "BETA-multiqc.parquet:md5,4ba5f587b73ba3f0564f98ab2dfff132",
                 "bifrost_diagnostics_table.txt:md5,cece1ce2cf68a16966908b8b4dd27d2b",
                 "bifrost_fc_down_summary.txt:md5,b1e75125cdd77235de030a61a8fc6de1",
                 "bifrost_fc_up_summary.txt:md5,239229d74de7040d01396d211b7af2e2",
