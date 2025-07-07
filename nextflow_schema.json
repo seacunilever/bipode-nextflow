@@ -172,7 +172,7 @@
                     "hidden": true,
                     "help_text": "When running offline, Nextflow cannot retrieve institutional configuration files from the internet. If needed, download these files from the repository and specify their location with this parameter.",
                     "fa_icon": "fas fa-users-cog"
-                },
+                }
         },
         "generic_options": {
             "title": "Generic options",
