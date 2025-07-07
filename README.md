@@ -25,34 +25,45 @@ The model is designed to infer a point-of-departure (PoD) from a concentration-r
 ## Usage
 
 > [!NOTE]
-> If you are new to Nextflow, please refer to [this page](https://www.nextflow.io/docs/latest/getstarted.html) on how to set-up Nextflow. Make sure to [test your setup](https://www.nextflow.io/docs/latest/getstarted.html#testing-the-installation) with `-profile test` before running the workflow on actual data.
+> If you are new to Nextflow, please refer to [this page](https://www.nextflow.io/docs/latest/getstarted.html) on how to set-up Nextflow. Before running the workflow on actual data, make sure to test your setup using the minimal test profile - see [Manual Testing](docs/test_guide.md#manual-testing).
+
+## Usage
 
 The pipeline accepts two types of input:
 
 1. Raw data input - for processing new data:
 
 ```bash
-nextflow run bifrost \
+# Using test data from the repository
+TEST_DATA=assets/test_data/minimal
+nextflow run seqera-services/bifrost \
    -profile <docker/singularity/.../institute> \
-   --input samplesheet.csv \
-   --counts counts.csv \
-   --meta_mapper meta_mapper.yml \
-   --substances_cell_types substances_cell_types.yml \
+   --input ${TEST_DATA}/Example_Meta_Data.csv \
+   --counts ${TEST_DATA}/Example_Counts_5probes.csv \
+   --meta_mapper ${TEST_DATA}/sers_meta_data_mapper.yml \
+   --substances_cell_types ${TEST_DATA}/substances_cell_types.yml \
    --outdir <OUTDIR>
 ```
 
 2. Pre-prepared JSON input - for using previously prepared data:
 
 ```bash
-nextflow run bifrost \
+# Using test data from the repository
+TEST_DATA=assets/test_data/minimal
+nextflow run seqera-services/bifrost \
    -profile <docker/singularity/.../institute> \
-   --input prepared_data.json \
+   --input ${TEST_DATA}/BIFROST_input_Nitrofurantoin_HepG2.json \
    --outdir <OUTDIR>
 ```
 
 When using pre-prepared JSON input, the pipeline will skip the data preparation step and process the JSON file(s) directly.
 
-For more details and further functionality, please refer to the [usage documentation](docs/usage.md) and the [output documentation](docs/output.md).
+For more details and further functionality, please refer to the:
+
+- [Usage documentation](docs/usage.md)
+- [Parameter documentation](docs/parameters.md)
+- [Test Guide](docs/test_guide.md)
+- [Output documentation](docs/output.md)
 
 ## Pipeline output
 
