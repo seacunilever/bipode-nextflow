@@ -23,7 +23,7 @@ process SPLIT_DATA {
     """
     bifrost-httr split-data \\
         --input-file $input_data \\
-        --analysis-dir . \\
+        --output-dir . \\
         --prefix $prefix \\
         $args
 

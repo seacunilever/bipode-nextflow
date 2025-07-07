@@ -23,9 +23,8 @@ process PREPARE_INPUTS {
     """
     bifrost-httr prepare-inputs \
         --meta-data $meta_data \
-        --meta-mapper $meta_mapper \
         --counts $counts \
-        --substances-cell-types $substances_cell_types \
+        --config $substances_cell_types \
         --output-dir bifrost_inputs \
         $args
 
