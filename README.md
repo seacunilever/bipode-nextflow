@@ -41,7 +41,7 @@ nextflow run seqera-services/bifrost \
    --input ${TEST_DATA}/Example_Meta_Data.csv \
    --counts ${TEST_DATA}/Example_Counts_5probes.csv \
    --meta_mapper ${TEST_DATA}/sers_meta_data_mapper.yml \
-   --substances_cell_types ${TEST_DATA}/substances_cell_types.yml \
+   --bifrost_config ${TEST_DATA}/substances_cell_types.yml \
    --outdir <OUTDIR>
 ```
 

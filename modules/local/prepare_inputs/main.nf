@@ -12,7 +12,7 @@ process PREPARE_INPUTS {
     path meta_data
     path meta_mapper
     path counts
-    path substances_cell_types
+    path bifrost_config
 
     output:
     path "bifrost_inputs/*.json", emit: prepared_inputs
@@ -24,7 +24,7 @@ process PREPARE_INPUTS {
     bifrost-httr prepare-inputs \
         --meta-data $meta_data \
         --counts $counts \
-        --config $substances_cell_types \
+        --config $bifrost_config \
         --output-dir bifrost_inputs \
         $args
 

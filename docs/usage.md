@@ -66,7 +66,7 @@ The JSON format consists of:
 
 When using pre-prepared JSON input:
 
-- The meta_mapper, counts, and substances_cell_types parameters are not required
+- The meta_mapper, counts, and bifrost_config parameters are not required
 - You can provide multiple JSON files using the --input parameter
 
 ## Raw Data Input
@@ -77,7 +77,7 @@ For raw data input, you need three files with specific structures and formats:
 
 1. **Metadata CSV file** (`--input`) - Sample information and experimental metadata
 2. **Counts CSV file** (`--counts`) - Gene expression count data matrix
-3. **Configuration YAML file** (`--substances-cell-types`) - Analysis configuration
+3. **Configuration YAML file** (`--bifrost-config`) - Analysis configuration
 
 ### Metadata CSV File Structure
 
@@ -233,10 +233,10 @@ S_C5180393_HG2_NFUR_7,HepG2,Nitrofurantoin,300.0,1538838,76.1,A18039301
 
 ### Substances and Cell Types Configuration
 
-You also need to provide a YAML file specifying which test substances and cell types to analyze. This file should be provided using the `--substances-cell-types` parameter:
+You also need to provide a YAML file specifying which test substances and cell types to analyze. This file should be provided using the `--bifrost-config` parameter:
 
 ```bash
---substances-cell-types '[path to substances_cell_types.yml]'
+--bifrost-config '[path to substances_cell_types.yml]'
 ```
 
 See example: [`substances_cell_types.yml`](../assets/test_data/minimal/substances_cell_types.yml)
@@ -336,7 +336,7 @@ Before running the pipeline with your own data, it's recommended to test your se
 The typical command for running the pipeline is as follows:
 
 ```bash
-nextflow run seqera-services/bifrost --input ./samplesheet.csv --counts ./counts.csv --substances_cell_types ./substances_cell_types.yml --outdir ./results  -profile docker
+nextflow run seqera-services/bifrost --input ./samplesheet.csv --counts ./counts.csv --bifrost_config ./substances_cell_types.yml --outdir ./results  -profile docker
 ```
 
 This will launch the pipeline with the `docker` configuration profile. See below for more information about profiles.
@@ -442,7 +442,7 @@ To generate a report with custom settings:
 nextflow run seqera-services/bifrost \
     --input samplesheet.csv \
     --counts counts.csv \
-    --substances_cell_types config.yml \
+    --bifrost_config config.yml \
     --report_timepoint "48 hours" \
     --report_conc_units "ugml-1" \
     --report_interactive_plots \
