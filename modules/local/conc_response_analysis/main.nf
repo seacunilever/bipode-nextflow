@@ -1,10 +1,10 @@
 process CONC_RESPONSE_ANALYSIS {
     tag "${meta.id}"
 
-    conda "bifrost-httr=0.2.0"
+    conda "bifrost-httr=0.3.1"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/ed/ed90af4777d8d7086ed99d0a825f99e20e39278a75c70d3f4f7b6336edf7e210/data' :
-        'community.wave.seqera.io/library/bifrost-httr:0.2.0--e8ca5c015e9a6142' }"
+        'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/76/76e8817651482fe89237efe5d385050d40144519c9f0c9fc5b0f9ee506292428/data' :
+        'community.wave.seqera.io/library/bifrost-httr:0.3.1--b4c49de956618921' }"
 
     cpus { params.n_cores }
     memory { 3.GB * task.attempt }
@@ -29,7 +29,7 @@ process CONC_RESPONSE_ANALYSIS {
     def probe_files_extract = probes.collect { " -f Data/" + it + ".pkl" }.join(" ")
     prefix = task.ext.prefix ?: "${meta.id}"
     """
-    mkdir -p Data Samples Fits
+    mkdir -p Data
 
     tar -zxf $all_probe_file -C Data/ $probe_files
 
@@ -50,6 +50,7 @@ process CONC_RESPONSE_ANALYSIS {
         $probe_files_extract \
         --model-executable \$model_executable \
         --n-cores $task.cpus \
+        --output-dir . \
         $args
 
     sleep 5

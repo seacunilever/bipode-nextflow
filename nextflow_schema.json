@@ -58,7 +58,7 @@
                     "description": "Path to the counts CSV file containing probe counts. Only required when processing raw data inputs.",
                     "fa_icon": "fas fa-file-csv"
                 },
-                "substances_cell_types": {
+                "bifrost_config": {
                     "type": "string",
                     "format": "file-path",
                     "description": "Path to YAML file containing test substances and cell types to analyze. Only required when processing raw data inputs.",

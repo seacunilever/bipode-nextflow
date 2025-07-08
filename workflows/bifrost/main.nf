@@ -22,7 +22,7 @@ workflow BIFROST {
     ch_input
     ch_meta_mapper
     ch_counts
-    ch_substances_cell_types
+    ch_bifrost_config
     ch_model
     n_cores
     precompile_model
@@ -39,7 +39,7 @@ workflow BIFROST {
         ch_input_json.raw,
         ch_meta_mapper,
         ch_counts,
-        ch_substances_cell_types
+        ch_bifrost_config
     )
 
     // Step 2: Process prepared inputs and probes

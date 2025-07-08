@@ -34,7 +34,7 @@ workflow NFCORE_BIFROST {
     // Create channels for raw data processing
     ch_meta_mapper = params.meta_mapper ? Channel.from(file(params.meta_mapper, checkIfExists: true)) : Channel.empty()
     ch_counts = params.counts ? Channel.from(file(params.counts, checkIfExists: true)) : Channel.empty()
-    ch_substances_cell_types = params.substances_cell_types ? Channel.from(file(params.substances_cell_types, checkIfExists: true)) : Channel.empty()
+    ch_bifrost_config = params.bifrost_config ? Channel.from(file(params.bifrost_config, checkIfExists: true)) : Channel.empty()
 
     ch_model = []
     if (params.model_file) {
@@ -47,7 +47,7 @@ workflow NFCORE_BIFROST {
         ch_input,
         ch_meta_mapper,
         ch_counts,
-        ch_substances_cell_types,
+        ch_bifrost_config,
         ch_model,
         params.n_cores,
         params.precompile_model

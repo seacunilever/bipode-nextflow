@@ -1,9 +1,9 @@
 process PREPARE_INPUTS {
 
-    conda "bifrost-httr=0.2.0"
+    conda "bifrost-httr=0.3.1"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/ed/ed90af4777d8d7086ed99d0a825f99e20e39278a75c70d3f4f7b6336edf7e210/data' :
-        'community.wave.seqera.io/library/bifrost-httr:0.2.0--e8ca5c015e9a6142' }"
+        'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/76/76e8817651482fe89237efe5d385050d40144519c9f0c9fc5b0f9ee506292428/data' :
+        'community.wave.seqera.io/library/bifrost-httr:0.3.1--b4c49de956618921' }"
 
     cpus { 2 * task.attempt }
     memory { 1.GB * task.attempt }
@@ -12,7 +12,7 @@ process PREPARE_INPUTS {
     path meta_data
     path meta_mapper
     path counts
-    path substances_cell_types
+    path bifrost_config
 
     output:
     path "bifrost_inputs/*.json", emit: prepared_inputs
@@ -23,9 +23,8 @@ process PREPARE_INPUTS {
     """
     bifrost-httr prepare-inputs \
         --meta-data $meta_data \
-        --meta-mapper $meta_mapper \
         --counts $counts \
-        --substances-cell-types $substances_cell_types \
+        --config $bifrost_config \
         --output-dir bifrost_inputs \
         $args
 
