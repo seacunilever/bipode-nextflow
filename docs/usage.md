@@ -91,6 +91,7 @@ The pipeline expects specific column names in your metadata file. You have two o
 2. **Use a meta mapper**: If your metadata file uses different column names (like in [`Example_Meta_Data.csv`](../assets/test_data/minimal/Example_Meta_Data.csv) which uses uppercase names), provide a YAML file with `--meta_mapper` (see example: [`meta_data_mapper.yml`](../assets/test_data/minimal/meta_data_mapper.yml)) to map your columns to Bifrost's expected names.
 
 For a complete working example, see:
+
 - Metadata file: [`Example_Meta_Data.csv`](../assets/test_data/minimal/Example_Meta_Data.csv)
 - Meta mapper: [`meta_data_mapper.yml`](../assets/test_data/minimal/meta_data_mapper.yml)
 - Counts file: [`Example_Counts_2probes.csv`](../assets/test_data/minimal/Example_Counts_2probes.csv)
@@ -108,10 +109,10 @@ For a complete working example, see:
 
 #### Optional Columns
 
-| Column                | Type   | Description                | Usage                        |
-| --------------------- | ------ | -------------------------- | ---------------------------- |
-| `Cell type`           | string | The type of cell used in the experiment | Used to identify cell lines |
-| `Treatment vessel ID` | string | ID of the treatment vessel | Used as batch key by default |
+| Column                | Type   | Description                             | Usage                        |
+| --------------------- | ------ | --------------------------------------- | ---------------------------- |
+| `Cell type`           | string | The type of cell used in the experiment | Used to identify cell lines  |
+| `Treatment vessel ID` | string | ID of the treatment vessel              | Used as batch key by default |
 
 Additional columns present in your metadata file are preserved but not actively used by the pipeline analysis.
 
