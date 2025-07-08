@@ -83,25 +83,35 @@ For raw data input, you need three files with specific structures and formats:
 
 The metadata file must be a comma-separated CSV file with specific required columns. The pipeline validates this file and applies quality filters before analysis.
 
+#### Column Name Mapping
+
+The pipeline expects specific column names in your metadata file. You have two options:
+
+1. **Use Bifrost's column names directly**: If your metadata file already uses the column names listed below, you don't need a meta mapper.
+2. **Use a meta mapper**: If your metadata file uses different column names (like in [`Example_Meta_Data.csv`](../assets/test_data/minimal/Example_Meta_Data.csv) which uses uppercase names), provide a YAML file with `--meta_mapper` (see example: [`meta_data_mapper.yml`](../assets/test_data/minimal/meta_data_mapper.yml)) to map your columns to Bifrost's expected names.
+
+For a complete working example, see:
+- Metadata file: [`Example_Meta_Data.csv`](../assets/test_data/minimal/Example_Meta_Data.csv)
+- Meta mapper: [`meta_data_mapper.yml`](../assets/test_data/minimal/meta_data_mapper.yml)
+- Counts file: [`Example_Counts_2probes.csv`](../assets/test_data/minimal/Example_Counts_2probes.csv)
+- Configuration: [`substances_cell_types.yml`](../assets/test_data/minimal/substances_cell_types.yml)
+
 #### Required Columns
 
 | Column                 | Type    | Description                             | Validation Rules           |
 | ---------------------- | ------- | --------------------------------------- | -------------------------- |
-| `SAMPLE_ID`            | string  | Unique identifier for each sample       | Must not contain spaces    |
-| `CELL_TYPE`            | string  | The type of cell used in the experiment | Must not contain spaces    |
-| `TEST_SUBSTANCE`       | string  | The substance being tested              | Must not contain spaces    |
-| `CONCENTRATION`        | numeric | The concentration of the test substance | Must be non-negative (≥ 0) |
-| `NUM_MAPPED_READS`     | integer | Number of mapped reads                  | Must be non-negative (≥ 0) |
-| `PERCENT_MAPPED_READS` | numeric | Percentage of mapped reads              | Must be between 0 and 100  |
-
-> [!IMPORTANT]
-> Number of mapped reads and read depth in the experiment are required fields in the metadata and are critical to the Bifrost model. If these fields are not available, users can estimate the number of mapped reads by summing the counts table, but only if the table is unfiltered. Filtering, such as using test datasets with reduced probes, invalidates this approach. Additionally, mapped reads are used in the model to calculate the probability of generating a particular count for each sample, making their accuracy essential.
+| `Sample ID`            | string  | Unique identifier for each sample       | Must not contain spaces    |
+| `Test substance`       | string  | The substance being tested              | Must not contain spaces    |
+| `Concentration`        | numeric | The concentration of the test substance | Must be non-negative (≥ 0) |
+| `Num. mapped reads`    | integer | Number of mapped reads                  | Must be non-negative (≥ 0) |
+| `Percent mapped reads` | numeric | Percentage of mapped reads              | Must be between 0 and 100  |
 
 #### Optional Columns
 
 | Column                | Type   | Description                | Usage                        |
 | --------------------- | ------ | -------------------------- | ---------------------------- |
-| `TREATMENT_VESSEL_ID` | string | ID of the treatment vessel | Used as batch key by default |
+| `Cell type`           | string | The type of cell used in the experiment | Used to identify cell lines |
+| `Treatment vessel ID` | string | ID of the treatment vessel | Used as batch key by default |
 
 Additional columns present in your metadata file are preserved but not actively used by the pipeline analysis.
 
@@ -126,7 +136,7 @@ Samples not meeting these criteria are excluded from analysis.
 Based on the test data, here's an example of the metadata file structure:
 
 ```csv
-SAMPLE_ID,CELL_TYPE,TEST_SUBSTANCE,CONCENTRATION,NUM_MAPPED_READS,PERCENT_MAPPED_READS,TREATMENT_VESSEL_ID
+Sample ID,Cell type,Test substance,Concentration,Num. mapped reads,Percent mapped reads,Treatment vessel ID
 S_O5180393_HG2_NFUR_1,HepG2,Nitrofurantoin,0.0192,2857440,86.0,A18039301
 S_M5180393_HG2_NFUR_2,HepG2,Nitrofurantoin,0.096,5710831,95.35,A18039301
 S_K5180393_HG2_NFUR_3,HepG2,Nitrofurantoin,0.48,4481281,84.35,A18039301
@@ -153,11 +163,13 @@ The counts file contains the gene expression count data in a matrix format where
 - **First column contains probe identifiers**
 - **Remaining columns contain count values for each sample**
 
+See example: [`Example_Counts_2probes.csv`](../assets/test_data/minimal/Example_Counts_2probes.csv)
+
 #### File Format Requirements
 
 - Must be a comma-separated CSV file
 - First column must contain unique probe identifiers
-- Column headers must match `SAMPLE_ID` values from metadata file
+- Column headers must match `Sample ID` values from metadata file
 - Count values must be non-negative integers
 - Missing values are not allowed
 
@@ -206,7 +218,7 @@ For raw data input, you will need to create a samplesheet with information about
 
 ### Example Samplesheet
 
-Here's an example of a minimal samplesheet for testing Nitrofurantoin on HepG2 cells:
+Here's an example of a minimal samplesheet for testing Nitrofurantoin on HepG2 cells (from [`Example_Meta_Data.csv`](../assets/test_data/minimal/Example_Meta_Data.csv)):
 
 ```csv
 SAMPLE_ID,CELL_TYPE,TEST_SUBSTANCE,CONCENTRATION,NUM_MAPPED_READS,PERCENT_MAPPED_READS,TREATMENT_VESSEL_ID
@@ -226,6 +238,8 @@ You also need to provide a YAML file specifying which test substances and cell t
 ```bash
 --substances-cell-types '[path to substances_cell_types.yml]'
 ```
+
+See example: [`substances_cell_types.yml`](../assets/test_data/minimal/substances_cell_types.yml)
 
 #### Configuration File Structure
 
