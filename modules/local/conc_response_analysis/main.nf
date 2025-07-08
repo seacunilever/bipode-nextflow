@@ -17,8 +17,8 @@ process CONC_RESPONSE_ANALYSIS {
 
     output:
     tuple val(meta), path("${prefix}.tar.gz"), emit: compressed_fits_files
-    tuple val(meta), path("${prefix}/*.pkl"), emit: fits_files
-    tuple val(meta), path("${prefix}/*.json"), emit: json_summaries
+    tuple val(meta), path("Fits/*.pkl"), emit: fits_files
+    tuple val(meta), path("Fits/*.json"), emit: json_summaries
     path "versions.yml", emit: versions
 
     script:
@@ -50,7 +50,7 @@ process CONC_RESPONSE_ANALYSIS {
         $probe_files_extract \
         --model-executable \$model_executable \
         --n-cores $task.cpus \
-        --output-dir $prefix \
+        --output-dir . \
         $args
 
     sleep 5
