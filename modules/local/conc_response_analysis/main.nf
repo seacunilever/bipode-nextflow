@@ -66,9 +66,9 @@ process CONC_RESPONSE_ANALYSIS {
     stub:
     prefix = task.ext.prefix ?: "${meta.id}"
     """
-    mkdir -p $prefix
-    touch $prefix/stub.pkl
-    touch $prefix/stub.json
+    mkdir -p Fits
+    touch Fits/stub.pkl
+    touch Fits/stub.json
     touch ${prefix}.tar.gz
 
     cat <<-END_VERSIONS > versions.yml
