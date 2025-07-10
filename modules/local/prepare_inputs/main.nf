@@ -25,6 +25,7 @@ process PREPARE_INPUTS {
         --meta-data $meta_data \
         --counts $counts \
         --config $bifrost_config \
+        --meta-mapper $meta_mapper \
         --output-dir bifrost_inputs \
         $args
 
