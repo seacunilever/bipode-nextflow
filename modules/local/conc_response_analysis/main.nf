@@ -36,10 +36,10 @@ process CONC_RESPONSE_ANALYSIS {
     # Handle model: empty (compile default), .stan (compile file), or executable (use as-is)
     if [[ -z "$model" ]] || [[ "$model" == *.stan ]]; then
         model_input=\${model:-""}  # Use empty string if model is empty, otherwise use model path
-        bifrost-httr compile-model \$model_input
-        model_executable=\$(find . -maxdepth 1 -type f -exec test -x {} \\; -print | head -n 1)
+        compilation_output=\$(bifrost-httr compile-model \$model_input 2>&1 | tee /dev/stderr)
+        model_executable=\$(echo "\$compilation_output" | grep "Model compiled successfully:" | sed 's/.*Model compiled successfully: //')
         if [[ -z "\$model_executable" ]]; then
-            echo "Error: No executable found after compilation"
+            echo "Error: No executable path found in compilation output"
             exit 1
         fi
     else
