@@ -42,7 +42,7 @@ workflow NFCORE_BIFROST {
 
     ch_meta_mapper = []
     if (params.meta_mapper) {
-        ch_meta_mapper = Channel.from(file(params.meta_mapper, checkIfExists: true))
+        ch_meta_mapper = Channel.fromPath(params.meta_mapper, checkIfExists: true).first()
     }
 
     //
