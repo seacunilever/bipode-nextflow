@@ -18,15 +18,10 @@ process COMPILE_STAN_MODEL {
 
     script:
     def args = task.ext.args ?: ''
+    def model_arg = model ? "--model $model" : ''
     """
     mkdir -p compiled_model && cd compiled_model
-
-    # Handle model: empty (compile default) or .stan (compile file)
-    if [[ -z "$model" ]]; then
-        bifrost-httr compile-model $args
-    else
-        bifrost-httr compile-model "$model" $args
-    fi
+    bifrost-httr compile-model $model_arg $args
     cd ..
 
     cat <<-END_VERSIONS > versions.yml

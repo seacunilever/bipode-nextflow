@@ -32,7 +32,6 @@ workflow NFCORE_BIFROST {
 
     main:
     // Create channels for raw data processing
-    ch_meta_mapper = params.meta_mapper ? Channel.from(file(params.meta_mapper, checkIfExists: true)) : Channel.empty()
     ch_counts = params.counts ? Channel.from(file(params.counts, checkIfExists: true)) : Channel.empty()
     ch_bifrost_config = params.bifrost_config ? Channel.from(file(params.bifrost_config, checkIfExists: true)) : Channel.empty()
 
@@ -40,6 +39,12 @@ workflow NFCORE_BIFROST {
     if (params.model_file) {
         ch_model = Channel.fromPath(params.model_file, checkIfExists: true).first()
     }
+
+    ch_meta_mapper = []
+    if (params.meta_mapper) {
+        ch_meta_mapper = Channel.fromPath(params.meta_mapper, checkIfExists: true).first()
+    }
+
     //
     // WORKFLOW: Run pipeline
     //

@@ -20,12 +20,14 @@ process PREPARE_INPUTS {
 
     script:
     def args = task.ext.args ?: ''
+    def meta_mapper_arg = meta_mapper ? "--meta-mapper $meta_mapper" : ''
     """
     bifrost-httr prepare-inputs \
         --meta-data $meta_data \
         --counts $counts \
         --config $bifrost_config \
         --output-dir bifrost_inputs \
+        $meta_mapper_arg \
         $args
 
     cat <<-END_VERSIONS > versions.yml
