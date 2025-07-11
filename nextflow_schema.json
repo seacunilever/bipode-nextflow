@@ -17,17 +17,13 @@
                         {
                             "type": "string",
                             "format": "file-path",
-                            "mimetype": "application/json"
+                            "mimetype": "application/json",
+                            "schema": "assets/schema_json_input.json"
                         },
                         {
                             "type": "string",
                             "format": "file-path",
                             "mimetype": "text/csv"
-                        },
-                        {
-                            "type": "string",
-                            "format": "file-path",
-                            "mimetype": "application/json"
                         },
                         {
                             "type": "array",
@@ -36,7 +32,8 @@
                                     {
                                         "type": "string",
                                         "format": "file-path",
-                                        "mimetype": "application/json"
+                                        "mimetype": "application/json",
+                                        "schema": "assets/schema_json_input.json"
                                     },
                                     {
                                         "type": "string",

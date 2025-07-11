@@ -1,0 +1,68 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://raw.githubusercontent.com/seqera-services/bifrost/master/assets/schema_input.json",
+    "title": "seqera-services/bifrost pipeline - params.input schema",
+    "description": "Schema for the file provided with params.input",
+    "type": "object",
+    "properties": {
+        "test_substance": {
+            "type": "string",
+            "description": "Name of the substance being tested"
+        },
+        "cell_type": {
+            "type": "string",
+            "description": "Type of cells used in the experiment"
+        },
+        "probes": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "description": "Array of probe identifiers"
+        },
+        "counts": {
+            "type": "array",
+            "items": {
+                "type": "array",
+                "items": {
+                    "type": "integer"
+                }
+            },
+            "description": "2D array where each inner array contains counts for one probe across all samples"
+        },
+        "batch_index": {
+            "type": "array",
+            "items": {
+                "type": "integer"
+            },
+            "description": "Array of batch indices (1-based) for each sample"
+        },
+        "concentration": {
+            "type": "array",
+            "items": {
+                "type": "number"
+            },
+            "description": "Array of concentrations for each sample"
+        },
+        "n_treatment_batch": {
+            "type": "integer",
+            "description": "Number of treatment batches in the dataset"
+        },
+        "total_count": {
+            "type": "array",
+            "items": {
+                "type": "integer"
+            },
+            "description": "Array of total counts for each sample (optional, calculated from counts if not provided)"
+        }
+    },
+    "required": [
+        "test_substance",
+        "cell_type",
+        "probes",
+        "counts",
+        "batch_index",
+        "concentration",
+        "n_treatment_batch"
+    ]
+}
