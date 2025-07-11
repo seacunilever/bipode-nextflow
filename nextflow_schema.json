@@ -25,6 +25,11 @@
                             "mimetype": "text/csv"
                         },
                         {
+                            "type": "string",
+                            "format": "file-path",
+                            "mimetype": "application/json"
+                        },
+                        {
                             "type": "array",
                             "items": {
                                 "anyOf": [
@@ -36,8 +41,7 @@
                                     {
                                         "type": "string",
                                         "format": "file-path",
-                                        "mimetype": "text/csv",
-                                        "schema": "assets/schema_input.json"
+                                        "mimetype": "text/csv"
                                     }
                                 ]
                             }
