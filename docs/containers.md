@@ -21,7 +21,7 @@ This guide explains how to create and manage containers for the Bifrost pipeline
 
 1. Enter `bifrost-httr` into the search box
 2. Two entries will appear:
-   - One for **PyPI** 
+   - One for **PyPI**
    - One for **Conda**
 3. **Important**: Always select the **Conda** entry, not the PyPI one
 
@@ -39,7 +39,7 @@ This guide explains how to create and manage containers for the Bifrost pipeline
 
 #### For Singularity Containers
 
-1. Select the Conda `bifrost-httr` package  
+1. Select the Conda `bifrost-httr` package
 2. Choose **Singularity** as the container type
 3. Click **"Get container"**
 4. **Wait for the build to complete** - the container is being built behind the scenes
@@ -65,7 +65,7 @@ process PROCESS_NAME {
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'SINGULARITY_HTTPS_URI_HERE' :
         'DOCKER_URI_HERE' }"
-    
+
     // ... rest of process definition
 }
 ```
@@ -73,14 +73,16 @@ process PROCESS_NAME {
 ### Updating Container URIs
 
 1. **Identify modules to update**: All modules using `bifrost-httr` are located in `modules/local/`:
+
    - `compile_stan_model/main.nf`
-   - `compress_output/main.nf` 
+   - `compress_output/main.nf`
    - `conc_response_analysis/main.nf`
    - `create_multiqc_report/main.nf`
    - `prepare_inputs/main.nf`
    - `split_data/main.nf`
 
 2. **Update the container declaration** in each module:
+
    ```nextflow
    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
        'NEW_SINGULARITY_HTTPS_URI' :
@@ -94,6 +96,7 @@ process PROCESS_NAME {
 ### Example Update
 
 Before:
+
 ```nextflow
 container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
     'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/76/76e8817651482fe89237efe5d385050d40144519c9f0c9fc5b0f9ee506292428/data' :
@@ -101,6 +104,7 @@ container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity
 ```
 
 After (with new URIs):
+
 ```nextflow
 container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
     'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/ab/ab1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef/data' :
@@ -119,15 +123,18 @@ container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity
 ## Troubleshooting
 
 ### Container Build Failures
+
 - If a Singularity build fails, wait a few minutes and try again
 - Check that you selected the correct Conda package, not PyPI
 
 ### Module Errors
+
 - Ensure URIs are copied correctly without extra spaces or characters
 - Verify that both Docker and Singularity URIs are updated in the same module
 - Check that the Nextflow syntax is valid after the update
 
 ### Performance Issues
+
 - New containers may take longer to pull on first use
 - Consider pre-pulling containers in production environments
 
@@ -136,4 +143,4 @@ container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity
 - [Seqera Containers Documentation](https://seqera.io/containers/)
 - [Nextflow Container Documentation](https://www.nextflow.io/docs/latest/container.html)
 - [Docker Documentation](https://docs.docker.com/)
-- [Singularity Documentation](https://docs.sylabs.io/) 
+- [Singularity Documentation](https://docs.sylabs.io/)
