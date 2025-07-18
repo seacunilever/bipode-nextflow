@@ -34,8 +34,8 @@ This guide explains how to create and manage containers for the Bifrost pipeline
 1. Select the Conda `bifrost-httr` package
 2. Choose **Docker** as the container type
 3. Click **"Get container"**
-4. The Docker URI will be presented immediately (e.g., `community.wave.seqera.io/library/bifrost-httr:0.3.1--b4c49de956618921`)
-5. Copy this URI for use in your modules
+4. The Docker URI will be presented immediately (e.g., `community.wave.seqera.io/library/bifrost-httr:0.4.0--3e1755e45da93297`)
+5. Copy this URI for use in your configuration
 
 #### For Singularity Containers
 
@@ -45,78 +45,46 @@ This guide explains how to create and manage containers for the Bifrost pipeline
 4. **Wait for the build to complete** - the container is being built behind the scenes
 5. Once ready, you'll see options for the container URI
 6. **Important**: Select the **"https"** checkbox to get the HTTPS link instead of the ORAS one
-7. Copy the HTTPS URI (e.g., `https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/76/76e8817651...`)
+7. Copy the HTTPS URI (e.g., `https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/f3/f3fddbc020a7295009575826d86375cd3a78b52a1ed859911022f2b315d723e4/data`)
 
 ![Singularity container with HTTPS option selected](images/bifrost_containers_singularity.png)
 
 > **Note**: The first time a container is requested, it needs to be built. Subsequent requests will use the cached version and be available immediately.
 
-## Updating Module Files
+## Updating Container Configuration
 
-Once you have both Docker and Singularity URIs, you need to update the module files in the pipeline.
+The container and conda configurations are centrally managed in `conf/modules.config`. This ensures consistent versions across all processes in the pipeline.
 
-### Module File Structure
+### Configuration Structure
 
-Each module in `modules/local/` contains a `main.nf` file with a container declaration that looks like this:
+The central configuration in `conf/modules.config` looks like this:
 
 ```nextflow
-process PROCESS_NAME {
-    conda "bifrost-httr=0.3.1"
-    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'SINGULARITY_HTTPS_URI_HERE' :
-        'DOCKER_URI_HERE' }"
-
-    // ... rest of process definition
+process {
+    // Set container and conda for all processes
+    conda = "bifrost-httr=0.4.0"
+    container = workflow.containerEngine == 'singularity' ? 
+        'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/f3/f3fddbc020a7295009575826d86375cd3a78b52a1ed859911022f2b315d723e4/data' :
+        'community.wave.seqera.io/library/bifrost-httr:0.4.0--3e1755e45da93297'
+    
+    // ... rest of process configuration
 }
 ```
 
 ### Updating Container URIs
 
-1. **Identify modules to update**: All modules using `bifrost-httr` are located in `modules/local/`:
+To update the container configuration:
 
-   - `compile_stan_model/main.nf`
-   - `compress_output/main.nf`
-   - `conc_response_analysis/main.nf`
-   - `create_multiqc_report/main.nf`
-   - `prepare_inputs/main.nf`
-   - `split_data/main.nf`
-
-2. **Update the container declaration** in each module:
-
-   ```nextflow
-   container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-       'NEW_SINGULARITY_HTTPS_URI' :
-       'NEW_DOCKER_URI' }"
-   ```
-
-3. **Replace the URIs**:
-   - Replace `NEW_SINGULARITY_HTTPS_URI` with the HTTPS URI from Seqera Containers
-   - Replace `NEW_DOCKER_URI` with the Docker URI from Seqera Containers
-
-### Example Update
-
-Before:
-
-```nextflow
-container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-    'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/76/76e8817651482fe89237efe5d385050d40144519c9f0c9fc5b0f9ee506292428/data' :
-    'community.wave.seqera.io/library/bifrost-httr:0.3.1--b4c49de956618921' }"
-```
-
-After (with new URIs):
-
-```nextflow
-container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-    'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/ab/ab1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef/data' :
-    'community.wave.seqera.io/library/bifrost-httr:0.3.2--c5d60ef067729032' }"
-```
+1. Generate new Docker and Singularity URIs using Seqera Containers
+2. Update both URIs in `conf/modules.config`
+3. Update the conda version to match the container version
 
 ## Best Practices
 
 1. **Always use the Conda package** when searching in Seqera Containers
 2. **Wait for Singularity builds** to complete before copying URIs
 3. **Use HTTPS URIs** for Singularity containers, not ORAS URIs
-4. **Update all modules consistently** to ensure the same container version across the pipeline
+4. **Keep conda and container versions in sync** to ensure consistency
 5. **Test the pipeline** after updating container URIs to ensure compatibility
 6. **Version control** your changes to track container updates over time
 
@@ -127,11 +95,12 @@ container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity
 - If a Singularity build fails, wait a few minutes and try again
 - Check that you selected the correct Conda package, not PyPI
 
-### Module Errors
+### Configuration Errors
 
 - Ensure URIs are copied correctly without extra spaces or characters
-- Verify that both Docker and Singularity URIs are updated in the same module
+- Verify that both Docker and Singularity URIs are updated
 - Check that the Nextflow syntax is valid after the update
+- Ensure conda version matches the container version
 
 ### Performance Issues
 
