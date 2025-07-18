@@ -63,10 +63,10 @@ The central configuration in `conf/modules.config` looks like this:
 process {
     // Set container and conda for all processes
     conda = "bifrost-httr=0.4.0"
-    container = workflow.containerEngine == 'singularity' ? 
+    container = workflow.containerEngine == 'singularity' ?
         'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/f3/f3fddbc020a7295009575826d86375cd3a78b52a1ed859911022f2b315d723e4/data' :
         'community.wave.seqera.io/library/bifrost-httr:0.4.0--3e1755e45da93297'
-    
+
     // ... rest of process configuration
 }
 ```
