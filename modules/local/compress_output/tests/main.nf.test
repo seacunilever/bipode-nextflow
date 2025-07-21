@@ -13,7 +13,7 @@ nextflow_process {
             }
             process {
                 """
-                input[0] = [ [id: "Nitrofurantoin_HepG2"], ["${projectDir}/assets/test_data/minimal/Nitrofurantoin_HepG2_fits_0.tar.gz"] ]
+                input[0] = [ [id: "Nitrofurantoin_HepG2"], ["${projectDir}/assets/test_data/minimal/BIFROST_input_Nitrofurantoin_HepG2_fits_1.tar.gz"] ]
                 """
             }
         }
