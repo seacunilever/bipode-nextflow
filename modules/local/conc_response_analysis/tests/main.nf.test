@@ -14,7 +14,7 @@ nextflow_process {
             process {
                 """
                 input[0] = []
-                input[1] = [['name': 'Nitrofurantoin_HepG2', 'batch_number': 0], ['MPDU1_11661'], file("${projectDir}/assets/test_data/minimal/Nitrofurantoin_HepG2_probes_batch0.tar.gz")]
+                input[1] = [['name': 'Nitrofurantoin_HepG2', 'batch_number': 0], ['MPDU1_11661'], file("${projectDir}/assets/test_data/minimal/BIFROST_input_Nitrofurantoin_HepG2_probes_batch0.tar.gz")]
                 """
             }
         }
@@ -36,7 +36,7 @@ nextflow_process {
             process {
                 """
                 input[0] = []
-                input[1] = [['name': 'Nitrofurantoin_HepG2', 'batch_number': 0], ['ACBD3_59'], file("${projectDir}/assets/test_data/minimal/Nitrofurantoin_HepG2_probes_batch0.tar.gz")]
+                input[1] = [['name': 'Nitrofurantoin_HepG2', 'batch_number': 0], ['ACBD3_59'], file("${projectDir}/assets/test_data/minimal/BIFROST_input_Nitrofurantoin_HepG2_probes_batch0.tar.gz")]
                 """
             }
         }
