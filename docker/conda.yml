@@ -1,0 +1,16 @@
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python>=3.10
+  - pip
+  - hatchling
+  - numpy>=2.0.0,<3.0
+  - pandas>=2.0.0,<3.0
+  - cmdstanpy>=1.2.0,<2.0
+  - scipy>=1.10.0,<2.0
+  - pyyaml>=6.0
+  - plotly>=6.0.0,<7.0
+  - click
+  - pip:
+      - multiqc==1.28
