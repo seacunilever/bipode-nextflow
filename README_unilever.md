@@ -4,7 +4,7 @@ This file details:
 - What needs to be removed from this repo for external release on Github (https://github.com/seacunilever/bifrost)
 
 ## Running internally
-Set the following env vars:
+Use profile 'az' in Nextflow run command after setting the following env vars:
 
 Service Principal
 ```bash
@@ -13,7 +13,7 @@ CLIENT_SECRET
 TENANT_ID
 ```
 
-Storage account
+Storage account name
 ```bash
 STORAGE_ACCOUNT
 ```
@@ -35,15 +35,17 @@ SUBNET
 SUBNET_RESOURCE_GROUP_NAME
 ```
 
-Use profile 'az' in Nextflow run command
+Check that `params.workDir` is set somewhere sensible
 
 ## Container from Azure Contain Registry (ACR)
 The workflow is set up to pull the container from Seqera which is built from the Bioconda release of 'bifrost-httr' (see ./docs/containers.md). For internal running, the container needs to come from SERS ACR.
 
-To update the container
-- Clone repo https://dev.azure.com/SEAC-Projects/BIFROST/_git/bifrost-httr into `./docker` and checkout the branch you want
+To update the container:
+- Get files from branch you want from 'bifrost-httr' repo into `./docker` eg.
+    - `git clone --branch <branch-name> --single-branch https://SEAC-Projects@dev.azure.com/SEAC-Projects/BIFROST/_git/bifrost-httr`
 - Build with dockerfile in `./docker`
-- Make sure the name is the same as `params.container` in 'az' profile in `nextflow.config`
+- Make sure the tag is the same as `params.container` for 'az' profile in `nextflow.config`
+- Push to repo in ACR
 
 ## Checklist for external release
 - Remove `./docker/`
