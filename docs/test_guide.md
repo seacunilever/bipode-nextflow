@@ -341,6 +341,9 @@ When test outputs intentionally change due to pipeline updates, you'll need to u
 ```bash
 # Update snapshots after intentional changes
 nf-test test --profile docker --updateSnapshot
+
+# You may need to re-specify the test profile if using another
+nf-test test --profile test,local --updateSnapshot
 ```
 
 ## Troubleshooting

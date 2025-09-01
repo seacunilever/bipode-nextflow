@@ -22,6 +22,8 @@ process COMPRESS_OUTPUT {
 
     bifrost-httr compress-output \
         --fits-dir Fits \
+        --test_substance "${meta.test_substance}" \
+        --cell_type "${meta.cell_type}" \
         --output ${prefix}${output_ext} \
         $args
 
