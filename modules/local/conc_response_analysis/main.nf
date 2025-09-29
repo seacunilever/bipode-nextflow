@@ -30,6 +30,7 @@ process CONC_RESPONSE_ANALYSIS {
 
     # Handle model: empty (compile default), .stan (compile file), or executable (use as-is)
     if [[ -z "$model" ]] || [[ "$model" == *.stan ]]; then
+        model="$model"
         model_input=\${model:-""}  # Use empty string if model is empty, otherwise use model path
         compilation_output=\$(bifrost-httr compile-model \$model_input 2>&1 | tee /dev/stderr)
         model_executable=\$(echo "\$compilation_output" | grep "Model compiled successfully:" | sed 's/.*Model compiled successfully: //')
