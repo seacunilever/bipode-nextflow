@@ -49,5 +49,5 @@ To update the container:
 
 ## Checklist for external release
 - Remove `./docker/`
-- Remove profile 'az' from `nextflow.config`
+- Remove profile 'az' and 'local' from `nextflow.config`
 - Remove this file

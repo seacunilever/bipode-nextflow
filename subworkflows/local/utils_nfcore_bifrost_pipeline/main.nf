@@ -1,5 +1,5 @@
 //
-// Subworkflow with functionality specific to the seqera-services/bifrost pipeline
+// Subworkflow with functionality specific to the seacunilever/bifrost pipeline
 //
 
 /*

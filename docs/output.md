@@ -1,4 +1,4 @@
-# seqera-services/bifrost: Output
+# seacunilever/bifrost: Output
 
 ## Introduction
 

@@ -1,7 +1,7 @@
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://raw.githubusercontent.com/seqera-services/bifrost/main/nextflow_schema.json",
-    "title": "seqera-services/bifrost pipeline parameters",
+    "$id": "https://raw.githubusercontent.com/seacunilever/bifrost/main/nextflow_schema.json",
+    "title": "seacunilever/bifrost pipeline parameters",
     "description": "Bifrost pipeline",
     "type": "object",
     "$defs": {

@@ -23,7 +23,7 @@
             "@type": "Dataset",
             "creativeWorkStatus": "InProgress",
             "datePublished": "2025-06-19T15:31:31+00:00",
-            "description": "# seqera-services/bifrost\n\n[![GitHub Actions CI Status](https://github.com/seqera-services/bifrost/actions/workflows/nf-test.yml/badge.svg)](https://github.com/seqera-services/bifrost/actions/workflows/nf-test.yml)\n[![GitHub Actions Linting Status](https://github.com/seqera-services/bifrost/actions/workflows/linting.yml/badge.svg)](https://github.com/seqera-services/bifrost/actions/workflows/linting.yml)\n[![nf-test](https://img.shields.io/badge/unit_tests-nf--test-337ab7.svg)](https://www.nf-test.com)\n\n[![Nextflow](https://img.shields.io/badge/version-%E2%89%A524.04.2-green?style=flat&logo=nextflow&logoColor=white&color=%230DC09D&link=https%3A%2F%2Fnextflow.io)](https://www.nextflow.io/)\n[![nf-core template version](https://img.shields.io/badge/nf--core_template-3.3.1-green?style=flat&logo=nfcore&logoColor=white&color=%2324B064&link=https%3A%2F%2Fnf-co.re)](https://github.com/nf-core/tools/releases/tag/3.3.1)\n[![run with conda](http://img.shields.io/badge/run%20with-conda-3EB049?labelColor=000000&logo=anaconda)](https://docs.conda.io/en/latest/)\n[![run with docker](https://img.shields.io/badge/run%20with-docker-0db7ed?labelColor=000000&logo=docker)](https://www.docker.com/)\n[![run with singularity](https://img.shields.io/badge/run%20with-singularity-1d355c.svg?labelColor=000000)](https://sylabs.io/docs/)\n\n# Bifrost\n\nBifrost is a Nextflow pipeline for analyzing high-throughput transcriptomics data (HTTr) to identify concentration-dependent responses and estimate points of departure (PoDs).\n\n![Bifrost Pipeline Report](assets/images/pipeline_report.png)\n\n## Introduction\n\nThe Bifrost model (Bayesian inference for region of signal threshold) is a statistical model for analysis of HTTr concentration-response data. The pipeline is powered by [bifrost-httr](https://pypi.org/project/bifrost-httr/), a Python package that implements the core statistical functionality for analyzing concentration-response relationships and inferring points of departure (PoDs). All modules in this pipeline utilize bifrost-httr via Conda environments or Docker containers to perform the analysis steps.\n\nThe model is designed to infer a point-of-departure (PoD) from a concentration-response dataset. The PoD is an estimate of the minimum effect concentration of the test substance for the experimental conditions under which the data were produced. PoDs are estimated as probability distributions.\n\n## Usage\n\n> [!NOTE]\n> If you are new to Nextflow, please refer to [this page](https://www.nextflow.io/docs/latest/getstarted.html) on how to set-up Nextflow. Before running the workflow on actual data, make sure to test your setup using the minimal test profile - see [Manual Testing](docs/test_guide.md#manual-testing).\n\n## Usage\n\nThe pipeline accepts two types of input:\n\n1. Raw data input - for processing new data:\n\n```bash\n# Using test data from the repository\nTEST_DATA=assets/test_data/minimal\nnextflow run seqera-services/bifrost \\\n   -profile <docker/singularity/.../institute> \\\n   --input ${TEST_DATA}/Example_Meta_Data.csv \\\n   --counts ${TEST_DATA}/Example_Counts_5probes.csv \\\n   --meta_mapper ${TEST_DATA}/sers_meta_data_mapper.yml \\\n   --bifrost_config ${TEST_DATA}/substances_cell_types.yml \\\n   --outdir <OUTDIR>\n```\n\n2. Pre-prepared JSON input - for using previously prepared data:\n\n```bash\n# Using test data from the repository\nTEST_DATA=assets/test_data/minimal\nnextflow run seqera-services/bifrost \\\n   -profile <docker/singularity/.../institute> \\\n   --input ${TEST_DATA}/BIFROST_input_Nitrofurantoin_HepG2.json \\\n   --outdir <OUTDIR>\n```\n\nWhen using pre-prepared JSON input, the pipeline will skip the data preparation step and process the JSON file(s) directly.\n\nFor more details and further functionality, please refer to the:\n\n- [Usage documentation](docs/usage.md)\n- [Parameter documentation](docs/parameters.md)\n- [Test Guide](docs/test_guide.md)\n- [Output documentation](docs/output.md)\n\n## Pipeline output\n\nFor more details about the output files and reports, please refer to the [output documentation](docs/output.md). An [example output report](docs/examples/BIFROST_input_Nitrofurantoin_HepaG2_full.html.zip) is available for Nitrofurantoin treatment in HepaG2 cells.\n\n## Credits\n\nBifrost was originally written by [Joe Reynolds](https://github.com/JoeReynolds257) and [Mark Liddell](https://github.com/mark-liddell).\n[Jonathan Manning](https://github.com/pinin4fjords) later updated the workflow structure and migrated to nf-core standards.\n\n## Citations\n\nAn extensive list of references for the tools used by the pipeline can be found in the [`CITATIONS.md`](CITATIONS.md) file.\n",
+            "description": "# seacunilever/bifrost\n\n[![GitHub Actions CI Status](https://github.com/seacunilever/bifrost/actions/workflows/nf-test.yml/badge.svg)](https://github.com/seacunilever/bifrost/actions/workflows/nf-test.yml)\n[![GitHub Actions Linting Status](https://github.com/seacunilever/bifrost/actions/workflows/linting.yml/badge.svg)](https://github.com/seacunilever/bifrost/actions/workflows/linting.yml)\n[![nf-test](https://img.shields.io/badge/unit_tests-nf--test-337ab7.svg)](https://www.nf-test.com)\n\n[![Nextflow](https://img.shields.io/badge/version-%E2%89%A524.04.2-green?style=flat&logo=nextflow&logoColor=white&color=%230DC09D&link=https%3A%2F%2Fnextflow.io)](https://www.nextflow.io/)\n[![nf-core template version](https://img.shields.io/badge/nf--core_template-3.3.1-green?style=flat&logo=nfcore&logoColor=white&color=%2324B064&link=https%3A%2F%2Fnf-co.re)](https://github.com/nf-core/tools/releases/tag/3.3.1)\n[![run with conda](http://img.shields.io/badge/run%20with-conda-3EB049?labelColor=000000&logo=anaconda)](https://docs.conda.io/en/latest/)\n[![run with docker](https://img.shields.io/badge/run%20with-docker-0db7ed?labelColor=000000&logo=docker)](https://www.docker.com/)\n[![run with singularity](https://img.shields.io/badge/run%20with-singularity-1d355c.svg?labelColor=000000)](https://sylabs.io/docs/)\n\n# Bifrost\n\nBifrost is a Nextflow pipeline for analyzing high-throughput transcriptomics data (HTTr) to identify concentration-dependent responses and estimate points of departure (PoDs).\n\n![Bifrost Pipeline Report](assets/images/pipeline_report.png)\n\n## Introduction\n\nThe Bifrost model (Bayesian inference for region of signal threshold) is a statistical model for analysis of HTTr concentration-response data. The pipeline is powered by [bifrost-httr](https://pypi.org/project/bifrost-httr/), a Python package that implements the core statistical functionality for analyzing concentration-response relationships and inferring points of departure (PoDs). All modules in this pipeline utilize bifrost-httr via Conda environments or Docker containers to perform the analysis steps.\n\nThe model is designed to infer a point-of-departure (PoD) from a concentration-response dataset. The PoD is an estimate of the minimum effect concentration of the test substance for the experimental conditions under which the data were produced. PoDs are estimated as probability distributions.\n\n## Usage\n\n> [!NOTE]\n> If you are new to Nextflow, please refer to [this page](https://www.nextflow.io/docs/latest/getstarted.html) on how to set-up Nextflow. Before running the workflow on actual data, make sure to test your setup using the minimal test profile - see [Manual Testing](docs/test_guide.md#manual-testing).\n\n## Usage\n\nThe pipeline accepts two types of input:\n\n1. Raw data input - for processing new data:\n\n```bash\n# Using test data from the repository\nTEST_DATA=assets/test_data/minimal\nnextflow run seacunilever/bifrost \\\n   -profile <docker/singularity/.../institute> \\\n   --input ${TEST_DATA}/Example_Meta_Data.csv \\\n   --counts ${TEST_DATA}/Example_Counts_5probes.csv \\\n   --meta_mapper ${TEST_DATA}/sers_meta_data_mapper.yml \\\n   --bifrost_config ${TEST_DATA}/substances_cell_types.yml \\\n   --outdir <OUTDIR>\n```\n\n2. Pre-prepared JSON input - for using previously prepared data:\n\n```bash\n# Using test data from the repository\nTEST_DATA=assets/test_data/minimal\nnextflow run seacunilever/bifrost \\\n   -profile <docker/singularity/.../institute> \\\n   --input ${TEST_DATA}/BIFROST_input_Nitrofurantoin_HepG2.json \\\n   --outdir <OUTDIR>\n```\n\nWhen using pre-prepared JSON input, the pipeline will skip the data preparation step and process the JSON file(s) directly.\n\nFor more details and further functionality, please refer to the:\n\n- [Usage documentation](docs/usage.md)\n- [Parameter documentation](docs/parameters.md)\n- [Test Guide](docs/test_guide.md)\n- [Output documentation](docs/output.md)\n\n## Pipeline output\n\nFor more details about the output files and reports, please refer to the [output documentation](docs/output.md). An [example output report](docs/examples/BIFROST_input_Nitrofurantoin_HepaG2_full.html.zip) is available for Nitrofurantoin treatment in HepaG2 cells.\n\n## Credits\n\nBifrost was originally written by [Joe Reynolds](https://github.com/JoeReynolds257) and [Mark Liddell](https://github.com/mark-liddell).\n[Jonathan Manning](https://github.com/pinin4fjords) later updated the workflow structure and migrated to nf-core standards.\n\n## Citations\n\nAn extensive list of references for the tools used by the pipeline can be found in the [`CITATIONS.md`](CITATIONS.md) file.\n",
             "hasPart": [
                 {
                     "@id": "main.nf"
@@ -95,7 +95,7 @@
                     "@id": ".prettierignore"
                 }
             ],
-            "isBasedOn": "https://github.com/seqera-services/bifrost",
+            "isBasedOn": "https://github.com/seacunilever/bifrost",
             "license": "MIT",
             "mainEntity": {
                 "@id": "main.nf"
@@ -105,7 +105,7 @@
                     "@id": "#46c5e703-4ed8-49b2-8d13-d2aa0660f1c6"
                 }
             ],
-            "name": "seqera-services/bifrost"
+            "name": "seacunilever/bifrost"
         },
         {
             "@id": "ro-crate-metadata.json",
@@ -150,7 +150,7 @@
                 }
             ],
             "name": [
-                "seqera-services/bifrost"
+                "seacunilever/bifrost"
             ],
             "programmingLanguage": {
                 "@id": "https://w3id.org/workflowhub/workflow-ro-crate#nextflow"
@@ -159,8 +159,8 @@
                 "@id": "https://nf-co.re/"
             },
             "url": [
-                "https://github.com/seqera-services/bifrost",
-                "https://nf-co.re/seqera-services/bifrost/dev/"
+                "https://github.com/seacunilever/bifrost",
+                "https://nf-co.re/seacunilever/bifrost/dev/"
             ],
             "version": [
                 "1.0.0dev"
@@ -189,13 +189,13 @@
             "mainEntity": {
                 "@id": "main.nf"
             },
-            "name": "Test suite for seqera-services/bifrost"
+            "name": "Test suite for seacunilever/bifrost"
         },
         {
             "@id": "#f2bb9a16-6c80-4760-ac30-39c902ee0f22",
             "@type": "TestInstance",
-            "name": "GitHub Actions workflow for testing seqera-services/bifrost",
-            "resource": "repos/seqera-services/bifrost/actions/workflows/nf-test.yml",
+            "name": "GitHub Actions workflow for testing seacunilever/bifrost",
+            "resource": "repos/seacunilever/bifrost/actions/workflows/nf-test.yml",
             "runsOn": {
                 "@id": "https://w3id.org/ro/terms/test#GithubService"
             },

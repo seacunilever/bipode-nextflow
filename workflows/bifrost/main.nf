@@ -70,7 +70,7 @@ workflow BIFROST {
 
     // Step 5: Run concentration response analysis using pre-compiled model
 
-    // SPLIT_DATA can package probes into targ.gz files in different ways. It
+    // SPLIT_DATA can package probes into tar.gz files in different ways. It
     // produces a manifest to describe which probes are in which tar.gz. To
     // prepare an input channel for the concentration response analysis, we
     // just need to parse out the probes from the manifest, and count the

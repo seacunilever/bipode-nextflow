@@ -11,27 +11,27 @@ Before running the pipeline with your own data, it's recommended to test your se
 To run a quick test with Docker:
 
 ```bash
-nextflow run seqera-services/bifrost -profile test,docker --outdir test_results
+nextflow run seacunilever/bifrost -profile test,docker --outdir test_results
 ```
 
 To run a quick test with Singularity:
 
 ```bash
-nextflow run seqera-services/bifrost -profile test,singularity --outdir test_results
+nextflow run seacunilever/bifrost -profile test,singularity --outdir test_results
 ```
 
 To run a quick test with Conda:
 
 ```bash
-nextflow run seqera-services/bifrost -profile test,conda --outdir test_results
+nextflow run seacunilever/bifrost -profile test,conda --outdir test_results
 ```
 
 Alternatively, you can install the dependencies directly on your host system:
 
 ```bash
 pip install bifrost-httr
-# You'll also need to install cmdstan - see https://github.com/seqera-services/bifrost-httr
-nextflow run seqera-services/bifrost -profile test --outdir test_results
+# You'll also need to install cmdstan - see https://pypi.org/project/bifrost-httr/
+nextflow run seacunilever/bifrost -profile test --outdir test_results
 ```
 
 ### Test profiles available
@@ -63,7 +63,7 @@ The test should complete in approximately 10 minutes depending on your system.
 
 ## Automated Testing
 
-# seqera-services/bifrost: Testing
+# seacunilever/bifrost: Testing
 
 ## Introduction
 

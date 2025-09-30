@@ -1,4 +1,4 @@
-# seqera-services/bifrost: Container Management
+# seacunilever/bifrost: Container Management
 
 ## Overview
 

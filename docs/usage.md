@@ -1,4 +1,4 @@
-# seqera-services/bifrost: Usage
+# seacunilever/bifrost: Usage
 
 ## Introduction
 
@@ -10,6 +10,21 @@ For a complete list of all available parameters and their descriptions, see the 
 
 - Linux (required for Nextflow, can be WSL2 https://learn.microsoft.com/en-us/windows/wsl/install)
 - Nextflow version 21.04.0 or later (https://www.nextflow.io/docs/latest/getstarted.html)
+
+## Nextflow project location
+
+Nextflow run command will automatically fetch the pipeline from this Github repo ie.
+
+```bash
+nextflow run seacunilever/bifrost <params>
+```
+For simplicity, this has been assumed across all the documentation
+
+If you wish to run from a local copy, specify the path in which `main.nf` resides. Eg. for current directory use
+```bash
+nextflow run . <params>
+```
+This will be likely if you wish to add a custom config profile for HPC or cloud execution (see 'Getting Started with Cloud Execution')
 
 ## Input Modes
 
@@ -28,7 +43,7 @@ Choose the appropriate mode based on your needs:
 To use pre-prepared JSON files:
 
 ```bash
-nextflow run bifrost \
+nextflow run seacunilever/bifrost \
    -profile <docker/singularity/.../institute> \
    --input prepared_data.json \
    --outdir <OUTDIR>
@@ -337,7 +352,7 @@ Before running the pipeline with your own data, it's recommended to test your se
 The typical command for running the pipeline is as follows:
 
 ```bash
-nextflow run seqera-services/bifrost --input ./samplesheet.csv --counts ./counts.csv --bifrost_config ./substances_cell_types.yml --outdir ./results  -profile docker
+nextflow run seacunilever/bifrost --input ./samplesheet.csv --counts ./counts.csv --bifrost_config ./substances_cell_types.yml --outdir ./results  -profile docker
 ```
 
 This will launch the pipeline with the `docker` configuration profile. See below for more information about profiles.
@@ -440,7 +455,7 @@ The pipeline generates an interactive MultiQC report that can be customized usin
 To generate a report with custom settings:
 
 ```bash
-nextflow run seqera-services/bifrost \
+nextflow run seacunilever/bifrost \
     --input samplesheet.csv \
     --counts counts.csv \
     --bifrost_config config.yml \
@@ -469,22 +484,6 @@ nf-core provides pre-configured profiles for popular cloud platforms:
 - **Azure Batch**: [nf-core/configs/azurebatch](https://nf-co.re/configs/azurebatch/)
 - **Google Cloud Batch**: Available through standard Nextflow configuration
 
-#### Organization-Specific Profile
-
-This pipeline also includes a `unilever_azure` profile configured for Unilever's Azure infrastructure. This profile:
-
-- Uses Unilever's Azure Container Registry and Batch account
-- Configures auto-scaling pools with `Standard_F4s_v2` VMs
-- Uses low-priority nodes for cost optimization (up to `max_nodes` parameter)
-- Automatically creates and deletes compute pools
-- Sets retry strategy (3 attempts) for handling preemptible node interruptions
-
-To use this profile (requires Unilever Azure credentials):
-
-```bash
-nextflow run seqera-services/bifrost -profile unilever_azure --input samplesheet.csv --outdir results
-```
-
 ### Getting Started with Cloud Execution
 
 To run the pipeline on a cloud platform:
@@ -496,10 +495,10 @@ To run the pipeline on a cloud platform:
 
 ```bash
 # AWS Batch example
-nextflow run seqera-services/bifrost -profile awsbatch --input samplesheet.csv --outdir results
+nextflow run seacunilever/bifrost -profile awsbatch --input samplesheet.csv --outdir results
 
 # Azure Batch example
-nextflow run seqera-services/bifrost -profile azurebatch --input samplesheet.csv --outdir results
+nextflow run seacunilever/bifrost -profile azurebatch --input samplesheet.csv --outdir results
 ```
 
 ### Cloud Platform Documentation
