@@ -1,5 +1,5 @@
 //
-// Subworkflow with functionality specific to the seacunilever/bifrost pipeline
+// Subworkflow with functionality specific to the seacunilever/bipode pipeline
 //
 
 /*

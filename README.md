@@ -1,4 +1,4 @@
-# seacunilever/bifrost
+# seacunilever/bipode
 
 [![nf-test](https://img.shields.io/badge/unit_tests-nf--test-337ab7.svg)](https://www.nf-test.com)
 [![Nextflow](https://img.shields.io/badge/version-%E2%89%A524.04.2-green?style=flat&logo=nextflow&logoColor=white&color=%230DC09D&link=https%3A%2F%2Fnextflow.io)](https://www.nextflow.io/)
@@ -7,15 +7,15 @@
 [![run with docker](https://img.shields.io/badge/run%20with-docker-0db7ed?labelColor=000000&logo=docker)](https://www.docker.com/)
 [![run with singularity](https://img.shields.io/badge/run%20with-singularity-1d355c.svg?labelColor=000000)](https://sylabs.io/docs/)
 
-# Bifrost
+# Bipode
 
-Bifrost is a Nextflow pipeline for analyzing high-throughput transcriptomics data (HTTr) to identify concentration-dependent responses and estimate points of departure (PoDs).
+Bipode is a Nextflow pipeline for analysing high-throughput transcriptomics data (HTTr) to identify concentration-dependent responses and estimate points of departure (PoDs).
 
-![Bifrost Pipeline Report](assets/images/pipeline_report.png)
+![Bipode Pipeline Report](assets/images/pipeline_report.png)
 
 ## Introduction
 
-The Bifrost model (Bayesian inference for region of signal threshold) is a statistical model for analysis of HTTr concentration-response data. The pipeline is powered by [bifrost-httr](https://pypi.org/project/bifrost-httr/), a Python package that implements the core statistical functionality for analyzing concentration-response relationships and inferring points of departure (PoDs). All modules in this pipeline utilize bifrost-httr via Conda environments or Docker containers to perform the analysis steps.
+The Bipode model (Bayesian inference for region of signal threshold) is a statistical model for analysis of HTTr concentration-response data. The pipeline is powered by [bipode-httr](https://pypi.org/project/bipode-httr/), a Python package that implements the core statistical functionality for analysing concentration-response relationships and inferring points of departure (PoDs). All modules in this pipeline utilize bipode-httr via Conda environments or Docker containers to perform the analysis steps.
 
 The model is designed to infer a point-of-departure (PoD) from a concentration-response dataset. The PoD is an estimate of the minimum effect concentration of the test substance for the experimental conditions under which the data were produced. PoDs are estimated as probability distributions.
 
@@ -33,12 +33,12 @@ The pipeline accepts two types of input:
 ```bash
 # Using test data from the repository
 TEST_DATA=assets/test_data/minimal
-nextflow run seacunilever/bifrost \
+nextflow run seacunilever/bipode \
    -profile <docker/singularity/.../institute> \
    --input ${TEST_DATA}/Example_Meta_Data.csv \
    --counts ${TEST_DATA}/Example_Counts_5probes.csv \
    --meta_mapper ${TEST_DATA}/sers_meta_data_mapper.yml \
-   --bifrost_config ${TEST_DATA}/substances_cell_types.yml \
+   --bipode_config ${TEST_DATA}/substances_cell_types.yml \
    --outdir <OUTDIR>
 ```
 
@@ -47,7 +47,7 @@ nextflow run seacunilever/bifrost \
 ```bash
 # Using test data from the repository
 TEST_DATA=assets/test_data/minimal
-nextflow run seacunilever/bifrost \
+nextflow run seacunilever/bipode \
    -profile <docker/singularity/.../institute> \
    --input ${TEST_DATA}/BIFROST_input_Nitrofurantoin_HepG2.json \
    --outdir <OUTDIR>
@@ -68,7 +68,7 @@ For more details about the output files and reports, please refer to the [output
 
 ## Credits
 
-Bifrost was originally written by [Joe Reynolds](https://github.com/JoeReynolds257) and [Mark Liddell](https://github.com/mark-liddell).
+Bipode was originally written by [Joe Reynolds](https://github.com/JoeReynolds257) and [Mark Liddell](https://github.com/mark-liddell).
 [Jonathan Manning](https://github.com/pinin4fjords) later updated the workflow structure and migrated to nf-core standards.
 
 ## Citations

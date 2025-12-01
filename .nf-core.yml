@@ -38,11 +38,11 @@ nf_core_version: 3.3.1
 repository_type: pipeline
 template:
   author: Joe Reynolds, Mark Liddell, Jonathan Manning
-  description: Bifrost pipeline
+  description: Bipode pipeline
   force: false
   is_nfcore: false
-  name: bifrost
-  org: seqera-services
+  name: bipode
+  org: seacunilever
   outdir: .
   skip_features:
     - igenomes

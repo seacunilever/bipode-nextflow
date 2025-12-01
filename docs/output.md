@@ -1,4 +1,4 @@
-# seacunilever/bifrost: Output
+# seacunilever/bipode: Output
 
 ## Introduction
 
@@ -52,7 +52,7 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
   - `multiqc_report.html` - Interactive HTML report containing:
   </details>
 
-![Bifrost Pipeline Report](../assets/images/pipeline_report.png)
+![Bipode Pipeline Report](../assets/images/pipeline_report.png)
 
 The MultiQC report provides a comprehensive analysis of your HTTr data, organized into several key sections:
 

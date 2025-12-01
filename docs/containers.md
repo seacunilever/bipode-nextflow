@@ -1,8 +1,8 @@
-# seacunilever/bifrost: Container Management
+# seacunilever/bipode: Container Management
 
 ## Overview
 
-This guide explains how to create and manage containers for the Bifrost pipeline using Seqera Containers. Seqera Containers provides an easy way to generate both Docker and Singularity container images from Conda packages, which can then be used in Nextflow modules.
+This guide explains how to create and manage containers for the Bipode pipeline using Seqera Containers. Seqera Containers provides an easy way to generate both Docker and Singularity container images from Conda packages, which can then be used in Nextflow modules.
 
 ## Prerequisites
 
@@ -19,27 +19,27 @@ This guide explains how to create and manage containers for the Bifrost pipeline
 
 ### Step 2: Search for the Package
 
-1. Enter `bifrost-httr` into the search box
+1. Enter `bipode-httr` into the search box
 2. Two entries will appear:
    - One for **PyPI**
    - One for **Conda**
 3. **Important**: Always select the **Conda** entry, not the PyPI one
 
-![Selecting the Conda package for bifrost-httr](images/bifrost_containers_conda.png)
+![Selecting the Conda package for bipode-httr](images/bifrost_containers_conda.png)
 
 ### Step 3: Generate Container URIs
 
 #### For Docker Containers
 
-1. Select the Conda `bifrost-httr` package
+1. Select the Conda `bipode-httr` package
 2. Choose **Docker** as the container type
 3. Click **"Get container"**
-4. The Docker URI will be presented immediately (e.g., `community.wave.seqera.io/library/bifrost-httr:0.4.0--3e1755e45da93297`)
+4. The Docker URI will be presented immediately (e.g., `community.wave.seqera.io/library/bipode-httr:0.4.0--3e1755e45da93297`)
 5. Copy this URI for use in your configuration
 
 #### For Singularity Containers
 
-1. Select the Conda `bifrost-httr` package
+1. Select the Conda `bipode-httr` package
 2. Choose **Singularity** as the container type
 3. Click **"Get container"**
 4. **Wait for the build to complete** - the container is being built behind the scenes
@@ -62,7 +62,7 @@ The central configuration in `conf/modules.config` looks like this:
 ```nextflow
 process {
     // Set container and conda for all processes
-    conda = "bifrost-httr=0.4.0"
+    conda = "bipode-httr=0.4.0"
     container = workflow.containerEngine == 'singularity' ?
         'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/f3/f3fddbc020a7295009575826d86375cd3a78b52a1ed859911022f2b315d723e4/data' :
         'community.wave.seqera.io/library/bifrost-httr:0.4.0--3e1755e45da93297'

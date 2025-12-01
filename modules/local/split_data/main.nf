@@ -16,7 +16,7 @@ process SPLIT_DATA {
     def args = task.ext.args ?: ''
 
     """
-    bifrost-httr split-data \\
+    bipode-httr split-data \\
         --input-file $input_data \\
         --output-dir . \\
         --prefix $prefix \\
@@ -24,7 +24,7 @@ process SPLIT_DATA {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        bifrost-httr: \$(bifrost-httr --version | sed 's/bifrost-httr, version //')
+        bipode-httr: \$(bipode-httr --version | sed 's/bipode-httr, version //')
     END_VERSIONS
     """
 
@@ -37,7 +37,7 @@ process SPLIT_DATA {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        bifrost-httr: \$(bifrost-httr --version | sed 's/bifrost-httr, version //')
+        bipode-httr: \$(bipode-httr --version | sed 's/bipode-httr, version //')
     END_VERSIONS
     """
 }

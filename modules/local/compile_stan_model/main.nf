@@ -16,12 +16,12 @@ process COMPILE_STAN_MODEL {
     def model_arg = model ? "--model $model" : ''
     """
     mkdir -p compiled_model && cd compiled_model
-    bifrost-httr compile-model $model_arg $args
+    bipode-httr compile-model $model_arg $args
     cd ..
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        bifrost-httr: \$(bifrost-httr --version | sed 's/bifrost-httr, version //')
+        bipode-httr: \$(bipode-httr --version | sed 's/bipode-httr, version //')
     END_VERSIONS
     """
 
@@ -32,7 +32,7 @@ process COMPILE_STAN_MODEL {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        bifrost-httr: \$(bifrost-httr --version | sed 's/bifrost-httr, version //')
+        bipode-httr: \$(bipode-httr --version | sed 's/bipode-httr, version //')
     END_VERSIONS
     """
 }

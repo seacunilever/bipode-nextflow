@@ -7,38 +7,38 @@ process PREPARE_INPUTS {
     path meta_data
     path meta_mapper
     path counts
-    path bifrost_config
+    path bipode_config
 
     output:
-    path "bifrost_inputs/*.json", emit: prepared_inputs
+    path "BIPODE_HTTr_standard.stan_inputs/*.json", emit: prepared_inputs
     path "versions.yml", emit: versions
 
     script:
     def args = task.ext.args ?: ''
     def meta_mapper_arg = meta_mapper ? "--meta-mapper $meta_mapper" : ''
     """
-    bifrost-httr prepare-inputs \
+    bipode-httr prepare-inputs \
         --meta-data $meta_data \
         --counts $counts \
-        --config $bifrost_config \
-        --output-dir bifrost_inputs \
+        --config $bipode_config \
+        --output-dir bipode_inputs \
         $meta_mapper_arg \
         $args
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        bifrost-httr: \$(bifrost-httr --version | sed 's/bifrost-httr, version //')
+        bipode-httr: \$(bipode-httr --version | sed 's/bipode-httr, version //')
     END_VERSIONS
     """
 
     stub:
     """
-    mkdir -p bifrost_inputs
-    touch bifrost_inputs/stub.json
+    mkdir -p bipode_inputs
+    touch bipode_inputs/stub.json
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        bifrost-httr: \$(bifrost-httr --version | sed 's/bifrost-httr, version //')
+        bipode-httr: \$(bipode-httr --version | sed 's/bipode-httr, version //')
     END_VERSIONS
     """
 }

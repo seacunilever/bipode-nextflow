@@ -1,5 +1,5 @@
 # README for Unilever internal use
-This is an extension to the general docs since the Bifrost Nextflow workflow is used both internally in SERS and is also released externally.
+This is an extension to the general docs since the Bipode Nextflow workflow is used both internally in SERS and is also released externally.
 
 This document covers:
 
@@ -9,11 +9,11 @@ __How to run on Unilever infrastructure__
 - Running using Azure Batch compute orchestrated using nf-runner (https://dev.azure.com/SEAC-Projects/_git/nf-runner)
 
 __Making an external release__
-1. SERS Github (https://github.com/seacunilever/bifrost-httr)
-1. PyPI (https://pypi.org/project/bifrost-httr)
-1. Bioconda (https://anaconda.org/bioconda/bifrost-httr)
+1. SERS Github (https://github.com/seacunilever/bipode-httr)
+1. PyPI (https://pypi.org/project/bipode-httr)
+1. Bioconda (https://anaconda.org/bioconda/bipode-httr)
 1. Public container on Seqera containers (https://seqera.io/containers/)
-1. SERS Github (https://github.com/seacunilever/bifrost)
+1. SERS Github (https://github.com/seacunilever/bipode)
 
 ## Running internally from a local machine
 For typical use you would use a released version with nf-runner (see later below) but for development work you will need to run the workflow from a local machine.
@@ -22,7 +22,7 @@ You can run either entirely locally with profile 'local' for local compute or wi
 
 Nextflow run commands in the examples in the general docs will pull the Nextflow workflow files from GitHub, so the commands need to be changed to point to the internal workflow files. It should be possible to point them to a DevOps repo https://www.nextflow.io/docs/stable/git.html#azure-repos but I have not got it to work. Often you will be developing with the files locally anyway, so change your run command to point to the local workflow path eg. `nextflow run .` for the current directory.
 
-By default, the container (if docker is used) will be pulled from the public container on Seqera Containers. If changes need to made to it for internal use it needs to come from the Azure Container Registry (ACR) (see "Updating 'bifrost-httr' container in the Azure Container Registry (ACR)" later)
+By default, the container (if docker is used) will be pulled from the public container on Seqera Containers. If changes need to made to it for internal use it needs to come from the Azure Container Registry (ACR) (see "Updating 'bipode-httr' container in the Azure Container Registry (ACR)" later)
 
 #### Local machine
 1. Check that `params.workDir` in `nextflow.config` is set somewhere sensible on the blob storage
@@ -76,25 +76,25 @@ SUBNET_RESOURCE_GROUP_NAME
 nextflow run . -profile az etc.
 ```
 
-### Updating 'bifrost-httr' container image in the Azure Container Registry (ACR)
-The workflow is set up to pull the container from Seqera which is built from the Bioconda release of 'bifrost-httr' (see [./docs/containers.md](./docs/containers.md)) for external use.
+### Updating 'bipode-httr' container image in the Azure Container Registry (ACR)
+The workflow is set up to pull the container from Seqera which is built from the Bioconda release of 'bipode-httr' (see [./docs/containers.md](./docs/containers.md)) for external use.
 
 __For internal running, the container needs to come from SERS ACR__. This allows for internal development of this code
 
 To update the container in the ACR (change version numbers and ACR registry name as required)
-1. Clone the files from branch you want from 'bifrost-httr' repo into `./docker` eg.
+1. Clone the files from branch you want from 'bipode-httr' repo into `./docker` eg.
 ```bash
-git clone --branch <branch-name> --single-branch https://SEAC-Projects@dev.azure.com/SEAC-Projects/BIFROST/_git/bifrost-httr
+git clone --branch <branch-name> --single-branch https://SEAC-Projects@dev.azure.com/SEAC-Projects/BIFROST/_git/bipode-httr
 ```
 2. Build the image with dockerfile in `./docker`, eg. while in `./docker` run
 ```bash
-docker build -t bifrost-httr:0.4.2 .
+docker build -t bipode-httr:0.4.2 .
 ```
 Make sure the version tag matches the version in `pyproject.toml` in the Python library
 
 3. Tag the image with the fully qualified path (ie. includes the ACR login server). Make sure the tag is the same as `params.container` for 'az' profile in `nextflow.config`
 ```bash
-docker tag bifrost-httr:0.4.2 bnlweu57679acr04.azurecr.io/bifrost-httr:0.4.2
+docker tag bipode-httr:0.4.2 bnlweu57679acr04.azurecr.io/bipode-httr:0.4.2
 ```
 4. Push image to repo in ACR
 You will need the username and password from Azure portal (settings > access keys)
@@ -103,7 +103,7 @@ You will need the username and password from Azure portal (settings > access key
 docker login bnlweu57679acr04.azurecr.io
 
 # push to repo
-docker push bnlweu57679acr04.azurecr.io/bifrost-httr:0.4.2
+docker push bnlweu57679acr04.azurecr.io/bipode-httr:0.4.2
 ```
 
 5. Check/update the container tag in Nextflow config
@@ -118,14 +118,14 @@ nf-runner takes Nextflow workflows from the artifact feed in Azure DevOps. In br
 See full instructions in https://dev.azure.com/SEAC-Projects/_git/nf-runner
 
 ## Making an external release
-This section covers the release of both the Python library 'bifrost-httr' and the Nextflow workflow 'bifrost'.
+This section covers the release of both the Python library 'bipode-httr' and the Nextflow workflow 'bipode'.
 
-Note that version of 'bifrost' and 'bifrost-httr' should match.
+Note that version of 'bipode' and 'bipode-httr' should match.
 
 ### PyPI
-Repo is https://pypi.org/project/bifrost-httr
+Repo is https://pypi.org/project/bipode-httr
 
-1. Increment version in `pyproject.toml` and push to 'main' branch on SERS GitHub repo (https://github.com/seacunilever/bifrost-httr)
+1. Increment version in `pyproject.toml` and push to 'main' branch on SERS GitHub repo (https://github.com/seacunilever/bipode-httr)
 2. Make a new release in GitHub tagged with the version number you changed in `pyproject.toml`
 3. GitHub action will trigger on making a new release and push the PyPI repo. You Check progress of 'pypi' under 'Deployments' in GitHub
 
@@ -133,7 +133,7 @@ Repo is https://pypi.org/project/bifrost-httr
 For full instructions, see this guide https://bioconda.github.io/tutorials/2024-updating-bioinformatic-software-to-bioconda.html
 
 1. Fork https://github.com/bioconda/bioconda-recipes in github, use your individual account not 'seacunilever' organisation
-2. Make changes to `bioconda-recipes/recipes/bifrost-httr/meta.yaml` (usually just version to match PyPI and sha256 sum). Make sure you generate the sha256 hash from the actual .tar.gz on PyPI, not GitHub, as it seems to make changes to it.
+2. Make changes to `bioconda-recipes/recipes/bipode-httr/meta.yaml` (usually just version to match PyPI and sha256 sum). Make sure you generate the sha256 hash from the actual .tar.gz on PyPI, not GitHub, as it seems to make changes to it.
 3. Commit and push to 'main' on your fork
 4. Open a PR on https://github.com/bioconda/bioconda-recipes with 'from' being your fork (ie. choose 'compare across forks' and find it)
 5. Wait for the CI to run, you can see progress on the PR
@@ -145,14 +145,16 @@ Note that Bioconda's autobump system can detect updates on PyPI and automaticall
 See [./docs/containers.md](./docs/containers.md)
 
 ### Nextflow workflow
-'bifrost' repo in SERS GitHub (https://github.com/seacunilever/bifrost) uses 'main' branch as the latest version. To allow internal working changes, __'main' branch there should match 'release' branch in the internal repo in Azure DevOps__ (https://dev.azure.com/SEAC-Projects/BIFROST/_git/bifrost) 
+'bipode' repo in SERS GitHub (https://github.com/seacunilever/bipode) uses 'main' branch as the latest version. To allow internal working changes, __'main' branch there should match 'release' branch in the internal repo in Azure DevOps__ (https://dev.azure.com/SEAC-Projects/BIFROST/_git/bipode-nextflow) 
 
-- Make sure the `bifrost-httr` container is also updated on Seqera Containers (see [./docs/containers.md](./docs/containers.md))
+- Make sure the `bipode-httr` container is also updated on Seqera Containers (see [./docs/containers.md](./docs/containers.md))
 - Check/update the container tag in
     - `conf/modules.config`
     - `nextflow.config` (if required)
 
-#### 1. Push to 'release' branch in DevOps repo
+#### 1. Update `CHANGELOG.md`
+
+#### 2. Push to 'release' branch in DevOps repo
 Commits should be squashed, internal files removed and changed committed to 'release' branch like
 
 ```bash
@@ -180,8 +182,8 @@ git commit -m "Release 0.4.2"
 git push origin release
 ```
 
-#### 2. Push to 'main' branch in SERS GitHub repo
-Make sure you have a remote 'github' which points to https://github.com/seacunilever/bifrost.git
+#### 3. Push to 'main' branch in SERS GitHub repo
+Make sure you have a remote 'github' which points to https://github.com/seacunilever/bipode.git
 
 ```bash
 git remote -v
@@ -189,7 +191,7 @@ git remote -v
 
 If you need to add it
 ```bash
-git remote add github https://github.com/seacunilever/bifrost.git
+git remote add github https://github.com/seacunilever/bipode.git
 ```
 
 Now push `release` branch to GitHub as `main`
@@ -198,5 +200,5 @@ git push github release:main --force
 ```
 This pushes your local release branch to GitHub and **overwrites** the main branch there
 
-#### 3. Make the release in GitHub
-Create a new release in GitHub, the tag should match version number for the 'bifrost-httr' Python package
+#### 4. Make the release in GitHub
+Create a new release in GitHub, the tag should match version number for the 'bipode-httr' Python package

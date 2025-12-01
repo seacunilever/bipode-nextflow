@@ -26,7 +26,7 @@ nextflow_process {
             assert compiled_model.canExecute()
 
             // Test file naming convention
-            assert compiled_model.name == "BIFROST_HTTr_beta_logistic_batch"
+            assert compiled_model.name == "BIPODE_HTTr_standard"
         }
     }
 

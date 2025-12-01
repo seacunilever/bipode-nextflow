@@ -1,6 +1,6 @@
 {
-    "name": "seacunilever/bifrost",
-    "homePage": "https://github.com/seacunilever/bifrost",
+    "name": "seacunilever/bipode",
+    "homePage": "https://github.com/seacunilever/bipode",
     "repos": {
         "https://github.com/nf-core/modules.git": {
             "modules": {

@@ -1,5 +1,5 @@
 reports:
   report/*.html:
-    display: "Bifrost Analysis Report"
+    display: "Bipode Analysis Report"
   compressed_results/*.zip:
-    display: "Combined complete results of Bifrost concentration-response analysis"
+    display: "Combined complete results of Bipode concentration-response analysis"

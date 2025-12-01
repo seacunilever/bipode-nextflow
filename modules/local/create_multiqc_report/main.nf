@@ -17,7 +17,7 @@ process CREATE_MULTIQC_REPORT {
     def args = task.ext.args ?: ''
     prefix = task.ext.prefix ?: "${meta.id}"
     """
-    bifrost-httr create-report \\
+    bipode-httr create-report \\
         --summary-file ${input_file} \\
         --test-substance "${test_substance}" \\
         --cell-type "${cell_type}" \\
@@ -28,7 +28,7 @@ process CREATE_MULTIQC_REPORT {
     "${task.process}":
         python: \$(python --version | sed 's/Python //')
         multiqc: \$(multiqc --version | sed 's/multiqc, version //')
-        bifrost-httr: \$(bifrost-httr --version | sed 's/bifrost-httr, version //')
+        bipode-httr: \$(bipode-httr --version | sed 's/bipode-httr, version //')
     END_VERSIONS
     """
 
@@ -39,7 +39,7 @@ process CREATE_MULTIQC_REPORT {
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         multiqc: \$(multiqc --version | sed 's/multiqc, version //')
-        bifrost-httr: \$(bifrost-httr --version | sed 's/bifrost-httr, version //')
+        bipode-httr: \$(bipode-httr --version | sed 's/bipode-httr, version //')
     END_VERSIONS
     """
 }

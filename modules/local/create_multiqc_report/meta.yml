@@ -1,8 +1,8 @@
 name: create_multiqc_report
-description: Generate MultiQC reports for BIFROST HTTr analysis
+description: Generate MultiQC reports for Bipode HTTr analysis
 keywords:
   - multiqc
-  - bifrost
+  - bipode
   - httr
   - report
 tools:
@@ -20,7 +20,7 @@ tools:
 input:
   - summary_file:
       type: file
-      description: BIFROST summary JSON file containing probe-level statistics
+      description: Bipode summary JSON file containing probe-level statistics
       pattern: "*.json.zip"
   - test_substance:
       type: string
