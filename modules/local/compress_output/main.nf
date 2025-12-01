@@ -20,7 +20,7 @@ process COMPRESS_OUTPUT {
     mkdir Fits
     for file in $fits_files; do tar -zxf "\$file" -C Fits/; done
 
-    bifrost-httr compress-output \
+    bipode-httr compress-output \
         --fits-dir Fits \
         --test_substance "${meta.test_substance}" \
         --cell_type "${meta.cell_type}" \
@@ -29,7 +29,7 @@ process COMPRESS_OUTPUT {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        bifrost-httr: \$(bifrost-httr --version | sed 's/bifrost-httr, version //')
+        bipode-httr: \$(bipode-httr --version | sed 's/bipode-httr, version //')
     END_VERSIONS
     """
 
@@ -41,7 +41,7 @@ process COMPRESS_OUTPUT {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        bifrost-httr: \$(bifrost-httr --version | sed 's/bifrost-httr, version //')
+        bipode-httr: \$(bipode-httr --version | sed 's/bipode-httr, version //')
     END_VERSIONS
     """
 }

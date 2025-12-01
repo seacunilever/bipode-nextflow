@@ -1,6 +1,6 @@
 # Testing
 
-This document describes how to test the Bifrost pipeline, including both manual testing for your setup and automated testing with nf-test.
+This document describes how to test the Bipode pipeline, including both manual testing for your setup and automated testing with nf-test.
 
 ## Manual Testing
 
@@ -11,27 +11,27 @@ Before running the pipeline with your own data, it's recommended to test your se
 To run a quick test with Docker:
 
 ```bash
-nextflow run seacunilever/bifrost -profile test,docker --outdir test_results
+nextflow run seacunilever/bipode -profile test,docker --outdir test_results
 ```
 
 To run a quick test with Singularity:
 
 ```bash
-nextflow run seacunilever/bifrost -profile test,singularity --outdir test_results
+nextflow run seacunilever/bipode -profile test,singularity --outdir test_results
 ```
 
 To run a quick test with Conda:
 
 ```bash
-nextflow run seacunilever/bifrost -profile test,conda --outdir test_results
+nextflow run seacunilever/bipode -profile test,conda --outdir test_results
 ```
 
 Alternatively, you can install the dependencies directly on your host system:
 
 ```bash
-pip install bifrost-httr
-# You'll also need to install cmdstan - see https://pypi.org/project/bifrost-httr/
-nextflow run seacunilever/bifrost -profile test --outdir test_results
+pip install bipode-httr
+# You'll also need to install cmdstan - see https://pypi.org/project/bipode-httr/
+nextflow run seacunilever/bipode -profile test --outdir test_results
 ```
 
 ### Test profiles available
@@ -63,11 +63,11 @@ The test should complete in approximately 10 minutes depending on your system.
 
 ## Automated Testing
 
-# seacunilever/bifrost: Testing
+# seacunilever/bipode: Testing
 
 ## Introduction
 
-This document describes the testing framework and procedures for the Bifrost pipeline. The pipeline uses [nf-test](https://nf-co.re/docs/nf-test/overview) for testing individual modules and the complete pipeline workflow, along with JSON Schema validation for input validation.
+This document describes the testing framework and procedures for the Bipode pipeline. The pipeline uses [nf-test](https://nf-co.re/docs/nf-test/overview) for testing individual modules and the complete pipeline workflow, along with JSON Schema validation for input validation.
 
 ## Testing Framework Overview
 
@@ -391,4 +391,4 @@ When creating pull requests:
 3. Test coverage should be maintained or improved
 4. Documentation should be updated for new test procedures
 
-This comprehensive testing framework ensures the reliability and maintainability of the Bifrost pipeline across different environments and use cases.
+This comprehensive testing framework ensures the reliability and maintainability of the Bipode pipeline across different environments and use cases.

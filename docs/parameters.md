@@ -1,13 +1,13 @@
 # Pipeline Parameters
 
-This document describes the parameters used in the Bifrost pipeline. Parameters are grouped into different sections based on their functionality.
+This document describes the parameters used in the Bipode pipeline. Parameters are grouped into different sections based on their functionality.
 
 For information about testing the pipeline and validating parameter inputs, see the [test guide](test_guide.md).
 
 ## Table of Contents
 
 - [Input/Output Options](#inputoutput-options)
-- [Bifrost-specific Options](#bifrost-specific-options)
+- [Bipode-specific Options](#bipode-specific-options)
 - [Report Options](#report-options)
 - [Generic Options](#generic-options)
 
@@ -17,16 +17,16 @@ These parameters define where the pipeline should find input data and save outpu
 
 | Parameter        | Type           | Description                                                                                                                                                                                                     | Required | Default |
 | ---------------- | -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------- |
-| `input`          | file path      | Path to input file(s). Choose ONE of these input modes:<br>1. A CSV file containing sample information (raw data input mode)<br>2. One or more pre-prepared JSON files in Bifrost format (prepared input mode). | Yes      | -       |
-| `meta_mapper`    | file path      | Path to the metadata mapper YAML file that maps your column names to Bifrost's expected names. Only needed for raw data inputs when your column names differ from Bifrost's requirements.                       | No       | -       |
+| `input`          | file path      | Path to input file(s). Choose ONE of these input modes:<br>1. A CSV file containing sample information (raw data input mode)<br>2. One or more pre-prepared JSON files in Bipode format (prepared input mode). | Yes      | -       |
+| `meta_mapper`    | file path      | Path to the metadata mapper YAML file that maps your column names to Bifrost's expected names. Only needed for raw data inputs when your column names differ from Bipode's requirements.                       | No       | -       |
 | `counts`         | file path      | Path to the counts CSV file containing probe counts. Only required when processing raw data inputs.                                                                                                             | No       | -       |
-| `bifrost_config` | file path      | Path to YAML file containing test substances and cell types to analyze. Only required when processing raw data inputs.                                                                                          | No       | -       |
+| `bipode_config` | file path      | Path to YAML file containing test substances and cell types to analyze. Only required when processing raw data inputs.                                                                                          | No       | -       |
 | `batch_mode`     | string         | Way in which to collect probes before passing for analysis. Options:<br>- `all`: collect all probes in one tar file<br>- `batch`: group probe files by batch                                                    | No       | `batch` |
 | `outdir`         | directory path | The output directory where the results will be saved. Use absolute paths for Cloud infrastructure.                                                                                                              | Yes      | -       |
 
-## Bifrost-specific Options
+## Bipode-specific Options
 
-Parameters specific to the Bifrost pipeline functionality.
+Parameters specific to the Bipode pipeline functionality.
 
 | Parameter                  | Type    | Description                                                                                                                                                                                                        | Required | Default             |
 | -------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------- | ------------------- |
@@ -34,7 +34,7 @@ Parameters specific to the Bifrost pipeline functionality.
 | `model_file`               | string  | Path to the Stan model file (without .stan extension)                                                                                                                                                              | No       | -                   |
 | `n_cores`                  | integer | Number of CPU cores to use for processing                                                                                                                                                                          | No       | 4                   |
 | `max_nodes`                | integer | Maximum number of nodes to use in Azure Batch (only applicable for Azure profile)                                                                                                                                  | No       | 1                   |
-| `batch_key`                | string  | Field to use as batch key in the BIFROST model                                                                                                                                                                     | No       | "Exposure plate ID" |
+| `batch_key`                | string  | Field to use as batch key in the Bipode model                                                                                                                                                                     | No       | "Exposure plate ID" |
 | `min_percent_mapped_reads` | number  | Minimum percentage of mapped reads required (0-100)                                                                                                                                                                | No       | 50                  |
 | `min_num_mapped_reads`     | integer | Minimum number of mapped reads required                                                                                                                                                                            | No       | 100000              |
 | `min_avg_treatment_count`  | number  | Minimum average treatment count required                                                                                                                                                                           | No       | 5                   |

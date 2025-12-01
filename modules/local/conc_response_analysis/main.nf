@@ -32,7 +32,7 @@ process CONC_RESPONSE_ANALYSIS {
     if [[ -z "$model" ]] || [[ "$model" == *.stan ]]; then
         model="$model"
         model_input=\${model:-""}  # Use empty string if model is empty, otherwise use model path
-        compilation_output=\$(bifrost-httr compile-model \$model_input 2>&1 | tee /dev/stderr)
+        compilation_output=\$(bipode-httr compile-model \$model_input 2>&1 | tee /dev/stderr)
         model_executable=\$(echo "\$compilation_output" | grep "Model compiled successfully:" | sed 's/.*Model compiled successfully: //')
         if [[ -z "\$model_executable" ]]; then
             echo "Error: No executable path found in compilation output"
@@ -42,7 +42,7 @@ process CONC_RESPONSE_ANALYSIS {
         model_executable="$model"
     fi
 
-    bifrost-httr run-analysis \
+    bipode-httr run-analysis \
         $probe_files_extract \
         --model-executable \$model_executable \
         --n-cores $task.cpus \
@@ -55,7 +55,7 @@ process CONC_RESPONSE_ANALYSIS {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        bifrost-httr: \$(bifrost-httr --version | sed 's/bifrost-httr, version //')
+        bipode-httr: \$(bipode-httr --version | sed 's/bipode-httr, version //')
     END_VERSIONS
     """
 
@@ -69,7 +69,7 @@ process CONC_RESPONSE_ANALYSIS {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        bifrost-httr: \$(bifrost-httr --version | sed 's/bifrost-httr, version //')
+        bipode-httr: \$(bipode-httr --version | sed 's/bipode-httr, version //')
     END_VERSIONS
     """
 }

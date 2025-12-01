@@ -1,8 +1,8 @@
-# seacunilever/bifrost: Usage
+# seacunilever/bipode: Usage
 
 ## Introduction
 
-This document describes how to use the Bifrost pipeline. The pipeline is designed to be portable across different execution environments (local, HPC, cloud providers) and takes in pre-formatted json data files for one cell line/chemical (referred to as one dataset).
+This document describes how to use the Bipode pipeline. The pipeline is designed to be portable across different execution environments (local, HPC, cloud providers) and takes in pre-formatted json data files for one cell line/chemical (referred to as one dataset).
 
 For a complete list of all available parameters and their descriptions, see the [parameter documentation](parameters.md).
 
@@ -16,7 +16,7 @@ For a complete list of all available parameters and their descriptions, see the 
 Nextflow run command will automatically fetch the pipeline from this Github repo ie.
 
 ```bash
-nextflow run seacunilever/bifrost <params>
+nextflow run seacunilever/bipode <params>
 ```
 For simplicity, this has been assumed across all the documentation
 
@@ -36,20 +36,20 @@ The pipeline supports two distinct input modes:
 Choose the appropriate mode based on your needs:
 
 - Use raw data input when starting with new experimental data
-- Use pre-prepared JSON input when working with data that has already been formatted for Bifrost
+- Use pre-prepared JSON input when working with data that has already been formatted for Bipode
 
 ### Pre-prepared JSON Input
 
 To use pre-prepared JSON files:
 
 ```bash
-nextflow run seacunilever/bifrost \
+nextflow run seacunilever/bipode \
    -profile <docker/singularity/.../institute> \
    --input prepared_data.json \
    --outdir <OUTDIR>
 ```
 
-The JSON files must follow the Bifrost format. Here's an example (truncated for readability):
+The JSON files must follow the Bipode format. Here's an example (truncated for readability):
 
 ```json
 {
@@ -81,7 +81,7 @@ The JSON format consists of:
 
 When using pre-prepared JSON input:
 
-- The meta_mapper, counts, and bifrost_config parameters are not required
+- The meta_mapper, counts, and bipode_config parameters are not required
 - You can provide multiple JSON files using the --input parameter
 
 ## Raw Data Input
@@ -92,7 +92,7 @@ For raw data input, you need three files with specific structures and formats:
 
 1. **Metadata CSV file** (`--input`) - Sample information and experimental metadata
 2. **Counts CSV file** (`--counts`) - Gene expression count data matrix
-3. **Configuration YAML file** (`--bifrost-config`) - Analysis configuration
+3. **Configuration YAML file** (`--bipode-config`) - Analysis configuration
 
 ### Metadata CSV File Structure
 
@@ -102,8 +102,8 @@ The metadata file must be a comma-separated CSV file with specific required colu
 
 The pipeline expects specific column names in your metadata file. You have two options:
 
-1. **Use Bifrost's column names directly**: If your metadata file already uses the column names listed below, you don't need a meta mapper.
-2. **Use a meta mapper**: If your metadata file uses different column names (like in [`Example_Meta_Data.csv`](../assets/test_data/minimal/Example_Meta_Data.csv) which uses uppercase names), provide a YAML file with `--meta_mapper` (see example: [`meta_data_mapper.yml`](../assets/test_data/minimal/meta_data_mapper.yml)) to map your columns to Bifrost's expected names.
+1. **Use Bipode's column names directly**: If your metadata file already uses the column names listed below, you don't need a meta mapper.
+2. **Use a meta mapper**: If your metadata file uses different column names (like in [`Example_Meta_Data.csv`](../assets/test_data/minimal/Example_Meta_Data.csv) which uses uppercase names), provide a YAML file with `--meta_mapper` (see example: [`meta_data_mapper.yml`](../assets/test_data/minimal/meta_data_mapper.yml)) to map your columns to Bipode's expected names.
 
 For a complete working example, see:
 
@@ -249,10 +249,10 @@ S_C5180393_HG2_NFUR_7,HepG2,Nitrofurantoin,300.0,1538838,76.1,A18039301
 
 ### Substances and Cell Types Configuration
 
-You also need to provide a YAML file specifying which test substances and cell types to analyze. This file should be provided using the `--bifrost-config` parameter:
+You also need to provide a YAML file specifying which test substances and cell types to analyze. This file should be provided using the `--bipode-config` parameter:
 
 ```bash
---bifrost-config '[path to substances_cell_types.yml]'
+--bipode-config '[path to substances_cell_types.yml]'
 ```
 
 See example: [`substances_cell_types.yml`](../assets/test_data/minimal/substances_cell_types.yml)
@@ -352,7 +352,7 @@ Before running the pipeline with your own data, it's recommended to test your se
 The typical command for running the pipeline is as follows:
 
 ```bash
-nextflow run seacunilever/bifrost --input ./samplesheet.csv --counts ./counts.csv --bifrost_config ./substances_cell_types.yml --outdir ./results  -profile docker
+nextflow run seacunilever/bipode --input ./samplesheet.csv --counts ./counts.csv --bipode_config ./substances_cell_types.yml --outdir ./results  -profile docker
 ```
 
 This will launch the pipeline with the `docker` configuration profile. See below for more information about profiles.
@@ -455,10 +455,10 @@ The pipeline generates an interactive MultiQC report that can be customized usin
 To generate a report with custom settings:
 
 ```bash
-nextflow run seacunilever/bifrost \
+nextflow run seacunilever/bipode \
     --input samplesheet.csv \
     --counts counts.csv \
-    --bifrost_config config.yml \
+    --bipode_config config.yml \
     --report_timepoint "48 hours" \
     --report_conc_units "ugml-1" \
     --report_interactive_plots \
@@ -495,10 +495,10 @@ To run the pipeline on a cloud platform:
 
 ```bash
 # AWS Batch example
-nextflow run seacunilever/bifrost -profile awsbatch --input samplesheet.csv --outdir results
+nextflow run seacunilever/bipode -profile awsbatch --input samplesheet.csv --outdir results
 
 # Azure Batch example
-nextflow run seacunilever/bifrost -profile azurebatch --input samplesheet.csv --outdir results
+nextflow run seacunilever/bipode -profile azurebatch --input samplesheet.csv --outdir results
 ```
 
 ### Cloud Platform Documentation

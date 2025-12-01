@@ -11,7 +11,7 @@ nextflow_pipeline {
                 input = "${projectDir}/assets/test_data/minimal/BIFROST_input_Nitrofurantoin_HepG2.json"
                 meta_mapper = null
                 counts = null
-                bifrost_config = null
+                bipode_config = null
             }
         }
 

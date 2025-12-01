@@ -7,7 +7,7 @@ import groovy.json.JsonSlurper
 
 include { paramsSummaryMap       } from 'plugin/nf-schema'
 include { softwareVersionsToYAML } from '../../subworkflows/nf-core/utils_nfcore_pipeline'
-include { methodsDescriptionText } from '../../subworkflows/local/utils_nfcore_bifrost_pipeline'
+include { methodsDescriptionText } from '../../subworkflows/local/utils_nfcore_bipode_pipeline'
 
 // Include process modules
 include { PREPARE_INPUTS } from '../../modules/local/prepare_inputs/main.nf'
@@ -17,12 +17,12 @@ include { CONC_RESPONSE_ANALYSIS } from '../../modules/local/conc_response_analy
 include { COMPRESS_OUTPUT } from '../../modules/local/compress_output/main.nf'
 include { CREATE_MULTIQC_REPORT } from '../../modules/local/create_multiqc_report/main.nf'
 
-workflow BIFROST {
+workflow BIPODE {
     take:
     ch_input
     ch_meta_mapper
     ch_counts
-    ch_bifrost_config
+    ch_bipode_config
     ch_model
     n_cores
     precompile_model
@@ -39,7 +39,7 @@ workflow BIFROST {
         ch_input_json.raw,
         ch_meta_mapper,
         ch_counts,
-        ch_bifrost_config
+        ch_bipode_config
     )
 
     // Step 2: Process prepared inputs and probes

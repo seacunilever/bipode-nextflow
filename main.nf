@@ -1,9 +1,9 @@
 #!/usr/bin/env nextflow
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    seacunilever/bifrost
+    seacunilever/bipode
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    Github : https://github.com/seacunilever/bifrost
+    Github : https://github.com/seacunilever/bipode
 ----------------------------------------------------------------------------------------
 */
 
@@ -13,9 +13,9 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { BIFROST  } from './workflows/bifrost/main'
-include { PIPELINE_INITIALISATION } from './subworkflows/local/utils_nfcore_bifrost_pipeline'
-include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_bifrost_pipeline'
+include { BIPODE } from './workflows/bipode/main'
+include { PIPELINE_INITIALISATION } from './subworkflows/local/utils_nfcore_bipode_pipeline'
+include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_bipode_pipeline'
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     NAMED WORKFLOWS FOR PIPELINE
@@ -25,7 +25,7 @@ include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_bifr
 //
 // WORKFLOW: Run main analysis pipeline depending on type of input
 //
-workflow NFCORE_BIFROST {
+workflow NFCORE_BIPODE {
 
     take:
     ch_input // channel: input read in from --input
@@ -33,7 +33,7 @@ workflow NFCORE_BIFROST {
     main:
     // Create channels for raw data processing
     ch_counts = params.counts ? Channel.from(file(params.counts, checkIfExists: true)) : Channel.empty()
-    ch_bifrost_config = params.bifrost_config ? Channel.from(file(params.bifrost_config, checkIfExists: true)) : Channel.empty()
+    ch_bipode_config = params.bipode_config ? Channel.from(file(params.bipode_config, checkIfExists: true)) : Channel.empty()
 
     ch_model = []
     if (params.model_file) {
@@ -48,11 +48,11 @@ workflow NFCORE_BIFROST {
     //
     // WORKFLOW: Run pipeline
     //
-    BIFROST (
+    BIPODE (
         ch_input,
         ch_meta_mapper,
         ch_counts,
-        ch_bifrost_config,
+        ch_bipode_config,
         ch_model,
         params.n_cores,
         params.precompile_model
@@ -82,7 +82,7 @@ workflow {
     //
     // WORKFLOW: Run main workflow
     //
-    NFCORE_BIFROST (
+    NFCORE_BIPODE (
         PIPELINE_INITIALISATION.out.input
     )
     //

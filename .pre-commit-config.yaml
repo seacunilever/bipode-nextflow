@@ -12,7 +12,7 @@ repos:
         args: [--markdown-linebreak-ext=md]
         exclude: |
           (?x)^(
-              assets/model/BIFROST_HTTr_beta_logistic_batch.stan|
+              assets/model/BIPODE_HTTr_standard.stan|
               .*ro-crate-metadata.json$|
               modules/nf-core/.*|
               subworkflows/nf-core/.*|
@@ -21,7 +21,7 @@ repos:
       - id: end-of-file-fixer
         exclude: |
           (?x)^(
-              assets/model/BIFROST_HTTr_beta_logistic_batch.stan|
+              assets/model/BIPODE_HTTr_standard.stan|
               .*ro-crate-metadata.json$|
               modules/nf-core/.*|
               subworkflows/nf-core/.*|

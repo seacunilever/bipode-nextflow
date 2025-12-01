@@ -1,8 +1,8 @@
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://raw.githubusercontent.com/seacunilever/bifrost/main/nextflow_schema.json",
-    "title": "seacunilever/bifrost pipeline parameters",
-    "description": "Bifrost pipeline",
+    "$id": "https://raw.githubusercontent.com/seacunilever/bipode/main/nextflow_schema.json",
+    "title": "seacunilever/bipode pipeline parameters",
+    "description": "Bipode pipeline",
     "type": "object",
     "$defs": {
         "input_output_options": {
@@ -42,7 +42,7 @@
                             }
                         }
                     ],
-                    "description": "Path to input file(s). Choose ONE of these input modes:\n1. A CSV file containing sample information (raw data input mode)\n2. One or more pre-prepared JSON files in Bifrost format (prepared input mode).",
+                    "description": "Path to input file(s). Choose ONE of these input modes:\n1. A CSV file containing sample information (raw data input mode)\n2. One or more pre-prepared JSON files in Bipode format (prepared input mode).",
                     "fa_icon": "fas fa-file-csv"
                 },
                 "meta_mapper": {
@@ -57,7 +57,7 @@
                     "description": "Path to the counts CSV file containing probe counts. Only required when processing raw data inputs.",
                     "fa_icon": "fas fa-file-csv"
                 },
-                "bifrost_config": {
+                "bipode_config": {
                     "type": "string",
                     "format": "file-path",
                     "description": "Path to YAML file containing test substances and cell types to analyze. Only required when processing raw data inputs.",
@@ -78,11 +78,11 @@
                 }
             }
         },
-        "bifrost_options": {
-            "title": "Bifrost-specific options",
+        "bipode_options": {
+            "title": "Bipode-specific options",
             "type": "object",
             "fa_icon": "fas fa-cogs",
-            "description": "Parameters specific to the Bifrost pipeline",
+            "description": "Parameters specific to the Bipode pipeline",
             "properties": {
                 "seed": {
                     "type": ["integer", "null"],
@@ -110,7 +110,7 @@
                 },
                 "batch_key": {
                     "type": "string",
-                    "description": "Field to use as batch key in the BIFROST model",
+                    "description": "Field to use as batch key in the Bipode model",
                     "default": "Exposure plate ID",
                     "fa_icon": "fas fa-key"
                 },
@@ -306,7 +306,7 @@
             "$ref": "#/$defs/input_output_options"
         },
         {
-            "$ref": "#/$defs/bifrost_options"
+            "$ref": "#/$defs/bipode_options"
         },
         {
             "$ref": "#/$defs/institutional_config_options"
