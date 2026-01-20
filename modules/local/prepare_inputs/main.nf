@@ -10,7 +10,7 @@ process PREPARE_INPUTS {
     path bipode_config
 
     output:
-    path "BIPODE_HTTr_standard.stan_inputs/*.json", emit: prepared_inputs
+    path "bipode_inputs/*.json", emit: prepared_inputs
     path "versions.yml", emit: versions
 
     script:

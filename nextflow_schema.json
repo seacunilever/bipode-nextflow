@@ -109,10 +109,22 @@
                     "fa_icon": "fas fa-server"
                 },
                 "batch_key": {
-                    "type": "string",
-                    "description": "Field to use as batch key in the Bipode model",
-                    "default": "Exposure plate ID",
-                    "fa_icon": "fas fa-key"
+                "title": "Batch key(s)",
+                "description": "Field(s) to use as batch key(s) in the Bipode model. Accepts a single value or a list.",
+                "anyOf": [
+                    {
+                    "type": "string"
+                    },
+                    {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "minItems": 1
+                    }
+                ],
+                "default": "Exposure plate ID",
+                "fa_icon": "fas fa-key"
                 },
                 "min_percent_mapped_reads": {
                     "type": "number",
