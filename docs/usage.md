@@ -332,6 +332,18 @@ The pipeline uses a batch key to group samples for statistical analysis. By defa
 
 The batch key should be a column in your samplesheet that identifies groups of samples that were processed together (e.g., same plate, same experiment, etc.). This is used to account for batch effects in the statistical model.
 
+Multiple batch keys can be specified like
+```bash
+--batch-key 'YOUR_COLUMN_NAME,YOUR_ADDITIONAL_COLUMN_NAME'
+```
+
+or in params yml file as a list
+```yml
+batch_key:
+    - YOUR_COLUMN_NAME
+    - YOUR_ADDITIONAL_COLUMN_NAME
+```
+
 #### Choosing an Appropriate Batch Key
 
 Common batch key options include:
