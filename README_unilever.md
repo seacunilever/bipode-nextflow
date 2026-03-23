@@ -126,8 +126,9 @@ Note that version of 'bipode' and 'bipode-httr' should match.
 Repo is https://pypi.org/project/bipode-httr
 
 1. Increment version in `pyproject.toml` and push to 'main' branch on SERS GitHub repo (https://github.com/seacunilever/bipode-httr)
-2. Make a new release in GitHub tagged with the version number you changed in `pyproject.toml`
-3. GitHub action will trigger on making a new release and push the PyPI repo. You Check progress of 'pypi' under 'Deployments' in GitHub
+2. For a change to the description on PyPI page update `DISCLAIMER.md`
+3. Make a new release in GitHub tagged with the version number you changed in `pyproject.toml`
+4. GitHub action will trigger on making a new release and push the PyPI repo. You Check progress of 'pypi' under 'Deployments' in GitHub
 
 ### Bioconda
 For full instructions, see this guide https://bioconda.github.io/tutorials/2024-updating-bioinformatic-software-to-bioconda.html
