@@ -120,12 +120,12 @@ See full instructions in https://dev.azure.com/SEAC-Projects/_git/nf-runner
 ## Making an external release
 This section covers the release of both the Python library 'bipode-httr' and the Nextflow workflow 'bipode'.
 
-Note that version of 'bipode' and 'bipode-httr' should match.
+Note that version of 'bipode-nextflow' and 'bipode-httr' should match.
 
 ### PyPI
 Repo is https://pypi.org/project/bipode-httr
 
-1. Increment version in `pyproject.toml` and push to 'main' branch on SERS GitHub repo (https://github.com/seacunilever/bipode-nextflow-httr)
+1. Increment version in `pyproject.toml` and push to 'main' branch on SERS GitHub repo (https://github.com/seacunilever/bipode-nextflow)
 2. For a change to the description on PyPI page update `DISCLAIMER.md`
 3. Make a new release in GitHub tagged with the version number you changed in `pyproject.toml`
 4. GitHub action will trigger on making a new release and push the PyPI repo. You Check progress of 'pypi' under 'Deployments' in GitHub
@@ -162,24 +162,24 @@ Commits should be squashed, internal files removed and changed committed to 'rel
 # 1. Checkout the release branch
 git checkout release
 
-# 2. Merge new changes from main (without squashing yet)
-git merge main --no-commit
+# 2) Merge main, stop before commit
+git merge main --no-commit --no-ff
 
-# 3. Remove unwanted files for this release
-git rm -r ./docker/
+# 3) Resolve conflict by removing unwanted files for public release
+git rm -r docker/
 git rm README_unilever.md
-```
 
-Manually remove profile 'az' and 'local' from `nextflow.config`
+#edit nextflow.config as needed (remove profiles 'az' and 'local')
 
 ```bash
-# 4. Stage everything
-git add .
+# 5) Stage changes safely
+git add -u
+git add nextflow.config
 
-# 5. Commit as a single release commit, change your message
+# 6. Commit as a single release commit, change your message
 git commit -m "Release 0.4.2"
 
-# 6. Push the updated release branch
+# 7. Push the updated release branch
 git push origin release
 ```
 
