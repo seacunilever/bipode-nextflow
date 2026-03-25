@@ -17,7 +17,7 @@
                         "size": "Large",
                         "weight": "Bolder",
                         "color": "<% if (success) { %>Good<% } else { %>Attention<%} %>",
-                        "text": "seacunilever/bipode v${version} - ${runName}",
+                        "text": "seacunilever/bipode-nextflow v${version} - ${runName}",
                         "wrap": true
                     },
                     {

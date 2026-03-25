@@ -1,4 +1,4 @@
-# seacunilever/bipode: Output
+# seacunilever/bipode-nextflow: Output
 
 ## Introduction
 

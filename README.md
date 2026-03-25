@@ -1,4 +1,4 @@
-# seacunilever/bipode
+# seacunilever/bipode-nextflow
 
 [![nf-test](https://img.shields.io/badge/unit_tests-nf--test-337ab7.svg)](https://www.nf-test.com)
 [![Nextflow](https://img.shields.io/badge/version-%E2%89%A524.04.2-green?style=flat&logo=nextflow&logoColor=white&color=%230DC09D&link=https%3A%2F%2Fnextflow.io)](https://www.nextflow.io/)
@@ -33,7 +33,7 @@ The pipeline accepts two types of input:
 ```bash
 # Using test data from the repository
 TEST_DATA=assets/test_data/minimal
-nextflow run seacunilever/bipode \
+nextflow run seacunilever/bipode-nextflow \
    -profile <docker/singularity/.../institute> \
    --input ${TEST_DATA}/Example_Meta_Data.csv \
    --counts ${TEST_DATA}/Example_Counts_5probes.csv \
@@ -47,7 +47,7 @@ nextflow run seacunilever/bipode \
 ```bash
 # Using test data from the repository
 TEST_DATA=assets/test_data/minimal
-nextflow run seacunilever/bipode \
+nextflow run seacunilever/bipode-nextflow \
    -profile <docker/singularity/.../institute> \
    --input ${TEST_DATA}/BIFROST_input_Nitrofurantoin_HepG2.json \
    --outdir <OUTDIR>
