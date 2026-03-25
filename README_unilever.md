@@ -9,11 +9,11 @@ __How to run on Unilever infrastructure__
 - Running using Azure Batch compute orchestrated using nf-runner (https://dev.azure.com/SEAC-Projects/_git/nf-runner)
 
 __Making an external release__
-1. SERS Github (https://github.com/seacunilever/bipode-httr)
+1. SERS Github (https://github.com/seacunilever/bipode-nextflow-httr)
 1. PyPI (https://pypi.org/project/bipode-httr)
 1. Bioconda (https://anaconda.org/bioconda/bipode-httr)
 1. Public container on Seqera containers (https://seqera.io/containers/)
-1. SERS Github (https://github.com/seacunilever/bipode)
+1. SERS Github (https://github.com/seacunilever/bipode-nextflow)
 
 ## Running internally from a local machine
 For typical use you would use a released version with nf-runner (see later below) but for development work you will need to run the workflow from a local machine.
@@ -125,7 +125,7 @@ Note that version of 'bipode' and 'bipode-httr' should match.
 ### PyPI
 Repo is https://pypi.org/project/bipode-httr
 
-1. Increment version in `pyproject.toml` and push to 'main' branch on SERS GitHub repo (https://github.com/seacunilever/bipode-httr)
+1. Increment version in `pyproject.toml` and push to 'main' branch on SERS GitHub repo (https://github.com/seacunilever/bipode-nextflow-httr)
 2. For a change to the description on PyPI page update `DISCLAIMER.md`
 3. Make a new release in GitHub tagged with the version number you changed in `pyproject.toml`
 4. GitHub action will trigger on making a new release and push the PyPI repo. You Check progress of 'pypi' under 'Deployments' in GitHub
@@ -146,7 +146,7 @@ Note that Bioconda's autobump system can detect updates on PyPI and automaticall
 See [./docs/containers.md](./docs/containers.md)
 
 ### Nextflow workflow
-'bipode' repo in SERS GitHub (https://github.com/seacunilever/bipode) uses 'main' branch as the latest version. To allow internal working changes, __'main' branch there should match 'release' branch in the internal repo in Azure DevOps__ (https://dev.azure.com/SEAC-Projects/BIFROST/_git/bipode-nextflow) 
+'bipode' repo in SERS GitHub (https://github.com/seacunilever/bipode-nextflow) uses 'main' branch as the latest version. To allow internal working changes, __'main' branch there should match 'release' branch in the internal repo in Azure DevOps__ (https://dev.azure.com/SEAC-Projects/BIFROST/_git/bipode-nextflow) 
 
 - Make sure the `bipode-httr` container is also updated on Seqera Containers (see [./docs/containers.md](./docs/containers.md))
 - Check/update the container tag in
@@ -184,7 +184,7 @@ git push origin release
 ```
 
 #### 3. Push to 'main' branch in SERS GitHub repo
-Make sure you have a remote 'github' which points to https://github.com/seacunilever/bipode.git
+Make sure you have a remote 'github' which points to https://github.com/seacunilever/bipode-nextflow.git
 
 ```bash
 git remote -v
@@ -192,7 +192,7 @@ git remote -v
 
 If you need to add it
 ```bash
-git remote add github https://github.com/seacunilever/bipode.git
+git remote add github https://github.com/seacunilever/bipode-nextflow.git
 ```
 
 Now push `release` branch to GitHub as `main`

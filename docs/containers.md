@@ -1,4 +1,4 @@
-# seacunilever/bipode: Container Management
+# seacunilever/bipode-nextflow: Container Management
 
 ## Overview
 

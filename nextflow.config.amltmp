@@ -1,6 +1,6 @@
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    seacunilever/bipode-nextflow Nextflow config file
+    seacunilever/bipode Nextflow config file
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     Default config options for all compute environments
 ----------------------------------------------------------------------------------------
@@ -100,7 +100,7 @@ dag {
 }
 
 manifest {
-    name            = 'seacunilever/bipode-nextflow'
+    name            = 'seacunilever/bipode'
     author          = """Joe Reynolds, Mark Liddell, Jonathan Manning""" // The author field is deprecated from Nextflow version 24.10.0, use contributors instead
     contributors    = [
         [
@@ -128,7 +128,7 @@ manifest {
             orcid: '0000-0002-3483-8456'
         ],
     ]
-    homePage        = 'https://github.com/seacunilever/bipode-nextflow-nextflow'
+    homePage        = 'https://github.com/seacunilever/bipode-nextflow'
     description     = """Bipode pipeline"""
     mainScript      = 'main.nf'
     defaultBranch   = 'master'
@@ -147,7 +147,7 @@ validation {
     monochromeLogs = params.monochrome_logs
     help {
         enabled = true
-        command = "nextflow run seacunilever/bipode-nextflow -profile <docker/singularity/.../institute> --input samplesheet.csv --outdir <OUTDIR>"
+        command = "nextflow run seacunilever/bipode -profile <docker/singularity/.../institute> --input samplesheet.csv --outdir <OUTDIR>"
         fullParameter = "help_full"
         showHiddenParameter = "show_hidden"
     }

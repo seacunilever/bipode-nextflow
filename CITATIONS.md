@@ -1,4 +1,4 @@
-# seacunilever/bipode: Citations
+# seacunilever/bipode-nextflow: Citations
 
 ## [nf-core](https://pubmed.ncbi.nlm.nih.gov/32055031/)
 

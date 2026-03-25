@@ -1,4 +1,4 @@
-# seacunilever/bipode: Usage
+# seacunilever/bipode-nextflow: Usage
 
 ## Introduction
 
@@ -16,7 +16,7 @@ For a complete list of all available parameters and their descriptions, see the 
 Nextflow run command will automatically fetch the pipeline from this Github repo ie.
 
 ```bash
-nextflow run seacunilever/bipode <params>
+nextflow run seacunilever/bipode-nextflow <params>
 ```
 For simplicity, this has been assumed across all the documentation
 
@@ -43,7 +43,7 @@ Choose the appropriate mode based on your needs:
 To use pre-prepared JSON files:
 
 ```bash
-nextflow run seacunilever/bipode \
+nextflow run seacunilever/bipode-nextflow \
    -profile <docker/singularity/.../institute> \
    --input prepared_data.json \
    --outdir <OUTDIR>
@@ -364,7 +364,7 @@ Before running the pipeline with your own data, it's recommended to test your se
 The typical command for running the pipeline is as follows:
 
 ```bash
-nextflow run seacunilever/bipode --input ./samplesheet.csv --counts ./counts.csv --bipode_config ./substances_cell_types.yml --outdir ./results  -profile docker
+nextflow run seacunilever/bipode-nextflow --input ./samplesheet.csv --counts ./counts.csv --bipode_config ./substances_cell_types.yml --outdir ./results  -profile docker
 ```
 
 This will launch the pipeline with the `docker` configuration profile. See below for more information about profiles.
@@ -467,7 +467,7 @@ The pipeline generates an interactive MultiQC report that can be customized usin
 To generate a report with custom settings:
 
 ```bash
-nextflow run seacunilever/bipode \
+nextflow run seacunilever/bipode-nextflow \
     --input samplesheet.csv \
     --counts counts.csv \
     --bipode_config config.yml \
@@ -507,10 +507,10 @@ To run the pipeline on a cloud platform:
 
 ```bash
 # AWS Batch example
-nextflow run seacunilever/bipode -profile awsbatch --input samplesheet.csv --outdir results
+nextflow run seacunilever/bipode-nextflow -profile awsbatch --input samplesheet.csv --outdir results
 
 # Azure Batch example
-nextflow run seacunilever/bipode -profile azurebatch --input samplesheet.csv --outdir results
+nextflow run seacunilever/bipode-nextflow -profile azurebatch --input samplesheet.csv --outdir results
 ```
 
 ### Cloud Platform Documentation
