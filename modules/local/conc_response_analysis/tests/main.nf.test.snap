@@ -7,15 +7,15 @@
                         "name": "Nitrofurantoin_HepG2",
                         "batch_number": 0
                     },
-                    "MPDU1_11661.json:md5,854e903be0dab8e059b047a0c2b46c7a"
+                    "MPDU1_11661.json:md5,41836913f72daf1d6d4666228039c1db"
                 ]
             ]
         ],
+        "timestamp": "2026-03-25T12:10:23.513888845",
         "meta": {
-            "nf-test": "0.9.2",
-            "nextflow": "24.10.2"
-        },
-        "timestamp": "2025-06-25T09:32:01.924759"
+            "nf-test": "0.9.5",
+            "nextflow": "25.10.2"
+        }
     },
     "Test with non-responder": {
         "content": [
@@ -25,14 +25,14 @@
                         "name": "Nitrofurantoin_HepG2",
                         "batch_number": 0
                     },
-                    "ACBD3_59.json:md5,c8bcf32cade4c373c279b0abb633838e"
+                    "ACBD3_59.json:md5,bdd74416e409893555305e9fc37512d5"
                 ]
             ]
         ],
+        "timestamp": "2026-03-25T12:12:30.262870002",
         "meta": {
-            "nf-test": "0.9.2",
-            "nextflow": "24.10.2"
-        },
-        "timestamp": "2025-06-25T09:36:10.530067"
+            "nf-test": "0.9.5",
+            "nextflow": "25.10.2"
+        }
     }
 }
