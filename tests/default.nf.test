@@ -34,7 +34,11 @@ nextflow_pipeline {
 
         when {
             params {
+                input = "${projectDir}/assets/test_data/minimal/Example_Meta_Data.csv"
                 outdir = "$outputDir"
+                counts = "${projectDir}/assets/test_data/minimal/Example_Counts_5probes.csv"
+                bipode_config = "${projectDir}/assets/test_data/minimal/substances_cell_types.yml"
+                meta_mapper = "${projectDir}/assets/test_data/minimal/meta_data_mapper.yml"                
             }
         }
 
