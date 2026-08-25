@@ -3,7 +3,6 @@
     IMPORT MODULES / SUBWORKFLOWS / FUNCTIONS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-import groovy.json.JsonSlurper
 
 include { paramsSummaryMap       } from 'plugin/nf-schema'
 include { softwareVersionsToYAML } from '../../subworkflows/nf-core/utils_nfcore_pipeline'
@@ -18,6 +17,7 @@ include { COMPRESS_OUTPUT } from '../../modules/local/compress_output/main.nf'
 include { CREATE_MULTIQC_REPORT } from '../../modules/local/create_multiqc_report/main.nf'
 
 workflow BIPODE {
+
     take:
     ch_input
     ch_meta_mapper
@@ -28,9 +28,10 @@ workflow BIPODE {
     precompile_model
 
     main:
+
     // Branch inputs into JSON and raw data
-    ch_input_json = ch_input.branch {
-        json: it.name.endsWith('.json')
+    ch_input_json = ch_input.branch { input_file ->
+        json: input_file.name.endsWith('.json')
         raw: true
     }
 
@@ -43,17 +44,20 @@ workflow BIPODE {
     )
 
     // Step 2: Process prepared inputs and probes
-    ch_named_prepared_inputs = PREPARE_INPUTS.out.prepared_inputs.flatten()
+    ch_named_prepared_inputs = PREPARE_INPUTS.out.prepared_inputs
+        .flatten()
         .mix(ch_input_json.json)
-        .map{
-            def json = new groovy.json.JsonSlurper().parseText(it.text)
+        .map { input_file ->
+
+            def json = new groovy.json.JsonSlurper().parseText(input_file.text)
+
             [
                 [
-                    id: it.simpleName,
-                    test_substance: json.test_substance,
-                    cell_type: json.cell_type
+                    id             : input_file.simpleName,
+                    test_substance : json.test_substance,
+                    cell_type      : json.cell_type
                 ],
-                it
+                input_file
             ]
         }
 
@@ -64,7 +68,8 @@ workflow BIPODE {
     if (precompile_model) {
         COMPILE_STAN_MODEL(ch_model)
         ch_model_for_analysis = COMPILE_STAN_MODEL.out.compiled_model
-    } else {
+    }
+    else {
         ch_model_for_analysis = ch_model
     }
 
@@ -76,27 +81,39 @@ workflow BIPODE {
     // just need to parse out the probes from the manifest, and count the
     // number of batches per file for the later benefit of groupKey.
 
-    ch_probes = SPLIT_DATA.out.probe_files //[ meta, manifest,[probe_files]]
+    ch_probes = SPLIT_DATA.out.probe_files
         .splitCsv(sep: '\t', header: true, elem: 1)
-        .groupTuple() // meta, [tar_file, probes]
-        .map{meta, rows, targzs ->
-            def tar_to_gz = targzs.flatten().collectEntries { [it.name, it] }
+        .groupTuple()
+        .map { meta, rows, targzs ->
+
+            def tar_to_gz = targzs
+                .flatten()
+                .collectEntries { tar_file ->
+                    [(tar_file.name): tar_file]
+                }
+
             [
                 meta + [n_batches: rows.size()],
                 rows*.batch,
                 rows*.probes*.split(','),
-                rows*.tar_file.collect { tar_to_gz[it] }
+                rows*.tar_file.collect { tar_file_name ->
+                    tar_to_gz[tar_file_name]
+                }
             ]
-        } // [meta, [batch_nums], [batches], [batch_files]]
-        .transpose() // meta, batch_num, batch, batch_file
-        .map{meta, batch_num, batch, batch_file ->
+        }
+        .transpose()
+        .map { meta, batch_num, batch, batch_file ->
+
             [
-                meta + [id: meta.id + '_' + batch_num, name:meta.id, batch_number: batch_num],
+                meta + [
+                    id           : "${meta.id}_${batch_num}",
+                    name         : meta.id,
+                    batch_number : batch_num
+                ],
                 batch,
                 batch_file
             ]
-        } // meta, batch, batch_file
-
+        }
 
     CONC_RESPONSE_ANALYSIS(
         ch_model_for_analysis,
@@ -106,24 +123,35 @@ workflow BIPODE {
     // Step 6: Compress and output results
 
     ch_results_for_compression = CONC_RESPONSE_ANALYSIS.out.compressed_fits_files
-            .map { meta, fits ->
-                tuple(groupKey(meta.findAll { k,v -> k != 'batch_number' } + [id: meta.name], meta.n_batches), fits) // Use groupKey to release results as soon as all batches for a file have been processed
+        .map { meta, fits ->
+
+            def grouped_meta = meta.findAll { key, _value ->
+                key != 'batch_number'
             }
-            .groupTuple()
+
+            tuple(
+                groupKey(
+                    grouped_meta + [id: meta.name],
+                    meta.n_batches
+                ),
+                fits
+            )
+        }
+        .groupTuple()
 
     COMPRESS_OUTPUT(ch_results_for_compression)
 
     // Step 7: Create reports
 
-    ch_compressed_output = COMPRESS_OUTPUT.out.compressed_fits_files.map{meta, fits ->
-        [
-            meta,
-            fits,
-            meta.cell_type,
-            meta.test_substance
-        ]
-    }
+    ch_compressed_output = COMPRESS_OUTPUT.out.compressed_fits_files
+        .map { meta, fits ->
+            [
+                meta,
+                fits,
+                meta.cell_type,
+                meta.test_substance
+            ]
+        }
 
     CREATE_MULTIQC_REPORT(ch_compressed_output)
-
 }
