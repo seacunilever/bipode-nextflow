@@ -1,7 +1,7 @@
 process PREPARE_INPUTS {
 
-    cpus { 2 * task.attempt }
-    memory { 1.GB * task.attempt }
+    cpus 2
+    memory 1.GB
 
     input:
     path meta_data

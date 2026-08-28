@@ -2,8 +2,8 @@ process CONC_RESPONSE_ANALYSIS {
     tag "${meta.id}"
 
     cpus { params.n_cores }
-    memory { 3.GB * task.attempt }
-    time { 4.h * task.attempt }
+    memory 3.GB
+    time 4.h
     disk '10 GB'
 
     input:

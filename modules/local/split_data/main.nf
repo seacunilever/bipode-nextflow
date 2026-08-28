@@ -1,8 +1,8 @@
 process SPLIT_DATA {
     tag "${meta.id}"
 
-    cpus { 2 * task.attempt }
-    memory { 1.GB * task.attempt }
+    cpus 2
+    memory 1.GB
 
     input:
     tuple val(meta), path(input_data)

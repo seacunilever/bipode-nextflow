@@ -1,8 +1,8 @@
 process COMPRESS_OUTPUT {
     tag "${meta.id}"
 
-    cpus { 2 * task.attempt }
-    memory { 1.GB * task.attempt }
+    cpus 2
+    memory 1.GB
 
     input:
     tuple val(meta), path(all_fits_files)
