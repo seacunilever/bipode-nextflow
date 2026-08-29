@@ -3,23 +3,7 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
-
-### `Fixed`
-
-- Regenerated the `assets/test_data/minimal` fixtures against bipode-httr 1.1.0. The committed fixtures still used the pre-1.1.0 data schema (`n_treatment_batch`, flat `batch_index`, `low`/`high` count buckets), so the isolated module tests failed even though full pipeline runs — which generate their intermediates live — passed.
-- Repaired the CI linting workflows: removed the orphaned `linting_comment` workflow, which waited on a `linting-logs` artifact that no longer exists since the `nf-core lint` job was stripped from `linting.yml`, and corrected the repository/branch guards in `fix_linting` and `awsfulltest`, none of which matched `seacunilever/bipode-nextflow`.
-- Fixed the pre-commit violations (Prettier formatting, trailing whitespace, missing final newlines) that were failing the `nf-core linting` workflow.
-
-### `Changed`
-
-- Renamed the remaining `BIFROST`/`bifrost` references to `BIPODE`/`bipode`, covering test fixtures, example output, documentation images and logo assets. Historical `CHANGELOG` entries are left as-is, since they record the names in use at the time.
-
-### `Removed`
-
-- Dropped stale test fixtures and assets that nothing referenced: the pre-1.1.0 `Nitrofurantoin_HepG2_*` files, the orphaned compiled model `assets/model/BIFROST_HTTr_beta_logistic_batch`, the duplicate `fix-linting.yml` workflow, and the accidentally committed `nextflow.config.amltmp`.
-
-## 1.1.0 - [28/08/2026]
+## 1.1.0 - [29/08/2026]
 
 ### `Added`
 
@@ -34,9 +18,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Approximate likelihood formulations previously used for very high and very low count data have been removed.
   - Internal testing demonstrated that these approximations were unnecessary and that the simplified implementation provides equivalent inference while reducing model complexity and easing future maintenance.
 
+### `Changed`
+
+- Renamed the remaining `BIFROST`/`bifrost` references to `BIPODE`/`bipode`, covering test fixtures, example output, documentation images and logo assets. Earlier `CHANGELOG` entries are left as-is, since they record the names in use at the time.
+
 ### `Fixed`
 
 - Update areas failing with strict syntax used in current Nextflow versions
+- Regenerated the `assets/test_data/minimal` fixtures against bipode-httr 1.1.0. The committed fixtures still used the pre-1.1.0 data schema (`n_treatment_batch`, flat `batch_index`, `low`/`high` count buckets), so the isolated module tests failed even though full pipeline runs — which generate their intermediates live — passed.
+- Repaired the CI linting workflows: removed the orphaned `linting_comment` workflow, which waited on a `linting-logs` artifact that no longer exists since the `nf-core lint` job was stripped from `linting.yml`, and corrected the repository/branch guards in `fix_linting` and `awsfulltest`, none of which matched `seacunilever/bipode-nextflow`.
+- Fixed the pre-commit violations (Prettier formatting, trailing whitespace, missing final newlines) that were failing the `nf-core linting` workflow.
+- Corrected invalid defaults in `nextflow_schema.json`: the `seed` default contradicted the `null` default in `nextflow.config` and broke `nf-core pipelines lint`, and `batch_mode` was documented as `all` while the config sets `batch`.
+
+### `Removed`
+
+- Dropped stale test fixtures and assets that nothing referenced: the pre-1.1.0 `Nitrofurantoin_HepG2_*` files, the orphaned compiled model `assets/model/BIFROST_HTTr_beta_logistic_batch`, the duplicate `fix-linting.yml` workflow, and the accidentally committed `nextflow.config.amltmp`.
 
 ## 1.0.0 - [25/03/2026]
 
