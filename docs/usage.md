@@ -18,12 +18,15 @@ Nextflow run command will automatically fetch the pipeline from this Github repo
 ```bash
 nextflow run seacunilever/bipode-nextflow <params>
 ```
+
 For simplicity, this has been assumed across all the documentation
 
 If you wish to run from a local copy, specify the path in which `main.nf` resides. Eg. for current directory use
+
 ```bash
 nextflow run . <params>
 ```
+
 This will be likely if you wish to add a custom config profile for HPC or cloud execution (see 'Getting Started with Cloud Execution')
 
 ## Input Modes
@@ -333,15 +336,17 @@ The pipeline uses a batch key to group samples for statistical analysis. By defa
 The batch key should be a column in your samplesheet that identifies groups of samples that were processed together (e.g., same plate, same experiment, etc.). This is used to account for batch effects in the statistical model.
 
 Multiple batch keys can be specified like
+
 ```bash
 --batch-key 'YOUR_COLUMN_NAME,YOUR_ADDITIONAL_COLUMN_NAME'
 ```
 
 or in params yml file as a list
+
 ```yml
 batch_key:
-    - YOUR_COLUMN_NAME
-    - YOUR_ADDITIONAL_COLUMN_NAME
+  - YOUR_COLUMN_NAME
+  - YOUR_ADDITIONAL_COLUMN_NAME
 ```
 
 #### Choosing an Appropriate Batch Key

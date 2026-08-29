@@ -34,7 +34,7 @@ process CREATE_MULTIQC_REPORT {
         bipode-httr: \$(bipode-httr --version | sed 's/bipode-httr, version //')
     END_VERSIONS
     """
-    
+
     stub:
     def report_prefix = task.ext.prefix ?: meta.id
 
