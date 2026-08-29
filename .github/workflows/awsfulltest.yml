@@ -15,8 +15,8 @@ on:
 jobs:
   run-platform:
     name: Run AWS full tests
-    # run only if the PR is approved by at least 2 reviewers and against the master branch or manually triggered
-    if: github.repository == 'seqera-services/bipode' && github.event.review.state == 'approved' && github.event.pull_request.base.ref == 'master' || github.event_name == 'workflow_dispatch'
+    # run only if the PR is approved by at least 2 reviewers and against the main branch or manually triggered
+    if: github.repository == 'seacunilever/bipode-nextflow' && github.event.review.state == 'approved' && github.event.pull_request.base.ref == 'main' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
       - name: Get PR reviews
