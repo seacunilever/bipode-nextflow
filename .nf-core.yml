@@ -8,12 +8,12 @@ lint:
     - assets/email_template.html
     - assets/email_template.txt
     - assets/multiqc_config.yml
-    - assets/nf-core-bifrost_logo_light.png
+    - assets/nf-core-bipode_logo_light.png
     - assets/sendmail_template.txt
     - conf/igenomes.config
     - conf/igenomes_ignored.config
-    - docs/images/nf-core-bifrost_logo_dark.png
-    - docs/images/nf-core-bifrost_logo_light.png
+    - docs/images/nf-core-bipode_logo_dark.png
+    - docs/images/nf-core-bipode_logo_light.png
   files_unchanged:
     - assets/sendmail_template.txt
     - .github/CONTRIBUTING.md

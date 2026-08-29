@@ -49,7 +49,7 @@ nextflow run seacunilever/bipode-nextflow \
 TEST_DATA=assets/test_data/minimal
 nextflow run seacunilever/bipode-nextflow \
    -profile <docker/singularity/.../institute> \
-   --input ${TEST_DATA}/BIFROST_input_Nitrofurantoin_HepG2.json \
+   --input ${TEST_DATA}/BIPODE_input_Nitrofurantoin_HepG2.json \
    --outdir <OUTDIR>
 ```
 
@@ -64,7 +64,7 @@ For more details and further functionality, please refer to the:
 
 ## Pipeline output
 
-For more details about the output files and reports, please refer to the [output documentation](docs/output.md). An [example output report](docs/examples/BIFROST_input_Nitrofurantoin_HepaG2_full.html.zip) is available for Nitrofurantoin treatment in HepaG2 cells.
+For more details about the output files and reports, please refer to the [output documentation](docs/output.md). An [example output report](docs/examples/BIPODE_input_Nitrofurantoin_HepaG2_full.html.zip) is available for Nitrofurantoin treatment in HepaG2 cells.
 
 ## Credits
 

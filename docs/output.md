@@ -10,7 +10,7 @@ The directories listed below will be created in the results directory after the 
 
 Example outputs from the pipeline are available in the `docs/examples` directory:
 
-- `BIFROST_input_Nitrofurantoin_HepaG2_full.html.zip` - An example HTML report for Nitrofurantoin treatment in HepaG2 cells, showing concentration-response analysis results including interactive plots, summary statistics, and diagnostic information.
+- `BIPODE_input_Nitrofurantoin_HepaG2_full.html.zip` - An example HTML report for Nitrofurantoin treatment in HepaG2 cells, showing concentration-response analysis results including interactive plots, summary statistics, and diagnostic information.
 
 ## Pipeline overview
 

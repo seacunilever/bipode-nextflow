@@ -25,7 +25,7 @@ This guide explains how to create and manage containers for the Bipode pipeline 
    - One for **Conda**
 3. **Important**: Always select the **Conda** entry, not the PyPI one
 
-![Selecting the Conda package for bipode-httr](images/bifrost_containers_conda.png)
+![Selecting the Conda package for bipode-httr](images/bipode_containers_conda.png)
 
 ### Step 3: Generate Container URIs
 
@@ -47,7 +47,7 @@ This guide explains how to create and manage containers for the Bipode pipeline 
 6. **Important**: Select the **"https"** checkbox to get the HTTPS link instead of the ORAS one
 7. Copy the HTTPS URI (e.g., `https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/f3/f3fddbc020a7295009575826d86375cd3a78b52a1ed859911022f2b315d723e4/data`)
 
-![Singularity container with HTTPS option selected](images/bifrost_containers_singularity.png)
+![Singularity container with HTTPS option selected](images/bipode_containers_singularity.png)
 
 > **Note**: The first time a container is requested, it needs to be built. Subsequent requests will use the cached version and be available immediately.
 
@@ -65,7 +65,7 @@ process {
     conda = "bipode-httr=0.4.0"
     container = workflow.containerEngine == 'singularity' ?
         'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/f3/f3fddbc020a7295009575826d86375cd3a78b52a1ed859911022f2b315d723e4/data' :
-        'community.wave.seqera.io/library/bifrost-httr:0.4.0--3e1755e45da93297'
+        'community.wave.seqera.io/library/bipode-httr:0.4.0--3e1755e45da93297'
 
     // ... rest of process configuration
 }

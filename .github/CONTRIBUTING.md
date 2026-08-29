@@ -14,7 +14,7 @@ Contributions to the code are even more welcome ;)
 If you'd like to write some code for seacunilever/bipode-nextflow the standard workflow is as follows:
 
 1. Check that there isn't already an issue about your idea in the [seacunilever/bipode-nextflow issues](https://github.com/seacunilever/bipode-nextflow/issues) to avoid duplicating work. If there isn't one already, please create one so that others know you're working on this
-2. [Fork](https://help.github.com/en/github/getting-started-with-github/fork-a-repo) the [seacunilever/bifrost repository](https://github.com/seacunilever/bipode-nextflow) to your GitHub account
+2. [Fork](https://help.github.com/en/github/getting-started-with-github/fork-a-repo) the [seacunilever/bipode-nextflow repository](https://github.com/seacunilever/bipode-nextflow) to your GitHub account
 3. Make the necessary changes / additions within your forked repository following [Pipeline conventions](#pipeline-contribution-conventions)
 4. Use `nf-core pipelines schema build` and add any new parameters to the pipeline JSON schema (requires [nf-core tools](https://github.com/nf-core/tools) >= 1.10).
 5. Submit a Pull Request against the `dev` branch and wait for the code to be reviewed and merged

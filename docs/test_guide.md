@@ -166,7 +166,7 @@ nextflow_pipeline {
         when {
             params {
                 outdir = "$outputDir"
-                input = "${projectDir}/assets/test_data/minimal/BIFROST_input_Nitrofurantoin_HepG2.json"
+                input = "${projectDir}/assets/test_data/minimal/BIPODE_input_Nitrofurantoin_HepG2.json"
                 meta_mapper = null
                 counts = null
                 substances_cell_types = null
@@ -323,7 +323,7 @@ Test data is stored in `assets/test_data/` with two main datasets:
 ```
 assets/test_data/
 ├── minimal/
-│   ├── BIFROST_input_Nitrofurantoin_HepG2.json     # Pre-prepared JSON input
+│   ├── BIPODE_input_Nitrofurantoin_HepG2.json     # Pre-prepared JSON input
 │   ├── Example_Meta_Data.csv                        # Sample metadata
 │   ├── Example_Counts_5probes.csv                   # Expression counts
 │   ├── sers_meta_data_mapper.yml                    # Meta data mapping
