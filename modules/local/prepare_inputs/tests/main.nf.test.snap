@@ -2,13 +2,13 @@
     "Should run without failures": {
         "content": [
             [
-                "BIPODE_input_Nitrofurantoin_HepG2.json:md5,022bd61a67ac649a2519e7ad57e3031e"
+                "BIPODE_input_Nitrofurantoin_HepG2.json:md5,135f4c0e09c9841083a6765434fcf12d"
             ]
         ],
-        "timestamp": "2026-03-25T12:14:32.00190536",
+        "timestamp": "2026-08-29T11:58:07.169168619",
         "meta": {
             "nf-test": "0.9.5",
-            "nextflow": "25.10.2"
+            "nextflow": "26.04.6"
         }
     }
 }

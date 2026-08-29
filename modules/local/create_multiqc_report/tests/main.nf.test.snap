@@ -2,21 +2,21 @@
     "Should run without failures": {
         "content": [
             [
-                "bipode_diagnostics_table.txt:md5,cece1ce2cf68a16966908b8b4dd27d2b",
-                "bipode_fc_down_summary.txt:md5,b1e75125cdd77235de030a61a8fc6de1",
-                "bipode_fc_up_summary.txt:md5,239229d74de7040d01396d211b7af2e2",
-                "bipode_lowest_means_summary.txt:md5,26b0ed9d009c9e3ca0d8cd9e321d894b",
-                "bipode_stats_table.txt:md5,ab4bee526b55e6f1568b1cc8ccfa80b6",
-                "bipode_summary.txt:md5,8603b2dc722791f1bf8e4482b46efbea",
-                "bipode_weighted_summary.txt:md5,26b0ed9d009c9e3ca0d8cd9e321d894b",
+                "bipode_diagnostics_table.txt:md5,8cecf4819a026297873a3ea54fdec31e",
+                "bipode_fc_down_summary.txt:md5,57eb41a4317ee95ab3d3e2a4a96820b5",
+                "bipode_fc_up_summary.txt:md5,cfec6a71a43ea4115571c11ec86c774b",
+                "bipode_lowest_means_summary.txt:md5,57eb41a4317ee95ab3d3e2a4a96820b5",
+                "bipode_stats_table.txt:md5,c42849955d9b02a21ae17dedc4313c30",
+                "bipode_summary.txt:md5,f7057bdedf3c4bb7f9c9f5d1dfcfbf7e",
+                "bipode_weighted_summary.txt:md5,0f96c6eec6a5eb874f67eb892ebf5603",
                 "multiqc_citations.txt:md5,4c806e63a283ec1b7e78cdae3a923d4f",
                 "multiqc_sources.txt:md5,d2a044df39ce3c6abe5cdc2d67473490"
             ]
         ],
-        "timestamp": "2026-03-25T12:14:09.657123906",
+        "timestamp": "2026-08-29T11:57:37.632654919",
         "meta": {
             "nf-test": "0.9.5",
-            "nextflow": "25.10.2"
+            "nextflow": "26.04.6"
         }
     }
 }

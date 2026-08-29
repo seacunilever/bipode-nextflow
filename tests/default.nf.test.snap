@@ -4,28 +4,28 @@
             6,
             [
                 "compressed_results",
-                "compressed_results/BIFROST_input_Nitrofurantoin_HepG2_results.json",
+                "compressed_results/BIPODE_input_Nitrofurantoin_HepG2_results.json",
                 "pipeline_info",
                 "report",
-                "report/BIFROST_input_Nitrofurantoin_HepG2.html",
-                "report/BIFROST_input_Nitrofurantoin_HepG2_data",
-                "report/BIFROST_input_Nitrofurantoin_HepG2_data/bipode_diagnostics_table.txt",
-                "report/BIFROST_input_Nitrofurantoin_HepG2_data/bipode_fc_down_summary.txt",
-                "report/BIFROST_input_Nitrofurantoin_HepG2_data/bipode_fc_up_summary.txt",
-                "report/BIFROST_input_Nitrofurantoin_HepG2_data/bipode_lowest_means_summary.txt",
-                "report/BIFROST_input_Nitrofurantoin_HepG2_data/bipode_stats_table.txt",
-                "report/BIFROST_input_Nitrofurantoin_HepG2_data/bipode_summary.txt",
-                "report/BIFROST_input_Nitrofurantoin_HepG2_data/bipode_weighted_summary.txt",
-                "report/BIFROST_input_Nitrofurantoin_HepG2_data/multiqc_citations.txt",
-                "report/BIFROST_input_Nitrofurantoin_HepG2_data/multiqc_data.json",
-                "report/BIFROST_input_Nitrofurantoin_HepG2_data/multiqc_sources.txt",
-                "report/BIFROST_input_Nitrofurantoin_HepG2_data/pod_vs_fc.txt"
+                "report/BIPODE_input_Nitrofurantoin_HepG2.html",
+                "report/BIPODE_input_Nitrofurantoin_HepG2_data",
+                "report/BIPODE_input_Nitrofurantoin_HepG2_data/bipode_diagnostics_table.txt",
+                "report/BIPODE_input_Nitrofurantoin_HepG2_data/bipode_fc_down_summary.txt",
+                "report/BIPODE_input_Nitrofurantoin_HepG2_data/bipode_fc_up_summary.txt",
+                "report/BIPODE_input_Nitrofurantoin_HepG2_data/bipode_lowest_means_summary.txt",
+                "report/BIPODE_input_Nitrofurantoin_HepG2_data/bipode_stats_table.txt",
+                "report/BIPODE_input_Nitrofurantoin_HepG2_data/bipode_summary.txt",
+                "report/BIPODE_input_Nitrofurantoin_HepG2_data/bipode_weighted_summary.txt",
+                "report/BIPODE_input_Nitrofurantoin_HepG2_data/multiqc_citations.txt",
+                "report/BIPODE_input_Nitrofurantoin_HepG2_data/multiqc_data.json",
+                "report/BIPODE_input_Nitrofurantoin_HepG2_data/multiqc_sources.txt",
+                "report/BIPODE_input_Nitrofurantoin_HepG2_data/pod_vs_fc.txt"
             ]
         ],
-        "timestamp": "2026-03-25T12:22:58.538013328",
+        "timestamp": "2026-08-29T12:45:31.670364443",
         "meta": {
             "nf-test": "0.9.5",
-            "nextflow": "25.10.2"
+            "nextflow": "26.04.6"
         }
     },
     "Params: default": {

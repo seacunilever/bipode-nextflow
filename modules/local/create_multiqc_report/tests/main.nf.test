@@ -14,7 +14,7 @@ nextflow_process {
             process {
                 """
                 // define inputs of the process here. Example:
-                input[0] = [ [id: "Nitrofurantoin_HepG2"], file("${projectDir}/assets/test_data/minimal/BIFROST_input_Nitrofurantoin_HepG2_results.json.zip"), "HepG2", "Nitrofurantoin" ]
+                input[0] = [ [id: "Nitrofurantoin_HepG2"], file("${projectDir}/assets/test_data/minimal/BIPODE_input_Nitrofurantoin_HepG2_results.json.zip"), "HepG2", "Nitrofurantoin" ]
                 """
             }
         }

@@ -8,7 +8,7 @@ nextflow_pipeline {
         when {
             params {
                 outdir = "$outputDir"
-                input = "${projectDir}/assets/test_data/minimal/BIFROST_input_Nitrofurantoin_HepG2.json"
+                input = "${projectDir}/assets/test_data/minimal/BIPODE_input_Nitrofurantoin_HepG2.json"
                 meta_mapper = null
                 counts = null
                 bipode_config = null
@@ -38,7 +38,7 @@ nextflow_pipeline {
                 outdir = "$outputDir"
                 counts = "${projectDir}/assets/test_data/minimal/Example_Counts_5probes.csv"
                 bipode_config = "${projectDir}/assets/test_data/minimal/substances_cell_types.yml"
-                meta_mapper = "${projectDir}/assets/test_data/minimal/meta_data_mapper.yml"                
+                meta_mapper = "${projectDir}/assets/test_data/minimal/meta_data_mapper.yml"
             }
         }
 

@@ -15,7 +15,7 @@ nextflow_process {
             }
             process {
                 """
-                input[0] = [ ['id': 'Nitrofurantoin_HepG2'], file("${projectDir}/assets/test_data/minimal/BIFROST_input_Nitrofurantoin_HepG2.json", checkIfExists: true)]
+                input[0] = [ ['id': 'Nitrofurantoin_HepG2'], file("${projectDir}/assets/test_data/minimal/BIPODE_input_Nitrofurantoin_HepG2.json", checkIfExists: true)]
                 """
             }
         }

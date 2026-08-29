@@ -8,19 +8,19 @@
                     },
                     "Nitrofurantoin_HepG2_probes.manifest.csv:md5,4c254d153466bb7280a67de0601a14d2",
                     [
-                        "ACBD3_59.pkl:md5,95b130a11cbe1604a5d13594a4aeee27",
-                        "CEP89_11010.pkl:md5,c87d242caf5e56f234defcb9a70bbd38",
-                        "MPDU1_11661.pkl:md5,76f54ce7ee1d1396774c59b968f5e01d",
-                        "OAS3_90233.pkl:md5,28c3e50b3c1ff2be667b9b22fea4d3f4",
-                        "TMEM183A_34069.pkl:md5,e7ea870854743b27fd97fca9f6209101"
+                        "ACBD3_59.pkl:md5,990b6a398a7c83feb9d1c0897f9dfb8f",
+                        "CEP89_11010.pkl:md5,cd2ed81abbd724f8e449ae8ad8c46785",
+                        "MPDU1_11661.pkl:md5,63d1c2d6941eaeeadb0312647d8fc95d",
+                        "OAS3_90233.pkl:md5,5fa3b39270169e9cccd71c17ac9e92d2",
+                        "TMEM183A_34069.pkl:md5,3a857ac8671daa9005832f61658d3541"
                     ]
                 ]
             ]
         ],
-        "timestamp": "2026-03-25T12:14:55.026220549",
+        "timestamp": "2026-08-29T11:58:38.307961467",
         "meta": {
             "nf-test": "0.9.5",
-            "nextflow": "25.10.2"
+            "nextflow": "26.04.6"
         }
     }
 }
